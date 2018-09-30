@@ -163,7 +163,7 @@ class PartialMerkleTreeTests extends FlatSpec with MustMatchers {
 
   it must "correctly compute a merkle tree that has an odd amount of txids on the merkle tree" in {
     //this test is meant to prevent these failures on travis ci
-    //https://travis-ci.org/bitcoin-s/bitcoin-s-core/builds/205812075#L2774
+    //https://travis-ci.org/bitcoin-s/scashd/builds/205812075#L2774
     val hashes: Seq[DoubleSha256Digest] = List(
       DoubleSha256Digest("1563b82f187da1067f5000dabe3a4f4ae8650e207aa163e1d25ded8175e2bae1"),
       DoubleSha256Digest("151cfc67334a38be8abdb5752f2346f8989c33336275d385b5c61af3edfa0a51"),

@@ -1,3 +1,3 @@
-name := "bitcoin-s-rpc"
+name := "scashd-rpc"
 
 libraryDependencies ++= Deps.rpc

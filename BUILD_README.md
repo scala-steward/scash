@@ -1,11 +1,11 @@
 SBT - http://www.scala-sbt.org/download.html
     
-With SBT downloaded, open a terminal, and go to the directory in which you'd like to install Bitcoin-S-Core:
+With SBT downloaded, open a terminal, and go to the directory in which you'd like to install scashd:
 
 ```shell
-$ git clone https://github.com/bitcoin-s/bitcoin-s-core.git
+$ git clone https://github.com/bitcoin-s/scashd.git
 ```
-bitcoin-s-core uses secp256k1 for signature verfication, you need to compile it and install it on your machine:
+scashd uses secp256k1 for signature verfication, you need to compile it and install it on your machine:
 
 ```shell
 $ mkdir lib && cd secp256k1

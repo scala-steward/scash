@@ -1,5 +1,5 @@
 
-name := "bitcoin-s-core-gen"
+name := "scashd-gen"
 
 libraryDependencies ++= Deps.coreGen
 

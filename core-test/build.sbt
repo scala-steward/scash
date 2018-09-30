@@ -1,5 +1,5 @@
 
-name := "bitcoin-s-core-test"
+name := "scashd-test"
 
 libraryDependencies ++= Deps.coreTest
 

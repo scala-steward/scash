@@ -14,7 +14,6 @@ lazy val root = project
       core,
       coreGen,
       coreTest,
-      zmq,
       rpc
     )
     .settings(commonSettings: _*)
@@ -47,14 +46,6 @@ lazy val coreTest = project
   .dependsOn(
     core,
     coreGen % "test->test"
-  )
-
-lazy val zmq = project
-  .in(file("zmq"))
-  .enablePlugins()
-  .settings(commonSettings: _*)
-  .dependsOn(
-    core
   )
 
 lazy val rpc = project

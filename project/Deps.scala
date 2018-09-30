@@ -53,15 +53,7 @@ object Deps {
     Test.scalaTest,
     Test.spray
   )
-
-  val zmq = List(
-    Compile.zeromq,
-    Compile.slf4j,
-    Test.logback,
-    Test.scalacheck,
-    Test.scalaTest
-  )
-
+  
   val rpc = List(
     Compile.akkaHttp,
     Compile.akkaStream,
