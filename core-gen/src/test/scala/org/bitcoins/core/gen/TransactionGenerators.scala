@@ -97,7 +97,7 @@ trait TransactionGenerators extends BitcoinSLogger {
   /** Generates a small list of [[Transaction]] */
   def smallTransactions: Gen[Seq[Transaction]] = Gen.choose(0, 10).flatMap(i => Gen.listOfN(i, transaction))
 
-  def transaction: Gen[Transaction] = Gen.oneOf(baseTransaction, witnessTransaction)
+  def transaction: Gen[Transaction] = baseTransaction
 
   def baseTransaction: Gen[BaseTransaction] = for {
     version <- NumberGenerator.int32s
@@ -106,20 +106,6 @@ trait TransactionGenerators extends BitcoinSLogger {
     lockTime <- NumberGenerator.uInt32s
   } yield BaseTransaction(version, is, os, lockTime)
 
-  /** Generates a random [[WitnessTransaction]] */
-  def witnessTransaction: Gen[WitnessTransaction] = for {
-    version <- NumberGenerator.int32s
-    //we cannot have zero witnesses on a WitnessTx
-    //https://github.com/bitcoin/bitcoin/blob/e8cfe1ee2d01c493b758a67ad14707dca15792ea/src/primitives/transaction.h#L276-L281
-    is <- smallInputsNonEmpty
-    os <- smallOutputs
-    lockTime <- NumberGenerator.uInt32s
-    //we have to have atleast one NON `EmptyScriptWitness` for a tx to be a valid WitnessTransaction, otherwise we
-    //revert to using the `BaseTransaction` serialization format
-    //notice we use the old serialization format if all witnesses are empty
-    //[[https://github.com/bitcoin/bitcoin/blob/e8cfe1ee2d01c493b758a67ad14707dca15792ea/src/primitives/transaction.h#L276-L281]]
-    witness <- WitnessGenerators.transactionWitness(is.size).suchThat(_.witnesses.exists(_ != EmptyScriptWitness))
-  } yield WitnessTransaction(version, is, os, lockTime, witness)
 
   /**
    * Creates a [[ECPrivateKey]], then creates a [[P2PKScriptPubKey]] from that private key
@@ -291,66 +277,6 @@ trait TransactionGenerators extends BitcoinSLogger {
   def unspendableEscrowTimeoutTransaction: Gen[BaseTxSigComponent] = {
     Gen.oneOf(unspendableTimeoutEscrowTimeoutTransaction, unspendableMultiSigEscrowTimeoutTransaction)
   }
-
-  /** Generates a [[WitnessTransaction]] that has all of it's inputs signed correctly */
-  def signedP2WPKHTransaction: Gen[(WitnessTxSigComponent, Seq[ECPrivateKey])] = for {
-    (_, wBaseTxSigComponent, privKeys) <- WitnessGenerators.signedP2WPKHTransactionWitness
-  } yield (wBaseTxSigComponent, privKeys)
-
-  /** Generates a [[WitnessTransaction]] that has an input spends a raw P2WSH [[WitnessScriptPubKey]] */
-  def signedP2WSHP2PKTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = for {
-    (_, wBaseTxSigComponent, privKeys) <- WitnessGenerators.signedP2WSHP2PKTransactionWitness
-  } yield (wBaseTxSigComponent, privKeys)
-
-  /** Generates a [[WitnessTransaction]] that has an input spends a raw P2WSH [[WitnessScriptPubKey]] */
-  def signedP2WSHP2PKHTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = for {
-    (_, wBaseTxSigComponent, privKeys) <- WitnessGenerators.signedP2WSHP2PKHTransactionWitness
-  } yield (wBaseTxSigComponent, privKeys)
-
-  def signedP2WSHMultiSigTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = for {
-    (_, wBaseTxSigComponent, privKeys) <- WitnessGenerators.signedP2WSHMultiSigTransactionWitness
-  } yield (wBaseTxSigComponent, privKeys)
-
-  def signedP2WSHMultiSigEscrowTimeoutTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = for {
-    (_, wBaseTxSigComponent, privKeys) <- WitnessGenerators.signedP2WSHMultiSigEscrowTimeoutWitness
-  } yield (wBaseTxSigComponent, privKeys)
-
-  def spendableP2WSHTimeoutEscrowTimeoutTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = for {
-    (_, wBaseTxSigComponent, privKeys) <- WitnessGenerators.spendableP2WSHTimeoutEscrowTimeoutWitness
-  } yield (wBaseTxSigComponent, privKeys)
-
-  def signedP2WSHEscrowTimeoutTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = {
-    Gen.oneOf(signedP2WSHMultiSigEscrowTimeoutTransaction, spendableP2WSHTimeoutEscrowTimeoutTransaction)
-  }
-
-  /** Creates a signed P2SH(P2WPKH) transaction */
-  def signedP2SHP2WPKHTransaction: Gen[(WitnessTxSigComponent, Seq[ECPrivateKey])] = for {
-    (signedScriptSig, scriptPubKey, privKeys, witness, amount) <- ScriptGenerators.signedP2SHP2WPKHScriptSignature
-    (creditingTx, outputIndex) = buildCreditingTransaction(signedScriptSig.redeemScript, amount)
-    (signedTx, inputIndex) = buildSpendingTransaction(TransactionConstants.validLockVersion, creditingTx,
-      signedScriptSig, outputIndex, witness)
-    output = TransactionOutput(creditingTx.outputs(outputIndex.toInt).value, scriptPubKey)
-    signedTxSignatureComponent = WitnessTxSigComponent(signedTx, inputIndex,
-      output, Policy.standardScriptVerifyFlags)
-  } yield (signedTxSignatureComponent, privKeys)
-
-  def signedP2WSHTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = {
-    Gen.oneOf(signedP2WSHP2PKTransaction, signedP2WSHP2PKHTransaction, signedP2WSHMultiSigTransaction,
-      signedP2WSHEscrowTimeoutTransaction)
-  }
-  /** Creates a signed P2SH(P2WSH) transaction */
-  def signedP2SHP2WSHTransaction: Gen[(WitnessTxSigComponent, Seq[ECPrivateKey])] = for {
-    (witness, wBaseTxSigComponent, privKeys) <- WitnessGenerators.signedP2WSHTransactionWitness
-    p2shScriptPubKey = P2SHScriptPubKey(wBaseTxSigComponent.scriptPubKey)
-    p2shScriptSig = P2SHScriptSignature(wBaseTxSigComponent.scriptPubKey.asInstanceOf[WitnessScriptPubKey])
-    (creditingTx, outputIndex) = buildCreditingTransaction(p2shScriptSig.redeemScript, wBaseTxSigComponent.amount)
-    sequence = wBaseTxSigComponent.transaction.inputs(wBaseTxSigComponent.inputIndex.toInt).sequence
-    locktime = wBaseTxSigComponent.transaction.lockTime
-    (signedTx, inputIndex) = buildSpendingTransaction(TransactionConstants.validLockVersion, creditingTx, p2shScriptSig, outputIndex, locktime, sequence, witness)
-    output = TransactionOutput(creditingTx.outputs(outputIndex.toInt).value, p2shScriptPubKey)
-    signedTxSignatureComponent = WitnessTxSigComponent(signedTx, inputIndex,
-      output, Policy.standardScriptVerifyFlags)
-  } yield (signedTxSignatureComponent, privKeys)
 
   /**
    * Builds a spending transaction according to bitcoin core
