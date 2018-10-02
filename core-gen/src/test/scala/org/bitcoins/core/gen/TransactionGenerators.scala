@@ -106,7 +106,6 @@ trait TransactionGenerators extends BitcoinSLogger {
     lockTime <- NumberGenerator.uInt32s
   } yield BaseTransaction(version, is, os, lockTime)
 
-
   /**
    * Creates a [[ECPrivateKey]], then creates a [[P2PKScriptPubKey]] from that private key
    * Finally creates a  [[Transaction]] that spends the [[P2PKScriptPubKey]] correctly

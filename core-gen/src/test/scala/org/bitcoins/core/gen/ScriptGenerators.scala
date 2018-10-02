@@ -469,18 +469,6 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
     }
   }
 
-  def signedP2SHP2WPKHScriptSignature: Gen[(P2SHScriptSignature, P2SHScriptPubKey, Seq[ECPrivateKey], TransactionWitness, CurrencyUnit)] = for {
-    (witness, wtxSigComponent, privKeys) <- WitnessGenerators.signedP2WPKHTransactionWitness
-    p2shScriptPubKey = P2SHScriptPubKey(wtxSigComponent.scriptPubKey)
-    p2shScriptSig = P2SHScriptSignature(wtxSigComponent.scriptPubKey.asInstanceOf[WitnessScriptPubKey])
-  } yield (p2shScriptSig, p2shScriptPubKey, privKeys, witness, wtxSigComponent.amount)
-
-  def signedP2SHP2WSHScriptSignature: Gen[(P2SHScriptSignature, P2SHScriptPubKey, Seq[ECPrivateKey], TransactionWitness, CurrencyUnit)] = for {
-    (witness, wtxSigComponent, privKeys) <- WitnessGenerators.signedP2WSHTransactionWitness
-    p2shScriptPubKey = P2SHScriptPubKey(wtxSigComponent.scriptPubKey)
-    p2shScriptSig = P2SHScriptSignature(wtxSigComponent.scriptPubKey)
-  } yield (p2shScriptSig, p2shScriptPubKey, privKeys, witness, wtxSigComponent.amount)
-
   /**
    * This function chooses a random signed [[ScriptSignature]] that is NOT a [[P2SHScriptSignature]], [[CSVScriptSignature]],
    * [[CLTVScriptSignature]], or any witness type
@@ -497,13 +485,11 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
 
   /** Generates a random [[ScriptSignature]], the [[ScriptPubKey]] it is spending, and the [[ECPrivateKey]] needed to spend it. */
   def randomScriptSig: Gen[(ScriptSignature, ScriptPubKey, Seq[ECPrivateKey])] = {
-    val witP2SHP2WPKH = signedP2SHP2WPKHScriptSignature.map(x => (x._1, x._2, x._3))
-    val witP2SHP2WSH = signedP2SHP2WSHScriptSignature.map(x => (x._1, x._2, x._3))
     Gen.oneOf(
       packageToSequenceOfPrivateKeys(signedP2PKHScriptSignature),
       packageToSequenceOfPrivateKeys(signedP2PKScriptSignature),
       signedMultiSignatureScriptSignature, signedCLTVScriptSignature,
-      signedCSVScriptSignature, signedP2SHScriptSignature, witP2SHP2WPKH, witP2SHP2WSH)
+      signedCSVScriptSignature, signedP2SHScriptSignature)
   }
 
   /** Simply converts one private key in the generator to a sequence of private keys */
