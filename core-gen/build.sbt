@@ -1,5 +1,5 @@
 
-name := "scashd-gen"
+name := "scash-gen"
 
 libraryDependencies ++= Deps.coreGen
 

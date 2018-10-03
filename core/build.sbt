@@ -1,4 +1,4 @@
-name := "scashd"
+name := "scash"
 
 libraryDependencies ++= Deps.core
 

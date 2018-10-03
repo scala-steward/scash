@@ -1,5 +1,5 @@
 
-name := "scashd-test"
+name := "scash-test"
 
 libraryDependencies ++= Deps.coreTest
 

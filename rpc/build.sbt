@@ -1,3 +1,3 @@
-name := "scashd-rpc"
+name := "scash-rpc"
 
 libraryDependencies ++= Deps.rpc
