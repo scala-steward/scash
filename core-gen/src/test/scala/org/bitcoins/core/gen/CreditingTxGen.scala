@@ -140,13 +140,19 @@ sealed abstract class CreditingTxGen {
     Gen.choose(0, outputs.size - 1).flatMap { outputIndex: Int =>
       ScriptGenerators.scriptPubKey.flatMap {
         case (spk, keys) =>
-          WitnessGenerators.scriptWitness.flatMap { wit: ScriptWitness =>
-            CryptoGenerators.hashType.map { hashType: HashType =>
-              val tc = TransactionConstants
-              val signers: Seq[Sign] = keys
-              val creditingTx = BaseTransaction(tc.validLockVersion, Nil, outputs, tc.lockTime)
-              BitcoinUTXOSpendingInfo(TransactionOutPoint(creditingTx.txId, UInt32.apply(outputIndex)), TransactionOutput(creditingTx.outputs(outputIndex).value, creditingTx.outputs(outputIndex).scriptPubKey), signers, Some(spk), Some(wit), hashType)
-            }
+          CryptoGenerators.hashType.map { hashType: HashType =>
+            val tc = TransactionConstants
+            val signers: Seq[Sign] = keys
+            val creditingTx = BaseTransaction(tc.validLockVersion, Nil, outputs, tc.lockTime)
+            BitcoinUTXOSpendingInfo(
+              TransactionOutPoint(creditingTx.txId, UInt32.apply(outputIndex)),
+              TransactionOutput(
+                creditingTx.outputs(outputIndex).value,
+                creditingTx.outputs(outputIndex).scriptPubKey),
+              signers,
+              Some(spk),
+              None,
+              hashType)
           }
       }
     }

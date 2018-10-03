@@ -75,39 +75,6 @@ class TransactionSignatureCreatorSpec extends Properties("TransactionSignatureCr
 
     }
 
-  property("generate a valid signature for a p2wpkh witness transaction") =
-    Prop.forAllNoShrink(TransactionGenerators.signedP2WPKHTransaction) {
-      case (wtxSigComponent, privKeys) =>
-        val program = PreExecutionScriptProgram(wtxSigComponent)
-        val result = ScriptInterpreter.run(program)
-        result == ScriptOk
-    }
-
-  property("generate a valid signature for a p2wsh(old scriptPubkey tx) witness transaction") =
-    Prop.forAllNoShrink(TransactionGenerators.signedP2WSHTransaction) {
-      case (wtxSigComponent, privKeys) =>
-        val program = PreExecutionScriptProgram(wtxSigComponent)
-        val result = ScriptInterpreter.run(program)
-        Seq(ScriptErrorPushSize, ScriptOk).contains(result)
-    }
-  property("generate a valid signature from a p2sh(p2wpkh) witness transaction") =
-    Prop.forAllNoShrink(TransactionGenerators.signedP2SHP2WPKHTransaction) {
-      case (wtxSigComponent, privKeys) =>
-        val program = PreExecutionScriptProgram(wtxSigComponent)
-        val result = ScriptInterpreter.run(program)
-        if (result != ScriptOk) logger.warn("Result: " + result)
-        result == ScriptOk
-    }
-
-  property("generate a valid signature from a p2sh(p2wsh) witness tranasction") =
-    Prop.forAllNoShrink(TransactionGenerators.signedP2SHP2WSHTransaction) {
-      case (wtxSigComponent, privKeys) =>
-        val program = PreExecutionScriptProgram(wtxSigComponent)
-        val result = ScriptInterpreter.run(program)
-        if (result != ScriptOk) logger.warn("Result: " + result)
-        Seq(ScriptErrorPushSize, ScriptOk).contains(result)
-    }
-
   property("generate a valid signature for a escrow timeout transaction") =
     Prop.forAll(TransactionGenerators.spendableEscrowTimeoutTransaction) { txSigComponent: TxSigComponent =>
       val program = PreExecutionScriptProgram(txSigComponent)
@@ -123,12 +90,4 @@ class TransactionSignatureCreatorSpec extends Properties("TransactionSignatureCr
     }
   }
 
-  property("generate a valid signature for a P2WSH(EscrowTimeout) tx") = {
-    Prop.forAllNoShrink(TransactionGenerators.signedP2WSHEscrowTimeoutTransaction) {
-      case (txSigComponent, _) =>
-        val program = PreExecutionScriptProgram(txSigComponent)
-        val result = ScriptInterpreter.run(program)
-        result == ScriptOk
-    }
-  }
 }

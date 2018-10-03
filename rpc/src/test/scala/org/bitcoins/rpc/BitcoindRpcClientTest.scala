@@ -38,6 +38,7 @@ class BitcoindRpcClientTest
   extends AsyncFlatSpec
   with BeforeAndAfterAll
   with BeforeAndAfter {
+
   implicit val system = ActorSystem("RpcClientTest_ActorSystem")
   implicit val m = ActorMaterializer()
   implicit val ec = m.executionContext
