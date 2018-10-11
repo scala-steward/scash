@@ -25,10 +25,4 @@ class TransactionSpec extends Properties("TransactionSpec") {
       btx.txId == CryptoUtil.doubleSHA256(btx.hex)
     }
 
-  property("wtxid must be the same as the SHA256(SHA256(hex)) of a wtx && " +
-    "wtxid and txid are not the same for witness transactions") =
-    Prop.forAll(TransactionGenerators.witnessTransaction) { wtx: WitnessTransaction =>
-      wtx.wTxId == CryptoUtil.doubleSHA256(wtx.hex) &&
-        wtx.wTxId != wtx.txId
-    }
 }

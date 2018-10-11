@@ -1,7 +1,7 @@
 package org.bitcoins.core.wallet.utxo
 
 import org.bitcoins.core.crypto.Sign
-import org.bitcoins.core.protocol.script.{ ScriptPubKey, ScriptWitness }
+import org.bitcoins.core.protocol.script.ScriptPubKey
 import org.bitcoins.core.protocol.transaction.{ TransactionOutPoint, TransactionOutput }
 import org.bitcoins.core.script.crypto.HashType
 
@@ -18,15 +18,15 @@ sealed abstract class UTXOSpendingInfo {
   def signers: Seq[Sign]
   /** a redeemScript, if required, to spend the output above */
   def redeemScriptOpt: Option[ScriptPubKey]
-  /** the scriptWitness, if required, to spend the output above */
-  def scriptWitnessOpt: Option[ScriptWitness]
 
   def hashType: HashType
 }
 
-case class BitcoinUTXOSpendingInfo(outPoint: TransactionOutPoint, output: TransactionOutput,
+case class BitcoinUTXOSpendingInfo(
+  outPoint: TransactionOutPoint,
+  output: TransactionOutput,
   signers: Seq[Sign],
   redeemScriptOpt: Option[ScriptPubKey],
-  scriptWitnessOpt: Option[ScriptWitness],
-  hashType: HashType) extends UTXOSpendingInfo
+  hashType: HashType
+) extends UTXOSpendingInfo
 

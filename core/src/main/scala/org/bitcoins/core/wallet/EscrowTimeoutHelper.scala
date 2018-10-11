@@ -4,13 +4,14 @@ import org.bitcoins.core.crypto._
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.policy.Policy
 import org.bitcoins.core.protocol.script._
+import org.bitcoins.core.protocol.transaction
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.util.BitcoinSLogger
 import org.bitcoins.core.wallet.builder.TxBuilderError
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success, Try }
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 /**
  * Created by chris on 5/9/17.
@@ -20,7 +21,7 @@ sealed abstract class EscrowTimeoutHelper {
   private val logger = BitcoinSLogger.logger
 
   /**
-   * Signs a [[org.bitcoins.core.protocol.transaction.WitnessTransaction]] with the given private key
+   * Signs a [[org.bitcoins.core.protocol.transaction.BaseTransaction]] with the given private key
    * This will result in a Transaction that is partially signed, we need to send the transaction to
    * the server to be fully signed
    */
@@ -29,24 +30,23 @@ sealed abstract class EscrowTimeoutHelper {
     lock: EscrowTimeoutScriptPubKey,
     hashType: HashType)(implicit ec: ExecutionContext): Future[WitnessTxSigComponentRaw] = {
     val creditingOutput = creditingTx.outputs(outPoint.vout.toInt)
-    if (creditingOutput.scriptPubKey != P2WSHWitnessSPKV0(lock)) {
+    if (creditingOutput.scriptPubKey != P2SHScriptPubKey(lock)) {
       Future.fromTry(TxBuilderError.WrongSigner)
     } else {
-      val (_, amount) = (creditingOutput.scriptPubKey.asInstanceOf[P2WSHWitnessSPKV0], creditingOutput.value)
+      val (_, amount) = (creditingOutput.scriptPubKey.asInstanceOf[P2SHScriptPubKey], creditingOutput.value)
       val tc = TransactionConstants
-      val uScriptWitness = P2WSHWitnessV0(lock)
       val inputs = Seq(TransactionInput(outPoint, EmptyScriptSignature, tc.sequence))
-      val wtx = WitnessTransaction(tc.validLockVersion, inputs, destinations, tc.lockTime, TransactionWitness(Seq(uScriptWitness)))
-      val witSPK = P2WSHWitnessSPKV0(lock)
-      val witOutput = TransactionOutput(amount, witSPK)
-      val u = WitnessTxSigComponentRaw(wtx, UInt32.zero, witOutput, Policy.standardFlags)
+      val tx = BaseTransaction(tc.validLockVersion, inputs, destinations, tc.lockTime)
+      val spk = P2SHScriptPubKey(lock)
+      val witOutput = TransactionOutput(amount, spk)
+      val u = BaseTxSigComponent(tx, UInt32.zero, witOutput, Policy.standardFlags)
       val sign = signer.signFunction
       val signature = TransactionSignatureCreator.createSig(u, sign, hashType)
       signature.map { sig =>
         val multiSigScriptSig = MultiSignatureScriptSignature(Seq(sig))
         val escrow = EscrowTimeoutScriptSignature.fromMultiSig(multiSigScriptSig)
         val witness = buildEscrowTimeoutScriptWitness(escrow, lock, u)
-        val signedWTx = WitnessTransaction(wtx.version, wtx.inputs, wtx.outputs, wtx.lockTime, witness)
+        val signedWTx = BaseTransaction(tx.version, tx.inputs, tx.outputs, tx.lockTime)
         WitnessTxSigComponentRaw(signedWTx, u.inputIndex, creditingOutput, u.flags)
       }
 

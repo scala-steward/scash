@@ -22,11 +22,3 @@ sealed abstract class FeeUnit {
 sealed abstract class BitcoinFeeUnit extends FeeUnit
 
 case class SatoshisPerByte(currencyUnit: CurrencyUnit) extends BitcoinFeeUnit
-
-/**
- * A 'virtual byte' (also known as virtual size) is a new weight measurement that
- * was created with segregated witness (BIP141). Now 1 'virtual byte'
- * has the weight of 4 bytes in the [[org.bitcoins.core.protocol.transaction.TransactionWitness]]
- * of a [[org.bitcoins.core.protocol.transaction.WitnessTransaction]]
- */
-case class SatoshisPerVirtualByte(currencyUnit: CurrencyUnit) extends BitcoinFeeUnit

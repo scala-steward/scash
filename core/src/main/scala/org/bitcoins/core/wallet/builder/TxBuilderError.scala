@@ -28,11 +28,6 @@ object TxBuilderError {
    */
   val WrongSigner = Failure(new IllegalArgumentException("You did not pass in the write Signer to sign the given transaction, you probably gave the wrong identifier"))
   /**
-   * Means that the [[org.bitcoins.core.protocol.script.ScriptWitnessV0]] you passed as an argument does
-   * not hash to the commitment inside of [[org.bitcoins.core.protocol.script.P2WSHWitnessSPKV0]]
-   */
-  val WrongWitness = Failure(new IllegalArgumentException("You passed in the wrong ScriptWitness type to sign the given WitnessScriptPubKey"))
-  /**
    * Means that the redeem script you passed as an argument does not hash to the commitment
    * inside of the [[org.bitcoins.core.protocol.script.P2SHScriptPubKey]]
    */
@@ -49,23 +44,10 @@ object TxBuilderError {
    */
   //case object NoRedeemScript extends TxBuilderError
   val NoRedeemScript = Failure(new IllegalArgumentException("We are missing a redeem script to sign a transaction"))
-  /**
-   * Can occurr when we are trying to sign a [[org.bitcoins.core.protocol.script.WitnessScriptPubKey]]
-   * but we do not have a [[org.bitcoins.core.protocol.script.ScriptWitness]] for that witness spk
-   */
-  //case object NoWitness extends TxBuilderError
-  val NoWitness = Failure(new IllegalArgumentException("We are missing a witness redeem script"))
-  /** We expected a [[org.bitcoins.core.protocol.script.WitnessScriptPubKeyV0]], but got a non witness spk type */
-  val NonWitnessSPK = Failure(new IllegalArgumentException("We expected a witness spk, but got a non witness spk"))
-
-  /** We cannot have a [[org.bitcoins.core.protocol.script.WitnessScriptPubKey]] nested inside of another [[org.bitcoins.core.protocol.script.ScriptPubKey]] */
-  //case object NestedWitnessSPK extends TxBuilderError
-  val NestedWitnessSPK = Failure(new IllegalArgumentException("We cannot nested witness SPKs"))
   /** We cannot have a [[org.bitcoins.core.protocol.script.P2SHScriptPubKey]] nested inside of another spk   */
   val NestedP2SHSPK = Failure(new IllegalArgumentException("We cannot sign nested P2SHScriptPubKeys"))
   /**
    * Means that there is no signer defined for the given [[org.bitcoins.core.protocol.script.ScriptPubKey]] type.
-   * An example of a spk with no signer that is defined is [[org.bitcoins.core.protocol.script.WitnessCommitment]]
    */
   val NoSigner = Failure(new IllegalArgumentException("We have no means to sign the given scriptpubkey"))
   /**

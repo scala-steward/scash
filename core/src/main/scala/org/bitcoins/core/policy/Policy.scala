@@ -29,20 +29,13 @@ sealed abstract class Policy {
   def standardScriptVerifyFlags: Seq[ScriptFlag] = mandatoryScriptVerifyFlags ++ Seq(ScriptVerifyDerSig, ScriptVerifyStrictEnc,
     ScriptVerifyMinimalData, ScriptVerifyDiscourageUpgradableNOPs,
     ScriptVerifyCleanStack, ScriptVerifyCheckLocktimeVerify, ScriptVerifyCheckSequenceVerify,
-    ScriptVerifyLowS, ScriptVerifyWitness, ScriptVerifyMinimalIf, ScriptVerifyNullFail,
-    ScriptVerifyNullDummy, ScriptVerifyWitnessPubKeyType, ScriptVerifyDiscourageUpgradableWitnessProgram)
+    ScriptVerifyLowS, ScriptVerifyMinimalIf, ScriptVerifyNullFail,
+    ScriptVerifyNullDummy)
 
   def standardFlags = standardScriptVerifyFlags
 
   /** The number of confirmations for a payment to be considered as accepted */
   def confirmations: Long = 6
-
-  /**
-   * Minimum amount of [[org.bitcoins.core.currency.CurrencyUnit]]
-   * lock in a [[org.bitcoins.core.channels.Channel]]
-   * Currently set to 1 mBTC
-   */
-  def minChannelAmount: CurrencyUnit = CurrencyUnits.oneMBTC
 
   /** The minimum amount of satoshis we can spend to an output */
   def dustThreshold: CurrencyUnit = Satoshis(Int64(1000))
@@ -52,8 +45,6 @@ sealed abstract class Policy {
 
   /** Max fee for a transaction is set to 10 mBTC right now */
   def maxFee: CurrencyUnit = Satoshis(Int64(10)) * CurrencyUnits.oneMBTC
-
-  def isRBFEnabled: Boolean = true
 }
 
 object Policy extends Policy

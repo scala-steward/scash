@@ -2,17 +2,15 @@ package org.bitcoins.core.protocol.script
 
 import org.bitcoins.core.crypto._
 import org.bitcoins.core.protocol._
-import org.bitcoins.core.protocol.blockchain.Block
-import org.bitcoins.core.protocol.transaction.WitnessTransaction
 import org.bitcoins.core.consensus.Consensus
 import org.bitcoins.core.script.bitwise.{ OP_EQUAL, OP_EQUALVERIFY }
 import org.bitcoins.core.script.constant.{ BytesToPushOntoStack, _ }
-import org.bitcoins.core.script.control.{ OP_ELSE, OP_ENDIF, OP_IF, OP_RETURN }
+import org.bitcoins.core.script.control.{ OP_ELSE, OP_ENDIF, OP_IF }
 import org.bitcoins.core.script.crypto.{ OP_CHECKMULTISIG, OP_CHECKMULTISIGVERIFY, OP_CHECKSIG, OP_HASH160 }
 import org.bitcoins.core.script.locktime.{ OP_CHECKLOCKTIMEVERIFY, OP_CHECKSEQUENCEVERIFY }
 import org.bitcoins.core.script.reserved.UndefinedOP_NOP
 import org.bitcoins.core.script.stack.{ OP_DROP, OP_DUP }
-import org.bitcoins.core.serializers.script.{ RawScriptPubKeyParser, ScriptParser }
+import org.bitcoins.core.serializers.script.ScriptParser
 import org.bitcoins.core.util._
 import scodec.bits.ByteVector
 
@@ -487,194 +485,11 @@ object ScriptPubKey extends ScriptFactory[ScriptPubKey] {
     case _ if MultiSignatureScriptPubKey.isMultiSignatureScriptPubKey(asm) => MultiSignatureScriptPubKey(asm)
     case _ if CLTVScriptPubKey.isCLTVScriptPubKey(asm) => CLTVScriptPubKey(asm)
     case _ if CSVScriptPubKey.isCSVScriptPubKey(asm) => CSVScriptPubKey(asm)
-    case _ if WitnessScriptPubKey.isWitnessScriptPubKey(asm) => WitnessScriptPubKey(asm).get
-    case _ if WitnessCommitment.isWitnessCommitment(asm) => WitnessCommitment(asm)
     case _ if EscrowTimeoutScriptPubKey.isValidEscrowTimeout(asm) => EscrowTimeoutScriptPubKey.fromAsm(asm)
     case _ => NonStandardScriptPubKey(asm)
   }
 
   def apply(asm: Seq[ScriptToken]): ScriptPubKey = fromAsm(asm)
-}
-
-/** This type represents a [[ScriptPubKey]] to evaluate a [[ScriptWitness]] */
-sealed trait WitnessScriptPubKey extends ScriptPubKey {
-  def witnessProgram: Seq[ScriptToken]
-  def witnessVersion = WitnessVersion(asm.head)
-}
-
-object WitnessScriptPubKey {
-
-  /** Witness scripts must begin with one of these operations, see BIP141 */
-  val validWitVersions: Seq[ScriptNumberOperation] = Seq(OP_0, OP_1, OP_2, OP_3, OP_4, OP_5, OP_6, OP_7, OP_8,
-    OP_9, OP_10, OP_11, OP_12, OP_13, OP_14, OP_15, OP_16)
-
-  val unassignedWitVersions = validWitVersions.tail
-
-  def apply(asm: Seq[ScriptToken]): Option[WitnessScriptPubKey] = fromAsm(asm)
-
-  def fromAsm(asm: Seq[ScriptToken]): Option[WitnessScriptPubKey] = asm match {
-    case _ if P2WPKHWitnessSPKV0.isValid(asm) => Some(P2WPKHWitnessSPKV0.fromAsm(asm))
-    case _ if P2WSHWitnessSPKV0.isValid(asm) => Some(P2WSHWitnessSPKV0.fromAsm(asm))
-    case _ if WitnessScriptPubKey.isWitnessScriptPubKey(asm) => Some(UnassignedWitnessScriptPubKey(asm))
-    case _ => None
-  }
-
-  /**
-   * Checks if the given asm is a valid [[org.bitcoins.core.protocol.script.WitnessScriptPubKey]]
-   * Mimics this function inside of Bitcoin Core
-   * [[https://github.com/bitcoin/bitcoin/blob/14d01309bed59afb08651f2b701ff90371b15b20/src/script/script.cpp#L223-L237]]
-   */
-  def isWitnessScriptPubKey(asm: Seq[ScriptToken]): Boolean = {
-    val bytes = BitcoinSUtil.toByteVector(asm)
-    val firstOp = asm.headOption
-    if (bytes.size < 4 || bytes.size > 42) false
-    else if (!validWitVersions.contains(firstOp.getOrElse(OP_1NEGATE))) false
-    else if (asm(1).toLong + 2 == bytes.size) true
-    else false
-  }
-}
-
-/** Represents a [[https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#witness-program]] */
-sealed abstract class WitnessScriptPubKeyV0 extends WitnessScriptPubKey {
-  override def witnessProgram: Seq[ScriptToken] = asm.tail.tail
-}
-
-object WitnessScriptPubKeyV0 {
-
-  /**
-   * Mimics the function to determine if a [[ScriptPubKey]] contains a witness
-   * A witness program is any valid [[ScriptPubKey]] that consists of a 1 byte push op and then a data push
-   * between 2 and 40 bytes
-   * Verison 0 witness program need to have an OP_0 as the first operation
-   * [[https://github.com/bitcoin/bitcoin/blob/449f9b8debcceb61a92043bc7031528a53627c47/src/script/script.cpp#L215-L229]]
-   */
-  def isValid(asm: Seq[ScriptToken]): Boolean = {
-    WitnessScriptPubKey.isWitnessScriptPubKey(asm) && asm.headOption == Some(OP_0)
-  }
-}
-
-/**
- * Represents the pay-to-witness-pubkeyhash script pubkey type as defined in BIP141
- * [[https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#P2WPKH]]
- */
-sealed abstract class P2WPKHWitnessSPKV0 extends WitnessScriptPubKeyV0 {
-  def pubKeyHash: Sha256Hash160Digest = Sha256Hash160Digest(asm(3).bytes)
-  override def toString = s"P2WPKHWitnessSPKV0($hex)"
-}
-
-object P2WPKHWitnessSPKV0 extends ScriptFactory[P2WPKHWitnessSPKV0] {
-  private case class P2WPKHWitnessSPKV0Impl(bytes: ByteVector) extends P2WPKHWitnessSPKV0
-
-  override def fromAsm(asm: Seq[ScriptToken]): P2WPKHWitnessSPKV0 = {
-    buildScript(asm, P2WPKHWitnessSPKV0Impl(_), isValid(_), s"Given asm was not a P2WPKHWitnessSPKV0, got $asm")
-  }
-
-  def isValid(asm: Seq[ScriptToken]): Boolean = {
-    val asmBytes = BitcoinSUtil.toByteVector(asm)
-    WitnessScriptPubKeyV0.isValid(asm) &&
-      asmBytes.size == 22
-  }
-
-  /** Creates a P2WPKH witness script pubkey */
-  def apply(pubKey: ECPublicKey): P2WPKHWitnessSPKV0 = {
-    //https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki#restrictions-on-public-key-type
-    require(pubKey.isCompressed, s"Public key must be compressed to be used in a segwit script, see BIP143")
-    val hash = CryptoUtil.sha256Hash160(pubKey.bytes)
-    val pushop = BitcoinScriptUtil.calculatePushOp(hash.bytes)
-    fromAsm(Seq(OP_0) ++ pushop ++ Seq(ScriptConstant(hash.bytes)))
-  }
-}
-
-/**
- * Reprents the pay-to-witness-scripthash script pubkey type as defined in BIP141
- * [[https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wsh]]
- */
-sealed abstract class P2WSHWitnessSPKV0 extends WitnessScriptPubKeyV0 {
-  def scriptHash: Sha256Digest = Sha256Digest(asm(3).bytes)
-  override def toString = s"P2WSHWitnessSPKV0($hex)"
-}
-
-object P2WSHWitnessSPKV0 extends ScriptFactory[P2WSHWitnessSPKV0] {
-  private case class P2WSHWitnessSPKV0Impl(bytes: ByteVector) extends P2WSHWitnessSPKV0
-
-  override def fromAsm(asm: Seq[ScriptToken]): P2WSHWitnessSPKV0 = {
-    buildScript(asm, P2WSHWitnessSPKV0Impl(_), isValid(_), s"Given asm was not a P2WSHWitnessSPKV0, got $asm")
-  }
-
-  def isValid(asm: Seq[ScriptToken]): Boolean = {
-    val asmBytes = BitcoinSUtil.toByteVector(asm)
-    WitnessScriptPubKeyV0.isValid(asm) &&
-      asmBytes.size == 34
-  }
-
-  def apply(spk: ScriptPubKey): P2WSHWitnessSPKV0 = {
-    require(BitcoinScriptUtil.isOnlyCompressedPubKey(spk), s"Public key must be compressed to be used in a segwit script, see BIP143")
-    val hash = CryptoUtil.sha256(spk.asmBytes)
-    val pushop = BitcoinScriptUtil.calculatePushOp(hash.bytes)
-    fromAsm(Seq(OP_0) ++ pushop ++ Seq(ScriptConstant(hash.bytes)))
-  }
-}
-
-/** Type to represent all [[org.bitcoins.core.protocol.script.WitnessScriptPubKey]]s we have not used yet in the bitcoin protocol */
-sealed trait UnassignedWitnessScriptPubKey extends WitnessScriptPubKey {
-  override def witnessProgram: Seq[ScriptToken] = asm.tail.tail
-}
-
-object UnassignedWitnessScriptPubKey extends ScriptFactory[UnassignedWitnessScriptPubKey] {
-  private case class UnassignedWitnessScriptPubKeyImpl(bytes: ByteVector) extends UnassignedWitnessScriptPubKey {
-    override def toString = "UnassignedWitnessScriptPubKeyImpl(" + hex + ")"
-  }
-
-  override def fromAsm(asm: Seq[ScriptToken]): UnassignedWitnessScriptPubKey = {
-    buildScript(asm, UnassignedWitnessScriptPubKeyImpl(_), WitnessScriptPubKey.isWitnessScriptPubKey(_),
-      "Given asm was not a valid witness script pubkey: " + asm)
-  }
-  def apply(asm: Seq[ScriptToken]): UnassignedWitnessScriptPubKey = fromAsm(asm)
-}
-
-/**
- * This trait represents the witness commitment found in the coinbase transaction
- * This is needed to commit to the wtxids of all of the witness transactions, since the merkle tree
- * does not commit to the witnesses for all [[org.bitcoins.core.protocol.transaction.WitnessTransaction]]
- * See BIP141 for more info
- * [[https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#commitment-structure]]
- */
-sealed trait WitnessCommitment extends ScriptPubKey {
-  /** The commitment to the [[WitnessTransaction]]s in the [[Block]] */
-  def witnessRootHash: DoubleSha256Digest = DoubleSha256Digest(asm(2).bytes.splitAt(4)._2)
-}
-
-object WitnessCommitment extends ScriptFactory[WitnessCommitment] {
-  private case class WitnessCommitmentImpl(bytes: ByteVector) extends WitnessCommitment {
-    override def toString = "WitnessCommitmentImpl(" + hex + ")"
-  }
-
-  /** Every witness commitment must start with this header, see BIP141 for details */
-  private val commitmentHeader = "aa21a9ed"
-
-  def apply(asm: Seq[ScriptToken]): WitnessCommitment = fromAsm(asm)
-
-  override def fromAsm(asm: Seq[ScriptToken]): WitnessCommitment = {
-    buildScript(asm, WitnessCommitmentImpl(_), isWitnessCommitment(_), "Given asm was not a valid witness commitment, got: " + asm)
-  }
-
-  def apply(hash: DoubleSha256Digest): WitnessCommitment = {
-    WitnessCommitment(Seq(OP_RETURN, BytesToPushOntoStack(36), ScriptConstant(commitmentHeader + hash.hex)))
-  }
-  /**
-   * This determines if the given asm has the correct witness structure according to BIP141
-   * [[https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#commitment-structure]]
-   */
-  def isWitnessCommitment(asm: Seq[ScriptToken]): Boolean = {
-    if (asm.size < 3) false
-    else {
-      val minCommitmentSize = 38
-      val asmBytes = BitcoinSUtil.toByteVector(asm)
-      val Seq(opReturn, pushOp, constant) = asm.take(3)
-      opReturn == OP_RETURN && pushOp == BytesToPushOntoStack(36) &&
-        constant.hex.take(8) == commitmentHeader && asmBytes.size >= minCommitmentSize
-    }
-  }
 }
 
 /**
