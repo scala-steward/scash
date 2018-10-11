@@ -32,8 +32,6 @@ sealed abstract class NetworkParameters {
 }
 
 sealed abstract class BitcoinNetwork extends NetworkParameters {
-  override def difficultyChangeThreshold: Int = 2016
-
   override def chainParams: BitcoinChainParams
 }
 
