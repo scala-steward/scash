@@ -60,7 +60,7 @@ sealed abstract class EscrowTimeoutHelper {
   def buildEscrowTimeoutScriptWitness(
     signedScriptSig: EscrowTimeoutScriptSignature,
     lock: EscrowTimeoutScriptPubKey,
-    unsigned: WitnessTxSigComponentRaw): TransactionWitness = {
+    unsigned: BaseTxSigComponent): TransactionWitness = {
     //need to remove the OP_0 or OP_1 and replace it with ScriptNumber.zero / ScriptNumber.one since witnesses are *not* run through the interpreter
     val signedScriptWitness = P2WSHWitnessV0(lock, signedScriptSig)
     val updatedWitnesses = unsigned.transaction.witness.witnesses.updated(unsigned.inputIndex.toInt, signedScriptWitness)

@@ -1,7 +1,7 @@
 package org.bitcoins.core.crypto
 
-import org.bitcoins.core.currency.{ CurrencyUnits, Satoshis }
-import org.bitcoins.core.number.{ Int64, UInt32 }
+import org.bitcoins.core.currency.CurrencyUnits
+import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.policy.Policy
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.transaction._
@@ -9,7 +9,6 @@ import org.bitcoins.core.script.crypto._
 import org.bitcoins.core.serializers.script.ScriptParser
 import org.bitcoins.core.util._
 import org.scalatest.{ FlatSpec, MustMatchers }
-import scodec.bits.ByteVector
 
 /**
  * Created by chris on 2/19/16.
@@ -116,24 +115,5 @@ class TransactionSignatureSerializerTest extends FlatSpec with MustMatchers {
       TransactionSignatureSerializer.serializeForSignature(txSigComponent, HashType.sigHashAll))
     serializedTxForSig must be("01000000020001000000000000000000000000000000000000000000000000000000000000000000002321035e7f0d4d0841bcd56c39337ed086b1a633ee770c1ffdd94ac552a95ac2ce0efcac01000000000200000000000000000000000000000000000000000000000000000000000000000000000100000001010000000000000001510000000001000000")
 
-  }
-
-  it must "serialize a p2wpkh with SIGHASH_SINGLE|SIGHASH_ANYONECANPAY" in {
-    val rawTx = "0100000000010400010000000000000000000000000000000000000000000000000000000000000200000000ffffffff00010000000000000000000000000000000000000000000000000000000000000100000000ffffffff00010000000000000000000000000000000000000000000000000000000000000000000000ffffffff00010000000000000000000000000000000000000000000000000000000000000300000000ffffffff05540b0000000000000151d0070000000000000151840300000000000001513c0f00000000000001512c010000000000000151000248304502210092f4777a0f17bf5aeb8ae768dec5f2c14feabf9d1fe2c89c78dfed0f13fdb86902206da90a86042e252bcd1e80a168c719e4a1ddcc3cebea24b9812c5453c79107e9832103596d3451025c19dbbdeb932d6bf8bfb4ad499b95b6f88db8899efac102e5fc71000000000000"
-    val inputIndex = UInt32(1)
-    val wtx = WitnessTransaction(rawTx)
-    val witScriptPubKey = P2WPKHWitnessSPKV0("1600144c9c3dfac4207d5d8cb89df5722cb3d712385e3f")
-    val amount = Satoshis(Int64(2000))
-    val txSigComponent = WitnessTxSigComponentRaw(
-      wtx,
-      inputIndex,
-      TransactionOutput(amount, witScriptPubKey),
-      Policy.standardFlags)
-
-    val serializedForSig = TransactionSignatureSerializer.serializeForSignature(
-      txSigComponent,
-      HashType.sigHashSingleAnyoneCanPay)
-
-    BitcoinSUtil.encodeHex(serializedForSig) must be("01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000010000001976a9144c9c3dfac4207d5d8cb89df5722cb3d712385e3f88acd007000000000000ffffffff2d793f9722ac8cbea9b2e0a2929cda4007b8312c6ec3b997088439e48e7aa64e0000000083000000")
   }
 }

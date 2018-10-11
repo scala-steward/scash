@@ -84,10 +84,10 @@ class BitcoinTxBuilderSpec extends Properties("TxBuilderSpec") {
       rem: Seq[BitcoinUTXOSpendingInfo],
       accum: BitcoinTxBuilder.UTXOMap): BitcoinTxBuilder.UTXOMap = rem match {
       case Nil => accum
-      case BitcoinUTXOSpendingInfo(txOutPoint, txOutput, signers, redeemScriptOpt, scriptWitOpt, hashType) :: t =>
+      case BitcoinUTXOSpendingInfo(txOutPoint, txOutput, signers, redeemScriptOpt, hashType) :: t =>
         val o = txOutPoint
         val output = txOutput
-        val outPointsSpendingInfo = BitcoinUTXOSpendingInfo(o, output, signers, redeemScriptOpt, scriptWitOpt, hashType)
+        val outPointsSpendingInfo = BitcoinUTXOSpendingInfo(o, output, signers, redeemScriptOpt, hashType)
         loop(t, accum.updated(o, outPointsSpendingInfo))
     }
     loop(info, Map.empty)
@@ -102,12 +102,7 @@ class BitcoinTxBuilderSpec extends Properties("TxBuilderSpec") {
         val spk = output.scriptPubKey
         val amount = output.value
         val txSigComponent = spk match {
-          case witSPK: WitnessScriptPubKeyV0 =>
-            val o = TransactionOutput(amount, witSPK)
-            WitnessTxSigComponentRaw(tx.asInstanceOf[WitnessTransaction], UInt32(idx),
-              o, Policy.standardFlags)
-          case _: UnassignedWitnessScriptPubKey => ???
-          case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: WitnessCommitment
+          case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey
             | _: CSVScriptPubKey | _: CLTVScriptPubKey | _: NonStandardScriptPubKey | _: EscrowTimeoutScriptPubKey
             | EmptyScriptPubKey) =>
             val o = TransactionOutput(CurrencyUnits.zero, x)

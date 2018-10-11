@@ -5,8 +5,8 @@ import org.bitcoins.core.currency.CurrencyUnits
 import org.bitcoins.core.number.Int32
 import org.bitcoins.core.policy.Policy
 import org.bitcoins.core.protocol.script.testprotocol.SignatureHashTestCase
-import org.bitcoins.core.protocol.transaction.{ BaseTransaction, Transaction, TransactionOutput, WitnessTransaction }
-import org.bitcoins.core.script.crypto.{ HashType, SIGHASH_ALL, SIGHASH_SINGLE }
+import org.bitcoins.core.protocol.transaction.{ Transaction, TransactionOutput }
+import org.bitcoins.core.script.crypto.{ HashType, SIGHASH_ALL }
 import org.bitcoins.core.serializers.script.RawScriptSignatureParser
 import org.bitcoins.core.util.{ BitcoinSLogger, BitcoinSUtil, TestUtil }
 import org.scalatest.{ FlatSpec, MustMatchers }
@@ -116,12 +116,13 @@ class ScriptSignatureTest extends FlatSpec with MustMatchers {
       logger.info("testCase: " + testCase)
       Transaction(testCase.transaction.hex) must be(testCase.transaction)
       val output = TransactionOutput(CurrencyUnits.zero, testCase.script)
-      val txSigComponent = testCase.transaction match {
-        case btx: BaseTransaction =>
-          BaseTxSigComponent(btx, testCase.inputIndex, output, Policy.standardFlags)
-        case wtx: WitnessTransaction =>
-          WitnessTxSigComponent(wtx, inputIndex = testCase.inputIndex, output, Policy.standardFlags)
-      }
+      val txSigComponent = BaseTxSigComponent(
+        testCase.transaction,
+        testCase.inputIndex,
+        output,
+        Policy.standardFlags
+      )
+
       val hashForSig = TransactionSignatureSerializer.hashForSignature(txSigComponent, testCase.hashType)
       val flipHash = BitcoinSUtil.flipEndianness(testCase.hash.hex)
       hashForSig must be(DoubleSha256Digest(flipHash))
