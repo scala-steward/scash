@@ -100,32 +100,39 @@ object MainNetChainParams extends BitcoinChainParams {
 
   override def networkId = "main"
 
-  override def genesisBlock: Block = createGenesisBlock(UInt32(1231006505), UInt32(2083236893), UInt32(0x1d00ffff), Int32.one, Satoshis(Int64(5000000000L)))
+  override def genesisBlock: Block =
+    createGenesisBlock(
+      UInt32(1231006505),
+      UInt32(2083236893),
+      UInt32(0x1d00ffff),
+      Int32.one,
+      Satoshis(Int64(5000000000L)))
 
   override def base58Prefixes: Map[Base58Type, ByteVector] = Map(
-    Base58Type.PubKeyAddress -> BitcoinSUtil.decodeHex("00"),
-    Base58Type.ScriptAddress -> BitcoinSUtil.decodeHex("05"),
-    Base58Type.SecretKey -> BitcoinSUtil.decodeHex("80"),
-    Base58Type.ExtPublicKey -> ByteVector(BitcoinSUtil.hexToByte("04"), BitcoinSUtil.hexToByte("88"),
-      BitcoinSUtil.hexToByte("b2"), BitcoinSUtil.hexToByte("1e")),
-    Base58Type.ExtSecretKey -> ByteVector(BitcoinSUtil.hexToByte("04"), BitcoinSUtil.hexToByte("88"),
-      BitcoinSUtil.hexToByte("ad"), BitcoinSUtil.hexToByte("e4")))
+    Base58Type.PubKeyAddress -> ByteVector(0),
+    Base58Type.ScriptAddress -> ByteVector(5),
+    Base58Type.SecretKey -> ByteVector(128),
+    Base58Type.ExtPublicKey -> ByteVector(0x04, 0x88, 0xB2, 0x1E),
+    Base58Type.ExtSecretKey -> ByteVector(0x04, 0x88, 0xAD, 0xE4))
 }
 
 object TestNetChainParams extends BitcoinChainParams {
 
   override def networkId = "test"
 
-  override def genesisBlock: Block = createGenesisBlock(UInt32(1296688602), UInt32(414098458), UInt32(0x1d00ffff), Int32.one, Satoshis(Int64(5000000000L)))
+  override def genesisBlock: Block = createGenesisBlock(
+    UInt32(1296688602),
+    UInt32(414098458),
+    UInt32(0x1d00ffff),
+    Int32.one,
+    Satoshis(Int64(5000000000L)))
 
   override def base58Prefixes: Map[Base58Type, ByteVector] = Map(
-    Base58Type.PubKeyAddress -> BitcoinSUtil.decodeHex("6f"),
-    Base58Type.ScriptAddress -> BitcoinSUtil.decodeHex("c4"),
-    Base58Type.SecretKey -> BitcoinSUtil.decodeHex("ef"),
-    Base58Type.ExtPublicKey -> ByteVector(BitcoinSUtil.hexToByte("04"), BitcoinSUtil.hexToByte("35"),
-      BitcoinSUtil.hexToByte("87"), BitcoinSUtil.hexToByte("cf")),
-    Base58Type.ExtSecretKey -> ByteVector(BitcoinSUtil.hexToByte("04"), BitcoinSUtil.hexToByte("35"),
-      BitcoinSUtil.hexToByte("83"), BitcoinSUtil.hexToByte("94")))
+    Base58Type.PubKeyAddress -> ByteVector(111),
+    Base58Type.ScriptAddress -> ByteVector(196),
+    Base58Type.SecretKey -> ByteVector(239),
+    Base58Type.ExtPublicKey -> ByteVector(0x04, 0x35, 0x87, 0xCF),
+    Base58Type.ExtSecretKey -> ByteVector(0x04, 0x35, 0x83, 0x94))
 }
 
 object RegTestNetChainParams extends BitcoinChainParams {

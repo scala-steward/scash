@@ -4,7 +4,8 @@ import org.bitcoins.core.protocol.blockchain._
 import scodec.bits.ByteVector
 
 /**
- * Created by chris on 7/27/15.
+ * * Copyright (c) 2015-2018, christewart (MIT License)
+ * * Copyright (c) 2018-    , floreslorca (MIT License)
  */
 sealed abstract class NetworkParameters {
   /** The parameters of the blockchain we are connecting to */
@@ -28,8 +29,6 @@ sealed abstract class NetworkParameters {
    */
   def magicBytes: ByteVector
 
-  /** In bitcoin, the network recaculates the difficulty for the network every 2016 blocks */
-  def difficultyChangeThreshold: Int
 }
 
 sealed abstract class BitcoinNetwork extends NetworkParameters {
@@ -44,12 +43,16 @@ sealed abstract class MainNet extends BitcoinNetwork {
   override def rpcPort = 8332
   //mainnet doesn't need to be specified like testnet or regtest
   override def name = ""
-  override def dnsSeeds = Seq("seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org",
-    "seed.bitcoinstats.com", "bitseed.xf2.org", "seed.bitcoin.jonasschnelli.ch")
 
-  override def magicBytes = ByteVector(0xf9, 0xbe, 0xb4, 0xd9)
+  def dnsSeeds = List(
+    "seed.bitcoinabc.org",
+    "seed-abc.bitcoinforks.org",
+    "seed.bitprim.org",
+    "seed.deadalnix.me",
+    "seeder.criptolayer.net")
 
-  override def difficultyChangeThreshold: Int = 2016
+  override def magicBytes = ByteVector(0xE3, 0xE1, 0xF3, 0xE8)
+
 }
 
 object MainNet extends MainNet
@@ -58,12 +61,16 @@ sealed abstract class TestNet3 extends BitcoinNetwork {
   override def chainParams = TestNetChainParams
   override def port = 18333
   override def rpcPort = 18332
-  override def dnsSeeds = Seq(
-    "testnet-seed.bitcoin.petertodd.org",
-    "testnet-seed.bluematt.me", "testnet-seed.bitcoin.schildbach.de")
-  override def magicBytes = ByteVector(0x0b, 0x11, 0x09, 0x07)
 
-  override def difficultyChangeThreshold: Int = 2016
+  override def dnsSeeds = Seq(
+    "testnet-seed.bitcoinabc.org",
+    "testnet-seed-abc.bitcoinforks.org",
+    "testnet-seed.bitprim.org",
+    "testnet-seed.deadalnix.me",
+    "testnet-seeder.criptolayer.net")
+
+  override def magicBytes = ByteVector(0xF4, 0xE5, 0xF3, 0xF4)
+
 }
 
 object TestNet3 extends TestNet3
@@ -73,8 +80,7 @@ sealed abstract class RegTest extends BitcoinNetwork {
   override def port = 18444
   override def rpcPort = TestNet3.rpcPort
   override def dnsSeeds = Nil
-  override def magicBytes = ByteVector(0xfa, 0xbf, 0xb5, 0xda)
-  override def difficultyChangeThreshold: Int = 2016
+  override def magicBytes = ByteVector(0xDA, 0xB5, 0xBF, 0xFA)
 }
 
 object RegTest extends RegTest
