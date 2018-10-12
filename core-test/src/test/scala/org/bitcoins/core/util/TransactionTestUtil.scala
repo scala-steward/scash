@@ -4,6 +4,7 @@ import org.bitcoins.core.crypto.{ ECPrivateKey, ECPublicKey }
 import org.bitcoins.core.currency.{ CurrencyUnit, CurrencyUnits }
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.script._
+import org.bitcoins.core.protocol.transaction
 import org.bitcoins.core.protocol.transaction._
 
 /**
@@ -56,41 +57,14 @@ trait TransactionTestUtil extends BitcoinSLogger {
    * @param outputIndex
    * @return the built spending transaction and the input index for the script signature
    */
-  def buildSpendingTransaction(creditingTx: Transaction, scriptSignature: ScriptSignature, outputIndex: UInt32,
-    witness: Option[(ScriptWitness, CurrencyUnit)] = None): (Transaction, UInt32) = {
-    /*
-    CMutableTransaction txSpend;
-    txSpend.nVersion = 1;
-    txSpend.nLockTime = 0;
-    txSpend.vin.resize(1);
-    txSpend.vout.resize(1);
-    txSpend.wit.vtxinwit.resize(1);
-    txSpend.wit.vtxinwit[0].scriptWitness = scriptWitness;
-    txSpend.vin[0].prevout.hash = txCredit.GetHash();
-    txSpend.vin[0].prevout.n = 0;
-    txSpend.vin[0].scriptSig = scriptSig;
-    txSpend.vin[0].nSequence = CTxIn::SEQUENCE_FINAL;
-    txSpend.vout[0].scriptPubKey = CScript();
-    txSpend.vout[0].nValue = txCredit.vout[0].nValue;
-    */
+  def buildSpendingTransaction(creditingTx: Transaction, scriptSignature: ScriptSignature, outputIndex: UInt32): (Transaction, UInt32) = {
 
     val outpoint = TransactionOutPoint(creditingTx.txId, outputIndex)
     val input = TransactionInput(outpoint, scriptSignature, TransactionConstants.sequence)
+    val output = TransactionOutput(CurrencyUnits.zero, EmptyScriptPubKey)
 
-    val tx = witness match {
-      case Some((scriptWitness, amount)) =>
-        val txWitness = TransactionWitness(Seq(scriptWitness))
-        val output = TransactionOutput(amount, EmptyScriptPubKey)
-        WitnessTransaction(TransactionConstants.version, Seq(input), Seq(output),
-          TransactionConstants.lockTime, txWitness)
-      case None =>
-        val output = TransactionOutput(CurrencyUnits.zero, EmptyScriptPubKey)
-        BaseTransaction(TransactionConstants.version, Seq(input), Seq(output), TransactionConstants.lockTime)
+    val tx = BaseTransaction(TransactionConstants.version, Seq(input), Seq(output), TransactionConstants.lockTime)
 
-    }
-
-    /*    val expectedHex = "01000000019ce5586f04dd407719ab7e2ed3583583b9022f29652702cfac5ed082013461fe000000004847304402200a5c6163f07b8d3b013c4d1d6dba25e780b39658d79ba37af7057a3b7f15ffa102201fd9b4eaa9943f734928b99a83592c2e7bf342ea2680f6a2bb705167966b742001ffffffff0100000000000000000000000000"
-    require(tx.hex == expectedHex,"\nExpected hex: " + expectedHex + "\nActual hex:   " +  tx.hex)*/
     (tx, UInt32.zero)
   }
 

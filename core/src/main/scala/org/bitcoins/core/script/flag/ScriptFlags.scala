@@ -124,4 +124,3 @@ case object ScriptVerifyNullFail extends ScriptFlag {
   override def name = "NULLFAIL"
 }
 
-

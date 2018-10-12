@@ -65,8 +65,7 @@ sealed abstract class P2PKSigner extends BitcoinSigner {
               unsignedTx.version,
               signedInputs,
               unsignedTx.outputs,
-              unsignedTx.lockTime
-            )
+              unsignedTx.lockTime)
             BaseTxSigComponent(signedTx, inputIndex, output, flags)
           }
         case lock: LockTimeScriptPubKey =>
@@ -82,21 +81,18 @@ sealed abstract class P2PKSigner extends BitcoinSigner {
                   unsignedTx.version,
                   signedInputs,
                   unsignedTx.outputs,
-                  unsignedTx.lockTime
-                )
+                  unsignedTx.lockTime)
 
                 BaseTxSigComponent(signedTx, inputIndex, output, flags)
               }
 
             case _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: P2SHScriptPubKey
               | _: NonStandardScriptPubKey
-              | _: CLTVScriptPubKey | _: CSVScriptPubKey
-              | _: WitnessCommitment | EmptyScriptPubKey
+              | _: CLTVScriptPubKey | _: CSVScriptPubKey | EmptyScriptPubKey
               | _: EscrowTimeoutScriptPubKey => Future.fromTry(TxBuilderError.WrongSigner)
           }
         case _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: P2SHScriptPubKey
-          | _: NonStandardScriptPubKey
-          | _: WitnessCommitment | EmptyScriptPubKey
+          | _: NonStandardScriptPubKey | EmptyScriptPubKey
           | _: EscrowTimeoutScriptPubKey => Future.fromTry(TxBuilderError.WrongSigner)
       }
       signed
@@ -135,8 +131,7 @@ sealed abstract class P2PKHSigner extends BitcoinSigner {
                 unsignedTx.version,
                 signedInputs,
                 unsignedTx.outputs,
-                unsignedTx.lockTime
-              )
+                unsignedTx.lockTime)
 
               BaseTxSigComponent(signedTx, inputIndex, output, flags)
             }
@@ -157,22 +152,19 @@ sealed abstract class P2PKHSigner extends BitcoinSigner {
                     unsignedTx.version,
                     signedInputs,
                     unsignedTx.outputs,
-                    unsignedTx.lockTime
-                  )
+                    unsignedTx.lockTime)
 
                   BaseTxSigComponent(signedTx, inputIndex, output, flags)
                 }
               }
             case _: P2PKScriptPubKey | _: MultiSignatureScriptPubKey | _: P2SHScriptPubKey
               | _: NonStandardScriptPubKey
-              | _: CLTVScriptPubKey | _: CSVScriptPubKey
-              | _: WitnessCommitment | EmptyScriptPubKey
+              | _: CLTVScriptPubKey | _: CSVScriptPubKey | EmptyScriptPubKey
               | _: EscrowTimeoutScriptPubKey => Future.fromTry(TxBuilderError.WrongSigner)
           }
         case _: P2PKScriptPubKey | _: MultiSignatureScriptPubKey | _: P2SHScriptPubKey
           | _: NonStandardScriptPubKey
-          | _: WitnessCommitment | EmptyScriptPubKey
-          | _: EscrowTimeoutScriptPubKey => Future.fromTry(TxBuilderError.WrongSigner)
+          | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey => Future.fromTry(TxBuilderError.WrongSigner)
       }
       signed
     }
@@ -208,8 +200,7 @@ sealed abstract class MultiSigSigner extends BitcoinSigner {
               unsignedTx.version,
               signedInputs,
               unsignedTx.outputs,
-              unsignedTx.lockTime
-            )
+              unsignedTx.lockTime)
 
             BaseTxSigComponent(signedTx, inputIndex, output, Policy.standardFlags)
           }
@@ -219,8 +210,8 @@ sealed abstract class MultiSigSigner extends BitcoinSigner {
         val multiSigSPK = nested match {
           case m: MultiSignatureScriptPubKey => Future.successful(m)
           case _: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: P2SHScriptPubKey
-            | _: P2WPKHWitnessSPKV0 | _: P2WSHWitnessSPKV0 | _: CLTVScriptPubKey | _: CSVScriptPubKey
-            | _: UnassignedWitnessScriptPubKey | _: NonStandardScriptPubKey | _: WitnessCommitment
+            | _: CLTVScriptPubKey | _: CSVScriptPubKey
+            | _: NonStandardScriptPubKey
             | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey => Future.fromTry(TxBuilderError.WrongSigner)
         }
         multiSigSPK.flatMap { mSPK =>
@@ -242,8 +233,7 @@ sealed abstract class MultiSigSigner extends BitcoinSigner {
               unsignedTx.version,
               signedInputs,
               unsignedTx.outputs,
-              unsignedTx.lockTime
-            )
+              unsignedTx.lockTime)
 
             BaseTxSigComponent(signedTx, inputIndex, output, flags)
           }
@@ -251,8 +241,7 @@ sealed abstract class MultiSigSigner extends BitcoinSigner {
         }
       case _: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: P2SHScriptPubKey
         | _: NonStandardScriptPubKey
-        | _: WitnessCommitment | EmptyScriptPubKey
-        | _: EscrowTimeoutScriptPubKey =>
+        | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey =>
         Future.fromTry(TxBuilderError.WrongSigner)
     }
     signed

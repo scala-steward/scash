@@ -7,9 +7,9 @@ import org.bitcoins.core.protocol.script.{ CLTVScriptPubKey, CSVScriptPubKey, Em
 import org.bitcoins.core.script.constant._
 import org.bitcoins.core.script.crypto.{ OP_CHECKMULTISIG, OP_CHECKMULTISIGVERIFY, OP_CHECKSIG, OP_CHECKSIGVERIFY }
 import org.bitcoins.core.script.flag.{ ScriptFlag, ScriptFlagUtil }
-import org.bitcoins.core.script.result.{ ScriptError, ScriptErrorPubKeyType, ScriptErrorWitnessPubKeyType }
+import org.bitcoins.core.script.result.{ ScriptError, ScriptErrorPubKeyType }
 import org.bitcoins.core.script.{ ExecutionInProgressScriptProgram, ScriptProgram }
-import scodec.bits.{ BitVector, ByteVector }
+import scodec.bits.ByteVector
 
 import scala.annotation.tailrec
 
@@ -268,9 +268,6 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
     if (ScriptFlagUtil.requireStrictEncoding(flags) &&
       !BitcoinScriptUtil.isCompressedOrUncompressedPubKey(pubKey)) {
       Some(ScriptErrorPubKeyType)
-    } else if (ScriptFlagUtil.requireScriptVerifyWitnessPubKeyType(flags) &&
-      !BitcoinScriptUtil.isCompressedPubKey(pubKey) && sigVersion == SigVersionWitnessV0) {
-      Some(ScriptErrorWitnessPubKeyType)
     } else None
   }
 
@@ -279,8 +276,6 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
    * We need to check if the scriptSignature has a redeemScript
    * In that case, we need to pass the redeemScript to the TransactionSignatureChecker
    *
-   * In the case we have a P2SH(P2WSH) we need to pass the witness's redeem script to the [[TransactionSignatureChecker]]
-   * instead of passing the [[WitnessScriptPubKey]] inside of the [[P2SHScriptSignature]]'s redeem script.
    */
   def calculateScriptForChecking(
     txSignatureComponent: TxSigComponent,
@@ -289,36 +284,17 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
     logger.debug("sig for removal: " + signature)
     logger.debug("script: " + script)
     logger.debug("scriptWithSigRemoved: " + scriptForChecking)
-    txSignatureComponent.sigVersion match {
-      case SigVersionBase => removeSignatureFromScript(signature, scriptForChecking)
-      case SigVersionWitnessV0 =>
-        //BIP143 removes requirement for calling FindAndDelete
-        //https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki#no-findanddelete
-        scriptForChecking
-    }
+    removeSignatureFromScript(signature, scriptForChecking)
   }
 
   def calculateScriptForSigning(txSignatureComponent: TxSigComponent, script: Seq[ScriptToken]): Seq[ScriptToken] = txSignatureComponent.scriptPubKey match {
     case _: P2SHScriptPubKey =>
-
       val p2shScriptSig = P2SHScriptSignature(txSignatureComponent.scriptSignature.bytes)
       val sigsRemoved = removeSignaturesFromScript(p2shScriptSig.signatures, p2shScriptSig.redeemScript.asm)
       sigsRemoved
-    case w: WitnessScriptPubKey =>
-      txSignatureComponent match {
-        case wtxSigComponent: WitnessTxSigComponent =>
-          val scriptEither: Either[(Seq[ScriptToken], ScriptPubKey), ScriptError] = w.witnessVersion.rebuild(wtxSigComponent.witness, w.witnessProgram)
-          parseScriptEither(scriptEither)
-        case rWTxSigComponent: WitnessTxSigComponentRebuilt =>
-          rWTxSigComponent.scriptPubKey.asm
-        case _: BaseTxSigComponent =>
-          //shouldn't have BaseTxSigComponent
-          //with a witness scriptPubKey
-          script
-      }
     case _: P2PKHScriptPubKey | _: P2PKScriptPubKey | _: MultiSignatureScriptPubKey
       | _: NonStandardScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey
-      | _: WitnessCommitment | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey => script
+      | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey => script
   }
 
   /** Removes the given [[ECDigitalSignature]] from the list of [[ScriptToken]] if it exists. */
@@ -414,8 +390,7 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
       case e: EscrowTimeoutScriptPubKey =>
         isOnlyCompressedPubKey(e.escrow) && isOnlyCompressedPubKey(e.timeout)
       case _: P2PKHScriptPubKey | _: P2SHScriptPubKey
-        | _: P2WPKHWitnessSPKV0 | _: P2WSHWitnessSPKV0 | _: UnassignedWitnessScriptPubKey
-        | _: NonStandardScriptPubKey | _: WitnessCommitment | EmptyScriptPubKey =>
+        | _: NonStandardScriptPubKey | EmptyScriptPubKey =>
         true
 
     }

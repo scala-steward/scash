@@ -27,6 +27,5 @@ case class BitcoinUTXOSpendingInfo(
   output: TransactionOutput,
   signers: Seq[Sign],
   redeemScriptOpt: Option[ScriptPubKey],
-  hashType: HashType
-) extends UTXOSpendingInfo
+  hashType: HashType) extends UTXOSpendingInfo
 

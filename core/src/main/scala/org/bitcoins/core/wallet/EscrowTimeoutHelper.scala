@@ -10,8 +10,8 @@ import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.util.BitcoinSLogger
 import org.bitcoins.core.wallet.builder.TxBuilderError
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Created by chris on 5/9/17.
@@ -19,7 +19,7 @@ import scala.util.{Failure, Success, Try}
 sealed abstract class EscrowTimeoutHelper {
 
   private val logger = BitcoinSLogger.logger
-
+  /*
   /**
    * Signs a [[org.bitcoins.core.protocol.transaction.BaseTransaction]] with the given private key
    * This will result in a Transaction that is partially signed, we need to send the transaction to
@@ -149,6 +149,7 @@ sealed abstract class EscrowTimeoutHelper {
       | _: CSVScriptPubKey | _: CLTVScriptPubKey | _: WitnessCommitment | _: UnassignedWitnessScriptPubKey
       | EmptyScriptPubKey => Future.fromTry(TxBuilderError.WrongRedeemScript)
   }
+  */
 }
 
-object EscrowTimeoutHelper extends EscrowTimeoutHelper
+//object EscrowTimeoutHelper extends EscrowTimeoutHelper

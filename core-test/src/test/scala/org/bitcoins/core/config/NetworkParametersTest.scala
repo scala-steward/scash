@@ -11,14 +11,14 @@ class NetworkParametersTest extends FlatSpec with MustMatchers {
   //test case answers are from this link
   //https://en.bitcoin.it/wiki/Protocol_documentation#Common_structures
   "NetworkParameters" must "create the correct magic network bytes for mainnet" in {
-    BitcoinSUtil.encodeHex(MainNet.magicBytes) must be("f9beb4d9")
+    MainNet.magicBytes.toHex must be("e3e1f3e8")
   }
 
   it must "create the correct magic network bytes for testnet" in {
-    BitcoinSUtil.encodeHex(TestNet3.magicBytes) must be("0B110907".toLowerCase)
+    TestNet3.magicBytes.toHex must be("f4e5f3f4".toLowerCase)
   }
 
   it must "create the correct magic network bytes for regtest" in {
-    BitcoinSUtil.encodeHex(RegTest.magicBytes) must be("fabfb5da")
+    RegTest.magicBytes.toHex must be("dab5bffa")
   }
 }

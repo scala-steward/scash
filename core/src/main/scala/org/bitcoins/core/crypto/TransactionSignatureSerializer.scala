@@ -135,45 +135,6 @@ sealed abstract class TransactionSignatureSerializer {
             val sigHashSingleAnyoneCanPay = sigHashAnyoneCanPay(sigHashSingleTx, inputWithConnectedScript)
             sigHashSingleAnyoneCanPay.bytes ++ sigHashBytes
         }
-      case SigVersionWitnessV0 =>
-        val isNotAnyoneCanPay = !HashType.isAnyoneCanPay(hashType)
-        val isNotSigHashSingle = !(HashType.isSigHashSingle(hashType.num))
-        val isNotSigHashNone = !(HashType.isSigHashNone(hashType.num))
-        val inputIndexInt = inputIndex.toInt
-        val emptyHash = CryptoUtil.emptyDoubleSha256Hash
-
-        val outPointHash: ByteVector = if (isNotAnyoneCanPay) {
-          val prevOuts = spendingTransaction.inputs.map(_.previousOutput)
-          val bytes: ByteVector = BitcoinSUtil.toByteVector(prevOuts)
-          CryptoUtil.doubleSHA256(bytes).bytes
-        } else emptyHash.bytes
-
-        val sequenceHash: ByteVector = if (isNotAnyoneCanPay && isNotSigHashNone && isNotSigHashSingle) {
-          val sequences = spendingTransaction.inputs.map(_.sequence)
-          val bytes = BitcoinSUtil.toByteVector(sequences)
-          CryptoUtil.doubleSHA256(bytes).bytes
-        } else emptyHash.bytes
-
-        val outputHash: ByteVector = if (isNotSigHashSingle && isNotSigHashNone) {
-          val outputs = spendingTransaction.outputs
-          val bytes = BitcoinSUtil.toByteVector(outputs)
-          CryptoUtil.doubleSHA256(bytes).bytes
-        } else if (HashType.isSigHashSingle(hashType.num) &&
-          inputIndex < UInt32(spendingTransaction.outputs.size)) {
-          val output = spendingTransaction.outputs(inputIndexInt)
-          val bytes = CryptoUtil.doubleSHA256(RawTransactionOutputParser.write(output)).bytes
-          bytes
-        } else emptyHash.bytes
-
-        val scriptBytes = BitcoinSUtil.toByteVector(script)
-
-        val i = spendingTransaction.inputs(inputIndexInt)
-        val serializationForSig: ByteVector = spendingTransaction.version.bytes.reverse ++ outPointHash ++ sequenceHash ++
-          i.previousOutput.bytes ++ CompactSizeUInt.calc(scriptBytes).bytes ++
-          scriptBytes ++ amount.bytes ++ i.sequence.bytes.reverse ++
-          outputHash ++ spendingTransaction.lockTime.bytes.reverse ++ hashType.num.bytes.reverse
-        logger.debug("Serialization for signature for WitnessV0Sig: " + BitcoinSUtil.encodeHex(serializationForSig))
-        serializationForSig
     }
   }
 
@@ -184,13 +145,11 @@ sealed abstract class TransactionSignatureSerializer {
   def hashForSignature(txSigComponent: TxSigComponent, hashType: HashType): DoubleSha256Digest = {
     val spendingTransaction = txSigComponent.transaction
     val inputIndex = txSigComponent.inputIndex
-    if (inputIndex >= UInt32(spendingTransaction.inputs.size) &&
-      txSigComponent.sigVersion != SigVersionWitnessV0) {
+    if (inputIndex >= UInt32(spendingTransaction.inputs.size)) {
       logger.warn("Our inputIndex is out of the range of the inputs in the spending transaction")
       errorHash
     } else if ((hashType.isInstanceOf[SIGHASH_SINGLE] || hashType.isInstanceOf[SIGHASH_SINGLE_ANYONECANPAY]) &&
-      inputIndex >= UInt32(spendingTransaction.outputs.size) &&
-      txSigComponent.sigVersion != SigVersionWitnessV0) {
+      inputIndex >= UInt32(spendingTransaction.outputs.size)) {
       logger.warn("When we have a SIGHASH_SINGLE we cannot have more inputs than outputs")
       errorHash
     } else {

@@ -1,19 +1,16 @@
 package org.bitcoins.core.wallet.builder
 
-import org.bitcoins.core.crypto.{ BaseTxSigComponent, WitnessTxSigComponentRaw }
+import org.bitcoins.core.crypto.BaseTxSigComponent
 import org.bitcoins.core.currency.{ CurrencyUnits, Satoshis }
 import org.bitcoins.core.gen.{ ChainParamsGenerator, CreditingTxGen, ScriptGenerators, TransactionGenerators }
 import org.bitcoins.core.number.{ Int64, UInt32 }
 import org.bitcoins.core.policy.Policy
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.transaction._
-import org.bitcoins.core.script.{ PreExecutionScriptProgram, ScriptProgram }
-import org.bitcoins.core.script.crypto.HashType
+import org.bitcoins.core.script.PreExecutionScriptProgram
 import org.bitcoins.core.script.interpreter.ScriptInterpreter
-import org.bitcoins.core.script.result.{ ScriptOk, ScriptResult }
 import org.bitcoins.core.util.BitcoinSLogger
-import org.bitcoins.core.wallet.fee.SatoshisPerVirtualByte
-import org.bitcoins.core.wallet.signer.Signer
+import org.bitcoins.core.wallet.fee.SatoshisPerByte
 import org.bitcoins.core.wallet.utxo.{ BitcoinUTXOSpendingInfo, UTXOSpendingInfo }
 import org.scalacheck.{ Prop, Properties }
 
@@ -35,7 +32,7 @@ class BitcoinTxBuilderSpec extends Properties("TxBuilderSpec") {
         val totalAmount = creditingOutputsAmt.fold(CurrencyUnits.zero)(_ + _)
         Prop.forAllNoShrink(TransactionGenerators.smallOutputs(totalAmount), ScriptGenerators.scriptPubKey, ChainParamsGenerator.bitcoinNetworkParams) {
           case (destinations: Seq[TransactionOutput], changeSPK, network) =>
-            val fee = SatoshisPerVirtualByte(Satoshis(Int64(1000)))
+            val fee = SatoshisPerByte(Satoshis(Int64(1000)))
             val outpointsWithKeys = buildCreditingTxInfo(creditingTxsInfo)
             val builder = BitcoinTxBuilder(destinations, outpointsWithKeys, fee, changeSPK._1, network)
             val tx = Await.result(builder.flatMap(_.sign), timeout)
@@ -44,7 +41,7 @@ class BitcoinTxBuilderSpec extends Properties("TxBuilderSpec") {
     }
   }
 
-  property("sign a mix of p2sh/p2wsh in a tx and then have it verified") = {
+  property("sign a mix of p2sh in a tx and then have it verified") = {
     Prop.forAllNoShrink(CreditingTxGen.nestedOutputs) {
       case creditingTxsInfo =>
         val creditingOutputs = creditingTxsInfo.map(c => c.output)
@@ -52,7 +49,7 @@ class BitcoinTxBuilderSpec extends Properties("TxBuilderSpec") {
         val totalAmount = creditingOutputsAmt.fold(CurrencyUnits.zero)(_ + _)
         Prop.forAll(TransactionGenerators.smallOutputs(totalAmount), ScriptGenerators.scriptPubKey, ChainParamsGenerator.bitcoinNetworkParams) {
           case (destinations: Seq[TransactionOutput], changeSPK, network) =>
-            val fee = SatoshisPerVirtualByte(Satoshis(Int64(1000)))
+            val fee = SatoshisPerByte(Satoshis(Int64(1000)))
             val outpointsWithKeys = buildCreditingTxInfo(creditingTxsInfo)
             val builder = BitcoinTxBuilder(destinations, outpointsWithKeys, fee, changeSPK._1, network)
             val tx = Await.result(builder.flatMap(_.sign), timeout)
@@ -69,7 +66,7 @@ class BitcoinTxBuilderSpec extends Properties("TxBuilderSpec") {
         val totalAmount = creditingOutputsAmt.fold(CurrencyUnits.zero)(_ + _)
         Prop.forAllNoShrink(TransactionGenerators.smallOutputs(totalAmount), ScriptGenerators.scriptPubKey, ChainParamsGenerator.bitcoinNetworkParams) {
           case (destinations: Seq[TransactionOutput], changeSPK, network) =>
-            val fee = SatoshisPerVirtualByte(Satoshis(Int64(1000)))
+            val fee = SatoshisPerByte(Satoshis(Int64(1000)))
             val outpointsWithKeys = buildCreditingTxInfo(creditingTxsInfo)
             val builder = BitcoinTxBuilder(destinations, outpointsWithKeys, fee, changeSPK._1, network)
             val result = Try(Await.result(builder.flatMap(_.sign), timeout))

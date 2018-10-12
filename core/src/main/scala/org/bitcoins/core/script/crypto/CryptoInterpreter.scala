@@ -287,8 +287,6 @@ sealed abstract class CryptoInterpreter {
       ScriptProgram(program, ScriptErrorSigHighS)
     case SignatureValidationErrorHashType =>
       ScriptProgram(program, ScriptErrorSigHashType)
-    case SignatureValidationErrorWitnessPubKeyType =>
-      ScriptProgram(program, ScriptErrorWitnessPubKeyType)
     case SignatureValidationErrorNullFail =>
       ScriptProgram(program, ScriptErrorSigNullFail)
   }

@@ -120,8 +120,7 @@ class ScriptSignatureTest extends FlatSpec with MustMatchers {
         testCase.transaction,
         testCase.inputIndex,
         output,
-        Policy.standardFlags
-      )
+        Policy.standardFlags)
 
       val hashForSig = TransactionSignatureSerializer.hashForSignature(txSigComponent, testCase.hashType)
       val flipHash = BitcoinSUtil.flipEndianness(testCase.hash.hex)

@@ -1,16 +1,16 @@
 package org.bitcoins.core.protocol.transaction
 
-import org.bitcoins.core.crypto.{ BaseTxSigComponent, TxSigComponent, WitnessTxSigComponentP2SH, WitnessTxSigComponentRaw }
+import org.bitcoins.core.crypto.BaseTxSigComponent
 import org.bitcoins.core.currency.CurrencyUnits
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.transaction.testprotocol.CoreTransactionTestCase
 import org.bitcoins.core.protocol.transaction.testprotocol.CoreTransactionTestCaseProtocol._
-import org.bitcoins.core.script.{ PreExecutionScriptProgram, ScriptProgram }
+import org.bitcoins.core.script.PreExecutionScriptProgram
 import org.bitcoins.core.script.interpreter.ScriptInterpreter
 import org.bitcoins.core.script.result.ScriptOk
 import org.bitcoins.core.serializers.transaction.RawBaseTransactionParser
-import org.bitcoins.core.util.{ BitcoinSLogger, BitcoinSUtil, CryptoUtil, TestUtil }
+import org.bitcoins.core.util.{ BitcoinSLogger, BitcoinSUtil, TestUtil }
 import org.scalatest.{ FlatSpec, MustMatchers }
 import spray.json._
 
@@ -56,43 +56,6 @@ class TransactionTest extends FlatSpec with MustMatchers {
     (Transaction(tx.hex) == tx) must be(true)
   }
 
-  it must "calculate the correct txid and wtxid for a witness transaction" in {
-    //from http://tapi.qbit.ninja/tx/d869f854e1f8788bcff294cc83b280942a8c728de71eb709a2c29d10bfe21b7c
-    val hex = "0100000000010115e180dc28a2327e687facc33f10f2a20da717e5548406f7ae8b4c811072f8560100000000ffffffff0100b4f505000000001976a9141d7cd6c75c2e86f4cbf98eaed221b30bd9a0b92888ac02483045022100df7b7e5cda14ddf91290e02ea10786e03eb11ee36ec02dd862fe9a326bbcb7fd02203f5b4496b667e6e281cc654a2da9e4f08660c620a1051337fa8965f727eb19190121038262a6c6cec93c2d3ecd6c6072efea86d02ff8e3328bbd0242b20af3425990ac00000000"
-    val wtx = WitnessTransaction(hex)
-    wtx.txId.hex must be(BitcoinSUtil.flipEndianness("d869f854e1f8788bcff294cc83b280942a8c728de71eb709a2c29d10bfe21b7c"))
-    wtx.wTxId must be(CryptoUtil.doubleSHA256(hex))
-  }
-
-  it must "parse a witness coinbase tx correctly" in {
-    //txid is b3974ba615f60f48b4c558a4080810fa5064cfcb88e59b843e7fd552b3f4b3d1 on testnet
-    val hex = "010000000001010000000000000000000000000000000000000000000000000000000000000000ffffffff2003e02e10130e6d696e65642062792062636f696e585bd0620000000006d50200ffffffff03cddf17000000000017a9146859969825bb2787f803a3d0eeb632998ce4f50187848c3b090000000017a9146859969825bb2787f803a3d0eeb632998ce4f501870000000000000000356a24aa21a9ed309cfb38d1015c266667d5b7888c83def872a531b8ac277fe8df623c32b562b50e6d696e65642062792062636f696e0120000000000000000000000000000000000000000000000000000000000000000000000000"
-    val tx = Transaction(hex)
-    val wtx = tx.asInstanceOf[WitnessTransaction]
-    wtx.inputs.size must be(1)
-    wtx.outputs.size must be(3)
-    val witCommitment = wtx.outputs.last
-    witCommitment.scriptPubKey.isInstanceOf[WitnessCommitment] must be(true)
-    wtx.hex must be(hex)
-  }
-
-  it must "calculate weight and vsize correctly" in {
-    //non segwit 27fd54c26042e72210eb519d631cec0fa93e676d8cf996ec5423bc7e2d14359d
-    val hex = "0200000008c590221c1971757a12de2c65cd49f38c6cac48e59a60bb7062cb0b26fb142c7a000000006a47304402200bf1b5d42ae0b860aaf77e91bf9e0f5d95662080b462ffaeaef3fdd4528cd42e02201a400b2adc6672c77068306e063f0421731d3f4aa4b9160837a30446d4c8c12f01210321da332a698189f31e188d7b735a8871ad816ea81b375336c273e7fec5dc9c2e00000000060e343f7cba7c38b1aea0a5eb38095c6c1eb21aaa1d3de7019abea433a62f76010000006a47304402207b2ed3ac323a63cba132556f2120d0669207f661a71212cbbf2b5f89a5f2d0360220651fbf59b5b5da0452146d95fbeedaf0c91101af221b818361421aa75b562616012102fa61b8d3acbd3b1364cd48fb70b5a84bd16e8087c421169bdc458f950f95c4ae00000000ea3c63b3e9e8f8cce011d607ffcd14b83ccdf7c1fd5df02354701ecd8223e600000000006a473044022034fea16d8db904437aab1c2bc4e3874f43bbc21eea9819a805f44a38eb51401a022050f0b321e05e204c22035772f161c6a1782628d14f7ac7ce464064645e027bb2012103294607de1909df8c7c70405b661b15db23373bb01cb17cc591cf19e3e184bc70000000001559693b1207392115bcafa76dc244038b4202bdd84a25312e3a10e4f3a66cb6010000006a473044022049df75532fa7db44f166f3b3c1dca3fce882444246e4a2451a1df56805b06ebc022079f8ffc02e16cda2f5340f3ed04a7d9e53366de5ee5739989dddda155202137901210356fc739e39c3554265af065963e9d1ba4983569b0235e03734f063bb6dd7283f00000000e47ef81325dc635f3d327027842a3fd6ef8cccf8eb12fadc31f2e4ea53300d08000000006a47304402206383a91058d6ac67fb1c0f2feca6e694d32bf6ea4b1320118a3d222fe77aa89102201cc9386c5ad21a7c3a2c504b4bebe0757c4c327d554caccda51afb2c15b8ff9c012103a1f9c896e58fe1130fd99562e76eb34767c1d58e5b0535c3ac1464964cf1c74700000000414e174eed5931d7627d76a18213d234866652d0c791c41013b5439e407b8933010000006a47304402203b4db0a1888752b5fdc37ad24ad864282b13a6a898237341fc4ecbfbb88db1f202203d1e6e6ce9692a1a8a5aa72f2a11bb0f16bf149a303e0a8d4f4e042124507bb3012102f60bdfbb626916965b8c7c9b7e03300cc52afb7bec7843898b6822c4d94296c800000000a67cb436ece24d133a731ae71545bbda68518fc119a7a09f83ef65052f01df04010000006b483045022100e6dba05a228da5c44a16c7f2936e0056bd0b27106b91632d0a975ddf3d0b022a0220552605ef5936c6af9e15c6f81cda980afd088564bfb63560db572cae5baf38750121033d91b05ab07af5e58179cd26b806efe3671ab03bfde80a75f56ce4bcc5458d9800000000f424d7c0714fa8fd66049eaaec80868084343bc0e9889afc72b6debdf33498a7000000006a47304402206b48ffbca3abdcb95067949b6db6ea89f6b17deb2adea930ad512db5b1fa5f9c02204025fc165bc4c95400689b03037324358e55d69410b5b94277f004035caa58c50121036ba893997c092e90dba979b224b878e8c3c21b5fd5b737ba55d5f6a5196a4c210000000001c0860e00000000001976a914a8fc6e80e43c99e0918f8e043f0e3a48e842095088ac00000000"
-    val tx = Transaction(hex)
-    tx.weight must be(4884)
-    tx.vsize must be(1221)
-
-    //segwit c586389e5e4b3acb9d6c8be1c19ae8ab2795397633176f5a6442a261bbdefc3a (sipa 3rd segwit tx)
-    val hex2 = "0200000000010140d43a99926d43eb0e619bf0b3d83b4a31f60c176beecfb9d35bf45e54d0f7420100000017160014a4b4ca48de0b3fffc15404a1acdc8dbaae226955ffffffff0100e1f5050000000017a9144a1154d50b03292b3024370901711946cb7cccc387024830450221008604ef8f6d8afa892dee0f31259b6ce02dd70c545cfcfed8148179971876c54a022076d771d6e91bed212783c9b06e0de600fab2d518fad6f15a2b191d7fbd262a3e0121039d25ab79f41f75ceaf882411fd41fa670a4c672c23ffaf0e361a969cde0692e800000000"
-    val tx2 = WitnessTransaction(hex2)
-    tx2.hex must be(hex2)
-    tx2.size must be(216)
-    tx2.weight must be(534)
-    tx2.vsize must be(134)
-
-  }
-
   it must "parse a transaction with an OP_PUSHDATA4 op code but not enough data to push" in {
     val hex = "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff2a03f35c0507062f503253482ffe4ecb3b55fefbde06000963676d696e6572343208040000000000000000ffffffff0100f90295000000001976a91496621bc1c9d1e5a1293e401519365de820792bbc88ac00000000"
     val btx = BaseTransaction.fromHex(hex)
@@ -127,39 +90,14 @@ class TransactionTest extends FlatSpec with MustMatchers {
       val txSigComponent = amountOpt match {
         case Some(amount) => scriptPubKey match {
           case p2sh: P2SHScriptPubKey =>
-            tx match {
-              case btx: BaseTransaction =>
-                BaseTxSigComponent(
-                  transaction = btx,
-                  inputIndex = UInt32(inputIndex),
-                  output = TransactionOutput(amount, p2sh),
-                  flags = testCase.flags)
-              case wtx: WitnessTransaction =>
-                WitnessTxSigComponentP2SH(
-                  transaction = wtx,
-                  inputIndex = UInt32(inputIndex),
-                  output = TransactionOutput(amount, p2sh),
-                  flags = testCase.flags)
-            }
-          case wit: WitnessScriptPubKey =>
-            tx match {
-              case btx: BaseTransaction =>
-                BaseTxSigComponent(
-                  transaction = btx,
-                  inputIndex = UInt32(inputIndex),
-                  output = TransactionOutput(amount, wit),
-                  flags = testCase.flags)
-              case wtx: WitnessTransaction =>
-                WitnessTxSigComponentRaw(
-                  transaction = wtx,
-                  inputIndex = UInt32(inputIndex),
-                  output = TransactionOutput(amount, wit),
-                  flags = testCase.flags)
-            }
+            BaseTxSigComponent(
+              transaction = tx,
+              inputIndex = UInt32(inputIndex),
+              output = TransactionOutput(amount, p2sh),
+              flags = testCase.flags)
           case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey
-            | _: CLTVScriptPubKey | _: EscrowTimeoutScriptPubKey | _: NonStandardScriptPubKey | _: WitnessCommitment | EmptyScriptPubKey) =>
+            | _: CLTVScriptPubKey | _: EscrowTimeoutScriptPubKey | _: NonStandardScriptPubKey | EmptyScriptPubKey) =>
             val output = TransactionOutput(amount, x)
-
             BaseTxSigComponent(tx, UInt32(inputIndex), output, testCase.flags)
         }
         case None =>
@@ -201,37 +139,13 @@ class TransactionTest extends FlatSpec with MustMatchers {
           val txSigComponent = amountOpt match {
             case Some(amount) => scriptPubKey match {
               case p2sh: P2SHScriptPubKey =>
-                tx match {
-                  case btx: BaseTransaction =>
-                    BaseTxSigComponent(
-                      transaction = btx,
-                      inputIndex = UInt32(inputIndex),
-                      output = TransactionOutput(amount, scriptPubKey),
-                      flags = testCase.flags)
-                  case wtx: WitnessTransaction =>
-                    WitnessTxSigComponentP2SH(
-                      transaction = wtx,
-                      inputIndex = UInt32(inputIndex),
-                      output = TransactionOutput(amount, scriptPubKey),
-                      flags = testCase.flags)
-                }
-              case wit: WitnessScriptPubKey =>
-                tx match {
-                  case btx: BaseTransaction =>
-                    BaseTxSigComponent(
-                      transaction = btx,
-                      inputIndex = UInt32(inputIndex),
-                      output = TransactionOutput(amount, wit),
-                      flags = testCase.flags)
-                  case wtx: WitnessTransaction =>
-                    WitnessTxSigComponentRaw(
-                      transaction = wtx,
-                      inputIndex = UInt32(inputIndex),
-                      output = TransactionOutput(amount, wit),
-                      flags = testCase.flags)
-                }
+                BaseTxSigComponent(
+                  transaction = tx,
+                  inputIndex = UInt32(inputIndex),
+                  output = TransactionOutput(amount, scriptPubKey),
+                  flags = testCase.flags)
               case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey
-                | _: CLTVScriptPubKey | _: EscrowTimeoutScriptPubKey | _: NonStandardScriptPubKey | _: WitnessCommitment | EmptyScriptPubKey) =>
+                | _: CLTVScriptPubKey | _: EscrowTimeoutScriptPubKey | _: NonStandardScriptPubKey | EmptyScriptPubKey) =>
                 BaseTxSigComponent(
                   transaction = tx,
                   inputIndex = UInt32(inputIndex),

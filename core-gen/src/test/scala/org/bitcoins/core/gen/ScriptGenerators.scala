@@ -123,37 +123,6 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
 
   def emptyScriptPubKey: Gen[(ScriptPubKey, Seq[ECPrivateKey])] = (EmptyScriptPubKey, Nil)
 
-  /** Creates a basic version 0 P2WPKH scriptpubkey */
-  def p2wpkhSPKV0: Gen[(P2WPKHWitnessSPKV0, Seq[ECPrivateKey])] = for {
-    privKey <- CryptoGenerators.privateKey
-  } yield (P2WPKHWitnessSPKV0(privKey.publicKey), Seq(privKey))
-
-  def p2wshSPKV0: Gen[(P2WSHWitnessSPKV0, Seq[ECPrivateKey])] = randomNonP2SHScriptPubKey.map { spk =>
-    (P2WSHWitnessSPKV0(spk._1), spk._2)
-  }
-
-  def witnessScriptPubKeyV0: Gen[(WitnessScriptPubKeyV0, Seq[ECPrivateKey])] = Gen.oneOf(
-    p2wpkhSPKV0, p2wshSPKV0)
-
-  /**
-   * Creates an [[UnassignedWitnessScriptPubKey]],
-   * currently this is any witness script pubkey besides [[org.bitcoins.core.protocol.script.WitnessScriptPubKeyV0]
-   */
-  def unassignedWitnessScriptPubKey: Gen[(UnassignedWitnessScriptPubKey, Seq[ECPrivateKey])] = for {
-    (witV0, privKeys) <- p2wpkhSPKV0
-    version <- Gen.oneOf(WitnessScriptPubKey.unassignedWitVersions)
-    unassignedAsm = version +: witV0.asm.tail
-  } yield (UnassignedWitnessScriptPubKey(unassignedAsm), privKeys)
-
-  /** Generates an arbitrary [[org.bitcoins.core.protocol.script.WitnessScriptPubKey]] */
-  def witnessScriptPubKey: Gen[(WitnessScriptPubKey, Seq[ECPrivateKey])] = Gen.oneOf(
-    p2wpkhSPKV0,
-    p2wshSPKV0, unassignedWitnessScriptPubKey)
-
-  def witnessCommitment: Gen[(WitnessCommitment, Seq[ECPrivateKey])] = for {
-    hash <- CryptoGenerators.doubleSha256Digest
-  } yield (WitnessCommitment(hash), Nil)
-
   def escrowTimeoutScriptPubKey: Gen[(EscrowTimeoutScriptPubKey, Seq[ECPrivateKey])] = for {
     (escrow, k1) <- ScriptGenerators.smallMultiSigScriptPubKey
     //We use a p2pkh scriptPubkey here to minimize the script size of EscrowTimeoutScriptPubKey
@@ -186,7 +155,7 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
     Gen.oneOf(p2pkScriptPubKey.map(privKeyToSeq(_)), p2pkhScriptPubKey.map(privKeyToSeq(_)),
       cltvScriptPubKey.suchThat(!_._1.nestedScriptPubKey.isInstanceOf[CSVScriptPubKey]),
       csvScriptPubKey.suchThat(!_._1.nestedScriptPubKey.isInstanceOf[CLTVScriptPubKey]),
-      multiSigScriptPubKey, p2wpkhSPKV0, unassignedWitnessScriptPubKey, escrowTimeoutScriptPubKey)
+      multiSigScriptPubKey, escrowTimeoutScriptPubKey)
   }
 
   /**
@@ -213,8 +182,8 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
   def scriptPubKey: Gen[(ScriptPubKey, Seq[ECPrivateKey])] = {
     Gen.oneOf(p2pkScriptPubKey.map(privKeyToSeq(_)), p2pkhScriptPubKey.map(privKeyToSeq(_)),
       multiSigScriptPubKey, emptyScriptPubKey,
-      cltvScriptPubKey, csvScriptPubKey, p2wpkhSPKV0, p2wshSPKV0, unassignedWitnessScriptPubKey,
-      p2shScriptPubKey, witnessCommitment, escrowTimeoutScriptPubKey)
+      cltvScriptPubKey, csvScriptPubKey,
+      p2shScriptPubKey, escrowTimeoutScriptPubKey)
   }
 
   /** Generates an arbitrary [[ScriptSignature]] */
@@ -239,10 +208,8 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
     case _: CLTVScriptPubKey => cltvScriptSignature
     case _: CSVScriptPubKey => csvScriptSignature
     case _: EscrowTimeoutScriptPubKey => escrowTimeoutScriptSig
-    case _: WitnessScriptPubKeyV0 | _: UnassignedWitnessScriptPubKey => emptyScriptSignature
-    case x @ (_: P2SHScriptPubKey | _: NonStandardScriptPubKey | _: WitnessCommitment) =>
-      throw new IllegalArgumentException("Cannot pick for p2sh script pubkey, " +
-        "non standard script pubkey or witness commitment got: " + x)
+    case x @ (_: P2SHScriptPubKey | _: NonStandardScriptPubKey) =>
+      throw new IllegalArgumentException(s"Cannot pick for p2sh script pubkey $x")
   }
 
   /**
@@ -333,10 +300,8 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
     case _: P2PKHScriptPubKey | _: P2PKScriptPubKey =>
       val cltvScriptSig = lockTimeHelper(Some(lockTime), sequence, cltv, privKeys, None, hashType)
       (cltvScriptSig.asInstanceOf[CLTVScriptSignature], cltv, privKeys)
-    case _: UnassignedWitnessScriptPubKey | _: WitnessScriptPubKeyV0 =>
-      throw new IllegalArgumentException("Cannot created a witness scriptPubKey for a CSVScriptSig since we do not have a witness")
     case _: P2SHScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey | _: NonStandardScriptPubKey
-      | _: WitnessCommitment | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey => throw new IllegalArgumentException("We only " +
+      | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey => throw new IllegalArgumentException("We only " +
       "want to generate P2PK, P2PKH, and MultiSig ScriptSignatures when creating a CSVScriptSignature")
   }
 
@@ -358,10 +323,8 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
     case _: P2PKHScriptPubKey | _: P2PKScriptPubKey =>
       val csvScriptSig = lockTimeHelper(None, sequence, csv, privKeys, None, hashType)
       (csvScriptSig.asInstanceOf[CSVScriptSignature], csv, privKeys)
-    case _: UnassignedWitnessScriptPubKey | _: WitnessScriptPubKeyV0 =>
-      throw new IllegalArgumentException("Cannot created a witness scriptPubKey for a CSVScriptSig since we do not have a witness")
     case _: P2SHScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey | _: NonStandardScriptPubKey
-      | _: WitnessCommitment | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey => throw new IllegalArgumentException("We only " +
+      | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey => throw new IllegalArgumentException("We only " +
       "want to generate P2PK, P2PKH, and MultiSig ScriptSignatures when creating a CLTVScriptSignature.")
   }
 
@@ -511,12 +474,9 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
       case p2pkh: P2PKHScriptPubKey => P2PKHScriptSignature(sigs.head, keys.head)
       case multisig: MultiSignatureScriptPubKey => MultiSignatureScriptSignature(sigs)
       case EmptyScriptPubKey => CSVScriptSignature(EmptyScriptSignature)
-      case _: WitnessScriptPubKeyV0 | _: UnassignedWitnessScriptPubKey =>
-        //bare segwit always has an empty script sig, see BIP141
-        CSVScriptSignature(EmptyScriptSignature)
       case _: LockTimeScriptPubKey | _: EscrowTimeoutScriptPubKey =>
         throw new IllegalArgumentException("Cannot have a nested locktimeScriptPubKey inside a lockTimeScriptPubKey")
-      case x @ (_: NonStandardScriptPubKey | _: P2SHScriptPubKey | _: WitnessCommitment) =>
+      case x @ (_: NonStandardScriptPubKey | _: P2SHScriptPubKey) =>
         throw new IllegalArgumentException("A NonStandardScriptPubKey/P2SHScriptPubKey/WitnessCommitment cannot be" +
           "the underlying scriptSig in a CSVScriptSignature. Got: " + x)
     }

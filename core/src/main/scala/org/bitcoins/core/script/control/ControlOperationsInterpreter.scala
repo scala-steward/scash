@@ -1,9 +1,7 @@
 package org.bitcoins.core.script.control
 
-import org.bitcoins.core.protocol.script.{ SigVersionWitnessV0, SignatureVersion }
 import org.bitcoins.core.script.ScriptProgram
 import org.bitcoins.core.script.constant._
-import org.bitcoins.core.script.flag.ScriptFlagUtil
 import org.bitcoins.core.script.result._
 import org.bitcoins.core.util._
 
@@ -17,11 +15,7 @@ sealed abstract class ControlOperationsInterpreter {
   /** If the top stack value is not 0, the statements are executed. The top stack value is removed. */
   def opIf(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_IF), "Script top was not OP_IF")
-    val sigVersion = program.txSignatureComponent.sigVersion
-    val flags = program.flags
-    val minimalIfEnabled = ScriptFlagUtil.minimalIfEnabled(flags)
     val binaryTree = parseBinaryTree(program.script)
-    val stackTop = program.stack.headOption
     logger.debug("Parsed binary tree: " + binaryTree)
     if (!checkMatchingOpIfOpNotIfOpEndIf(program.originalScript)) {
       logger.error("We do not have a matching OP_ENDIF for every OP_IF we have")
@@ -29,9 +23,6 @@ sealed abstract class ControlOperationsInterpreter {
     } else if (program.stack.isEmpty) {
       logger.error("We do not have any stack elements for our OP_IF")
       ScriptProgram(program, ScriptErrorUnbalancedConditional)
-    } else if (isNotMinimalStackTop(stackTop, sigVersion, minimalIfEnabled)) {
-      logger.error("OP_IF argument was not minimally encoded, got: " + stackTop)
-      ScriptProgram(program, ScriptErrorMinimalIf)
     } else if (program.stackTopIsTrue) {
       logger.debug("OP_IF stack top was true")
       logger.debug("Stack top: " + program.stack)
@@ -49,38 +40,15 @@ sealed abstract class ControlOperationsInterpreter {
       ScriptProgram(program, program.stack.tail, scriptWithoutOpIf.toList)
     }
   }
-  /** Checks if the stack top is NOT minimially encoded */
-  private def isNotMinimalStackTop(stackTopOpt: Option[ScriptToken], sigVersion: SignatureVersion,
-    minimalIfEnabled: Boolean): Boolean = {
-    //see: https://github.com/bitcoin/bitcoin/blob/528472111b4965b1a99c4bcf08ac5ec93d87f10f/src/script/interpreter.cpp#L447-L452
-    //https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2016-August/013014.html
-    val isNotMinimal = stackTopOpt.map { stackTop =>
-      (sigVersion == SigVersionWitnessV0 && minimalIfEnabled
-        && (stackTop.bytes.size > 1 ||
-          (stackTop.bytes.size == 1 && stackTop.bytes.head != 1)))
-    }
-    isNotMinimal.isDefined && isNotMinimal.get
-  }
 
   /** If the top stack value is 0, the statements are executed. The top stack value is removed. */
   def opNotIf(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_NOTIF), "Script top was not OP_NOTIF")
-    val minimalIfEnabled = ScriptFlagUtil.minimalIfEnabled(program.flags)
-    val sigVersion = program.txSignatureComponent.sigVersion
-    val oldStackTop = program.stack.headOption
-
-    if (isNotMinimalStackTop(oldStackTop, sigVersion, minimalIfEnabled)) {
-      //need to duplicate minimal check, we cannot accurately invert the stack
-      //top for OP_IF otherwise
-      ScriptProgram(program, ScriptErrorMinimalIf)
-    } else {
-      val script = OP_IF :: program.script.tail
-      val stackTop = if (program.stackTopIsTrue) ScriptNumber.zero else ScriptNumber.one
-      val stack = if (program.stack.nonEmpty) stackTop :: program.stack.tail else Nil
-      val newProgram = ScriptProgram(program, stack, script)
-      opIf(newProgram)
-    }
-
+    val script = OP_IF :: program.script.tail
+    val stackTop = if (program.stackTopIsTrue) ScriptNumber.zero else ScriptNumber.one
+    val stack = if (program.stack.nonEmpty) stackTop :: program.stack.tail else Nil
+    val newProgram = ScriptProgram(program, stack, script)
+    opIf(newProgram)
   }
 
   /** Evaluates the [[OP_ELSE]] operator. */

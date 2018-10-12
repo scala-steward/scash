@@ -42,13 +42,13 @@ object CoreTestCaseProtocol extends DefaultJsonProtocol {
         logger.info("Result: " + elements(3).convertTo[String])
         val expectedResult = ScriptResult(elements(3).convertTo[String])
         Some(CoreTestCaseImpl(scriptSignature, scriptPubKey, flags,
-          expectedResult, "", elements.toString, None))
+          expectedResult, "", elements.toString))
       } else if (elements.size == 5 && elements.head.isInstanceOf[JsArray]) {
         //means we have a witness as the first item in our array
         val witnessArray = elements.head.asInstanceOf[JsArray]
         val amount = Satoshis(Int64((witnessArray.elements.last.convertTo[Double] * 100000000L).toLong))
         val stack = witnessArray.elements.slice(0, witnessArray.elements.size - 1).map(c => BitcoinSUtil.decodeHex(c.convertTo[String]))
-        val witness = ScriptWitness(stack.reverse)
+
         val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(2))
         val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
         val scriptSignatureBytes: ByteVector = parseScriptSignature(elements(1))
@@ -57,7 +57,7 @@ object CoreTestCaseProtocol extends DefaultJsonProtocol {
         logger.info("Result: " + elements(4).convertTo[String])
         val expectedResult = ScriptResult(elements(4).convertTo[String])
         Some(CoreTestCaseImpl(scriptSignature, scriptPubKey, flags,
-          expectedResult, "", elements.toString, Some(witness, amount)))
+          expectedResult, "", elements.toString))
       } else if (elements.size == 5) {
         val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(1))
         val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
@@ -68,12 +68,8 @@ object CoreTestCaseProtocol extends DefaultJsonProtocol {
         val expectedResult = ScriptResult(elements(3).convertTo[String])
         val comments = elements(4).convertTo[String]
         Some(CoreTestCaseImpl(scriptSignature, scriptPubKey, flags,
-          expectedResult, comments, elements.toString, None))
+          expectedResult, comments, elements.toString))
       } else if (elements.size == 6 && elements.head.isInstanceOf[JsArray]) {
-        val witnessArray = elements.head.asInstanceOf[JsArray]
-        val amount = Satoshis(Int64((witnessArray.elements.last.convertTo[Double] * 100000000L).toLong))
-        val stack = witnessArray.elements.slice(0, witnessArray.elements.size - 1).map(c => BitcoinSUtil.decodeHex(c.convertTo[String]))
-        val witness = ScriptWitness(stack.reverse)
         val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(2))
         val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
         val scriptSignatureBytes: ByteVector = parseScriptSignature(elements(1))
@@ -83,7 +79,7 @@ object CoreTestCaseProtocol extends DefaultJsonProtocol {
         val expectedResult = ScriptResult(elements(4).convertTo[String])
         val comments = elements(5).convertTo[String]
         Some(CoreTestCaseImpl(scriptSignature, scriptPubKey, flags,
-          expectedResult, comments, elements.toString, Some(witness, amount)))
+          expectedResult, comments, elements.toString))
       } else None
     }
 

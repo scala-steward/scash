@@ -1,13 +1,10 @@
 package org.bitcoins.core.util
 
-import org.bitcoins.core.crypto.{ ECPrivateKey, ECPublicKey }
-import org.bitcoins.core.protocol.script.{ SigVersionBase, SigVersionWitnessV0 }
+import org.bitcoins.core.crypto.ECPublicKey
 import org.bitcoins.core.script.constant._
 import org.bitcoins.core.script.crypto._
-import org.bitcoins.core.script.flag.ScriptVerifyWitnessPubKeyType
 import org.bitcoins.core.script.locktime.OP_CHECKLOCKTIMEVERIFY
 import org.bitcoins.core.script.reserved.{ OP_NOP, OP_RESERVED }
-import org.bitcoins.core.script.result.ScriptErrorWitnessPubKeyType
 import org.scalatest.{ FlatSpec, MustMatchers }
 import scodec.bits.ByteVector
 
@@ -193,17 +190,6 @@ class BitcoinScriptUtilTest extends FlatSpec with MustMatchers {
     BitcoinScriptUtil.minimalScriptNumberRepresentation(scriptNum17) must be(scriptNum17)
     BitcoinScriptUtil.minimalScriptNumberRepresentation(ScriptNumber(-1)) must be(OP_1NEGATE)
     BitcoinScriptUtil.minimalScriptNumberRepresentation(ScriptNumber(-2)) must be(ScriptNumber(-2))
-  }
-
-  it must "determine if a segwit pubkey is compressed" in {
-    val key = ECPrivateKey(false)
-    val pubKey = key.publicKey
-    val flags = Seq(ScriptVerifyWitnessPubKeyType)
-    BitcoinScriptUtil.isValidPubKeyEncoding(pubKey, SigVersionWitnessV0, flags) must be(Some(ScriptErrorWitnessPubKeyType))
-
-    val key2 = ECPrivateKey(false)
-    val pubKey2 = key2.publicKey
-    BitcoinScriptUtil.isValidPubKeyEncoding(pubKey2, SigVersionBase, flags) must be(None)
   }
 
   it must "remove the signatures from a p2sh scriptSig" in {

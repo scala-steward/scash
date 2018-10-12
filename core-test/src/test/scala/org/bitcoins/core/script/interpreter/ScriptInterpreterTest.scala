@@ -1,9 +1,9 @@
 package org.bitcoins.core.script.interpreter
 
-import org.bitcoins.core.crypto.{ BaseTxSigComponent, WitnessTxSigComponentP2SH, WitnessTxSigComponentRaw }
+import org.bitcoins.core.crypto.BaseTxSigComponent
 import org.bitcoins.core.currency.CurrencyUnits
 import org.bitcoins.core.protocol.script._
-import org.bitcoins.core.protocol.transaction.{ Transaction, TransactionOutput, WitnessTransaction }
+import org.bitcoins.core.protocol.transaction.{ Transaction, TransactionOutput }
 import org.bitcoins.core.script.{ PreExecutionScriptProgram, ScriptProgram }
 import org.bitcoins.core.script.flag.ScriptFlagFactory
 import org.bitcoins.core.script.interpreter.testprotocol.CoreTestCase
@@ -33,44 +33,17 @@ class ScriptInterpreterTest extends FlatSpec with MustMatchers {
     val testCases: Seq[CoreTestCase] = testCasesOpt.flatten
     for {
       testCase <- testCases
-      (creditingTx, outputIndex) = TransactionTestUtil.buildCreditingTransaction(testCase.scriptPubKey, testCase.witness.map(_._2))
-      (tx, inputIndex) = TransactionTestUtil.buildSpendingTransaction(creditingTx, testCase.scriptSig, outputIndex, testCase.witness)
+      (creditingTx, outputIndex) = TransactionTestUtil.buildCreditingTransaction(testCase.scriptPubKey)
+      (tx, inputIndex) = TransactionTestUtil.buildSpendingTransaction(creditingTx, testCase.scriptSig, outputIndex)
     } yield {
       val scriptPubKey = ScriptPubKey.fromAsm(testCase.scriptPubKey.asm)
       val flags = ScriptFlagFactory.fromList(testCase.flags)
-      val witness = testCase.witness
-      val txSigComponent = witness match {
-        case Some((w, amount)) => scriptPubKey match {
-          case p2sh: P2SHScriptPubKey =>
-            val output = TransactionOutput(amount, p2sh)
-            WitnessTxSigComponentP2SH(tx.asInstanceOf[WitnessTransaction], inputIndex, output, flags)
-
-          case wit: WitnessScriptPubKey =>
-            val output = TransactionOutput(amount, wit)
-            val t = WitnessTxSigComponentRaw(
-              transaction = tx.asInstanceOf[WitnessTransaction],
-              inputIndex = inputIndex,
-              output = output,
-              flags = flags)
-            t
-          case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey
-            | _: CLTVScriptPubKey | _: EscrowTimeoutScriptPubKey | _: NonStandardScriptPubKey | _: WitnessCommitment | EmptyScriptPubKey) =>
-            val output = TransactionOutput(amount, x)
-            BaseTxSigComponent(
-              transaction = tx,
-              inputIndex = inputIndex,
-              output = output,
-              flags = flags)
-        }
-        case None =>
-          //value in the output does not matter here since it isn't covered by the digital signature
-          val output = TransactionOutput(CurrencyUnits.zero, scriptPubKey)
-          BaseTxSigComponent(
-            transaction = tx,
-            inputIndex = inputIndex,
-            output = output,
-            flags = flags)
-      }
+      val output = TransactionOutput(CurrencyUnits.zero, scriptPubKey)
+      val txSigComponent = BaseTxSigComponent(
+        transaction = tx,
+        inputIndex = inputIndex,
+        output = output,
+        flags = flags)
       val program = PreExecutionScriptProgram(txSigComponent)
       withClue(testCase.raw) {
         ScriptInterpreter.run(program) must equal(testCase.expectedResult)

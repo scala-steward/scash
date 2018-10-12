@@ -1,9 +1,6 @@
 package org.bitcoins.core.crypto
 
-import java.math.BigInteger
-
 import org.bitcoinj.core.Sha256Hash
-import org.bitcoins.core.util.BitcoinSUtil
 import org.scalatest.{ FlatSpec, MustMatchers }
 import scodec.bits.ByteVector
 

@@ -196,7 +196,6 @@ object ScriptResult {
     ScriptErrorInvalidAltStackOperation, ScriptErrorUnbalancedConditional, ScriptErrorNegativeLockTime,
     ScriptErrorUnsatisfiedLocktime, ScriptErrorSigHashType, ScriptErrorSigDer, ScriptErrorMinimalData, ScriptErrorSigPushOnly,
     ScriptErrorSigHighS, ScriptErrorSigNullDummy, ScriptErrorPubKeyType, ScriptErrorCleanStack, ScriptErrorDiscourageUpgradableNOPs,
-    ScriptErrorCount, ScriptErrorMinimalIf, ScriptErrorSigNullFail
-  )
+    ScriptErrorCount, ScriptErrorMinimalIf, ScriptErrorSigNullFail)
   def apply(str: String): ScriptResult = results.filter(_.description == str).head
 }

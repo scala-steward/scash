@@ -22,3 +22,4 @@ sealed abstract class FeeUnit {
 sealed abstract class BitcoinFeeUnit extends FeeUnit
 
 case class SatoshisPerByte(currencyUnit: CurrencyUnit) extends BitcoinFeeUnit
+

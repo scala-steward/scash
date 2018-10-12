@@ -1,6 +1,6 @@
 package org.bitcoins.core.wallet.signer
 
-import org.bitcoins.core.protocol.transaction.{ BaseTransaction, Transaction, WitnessTransaction }
+import org.bitcoins.core.protocol.transaction.{ BaseTransaction, Transaction }
 import org.bitcoins.core.wallet.utxo.{ BitcoinUTXOSpendingInfo, UTXOSpendingInfo }
 
 /**
@@ -27,9 +27,5 @@ object BitcoinFundingInfo {
     utxos: Seq[BitcoinUTXOSpendingInfo]) extends BitcoinFundingInfo
   def apply(tx: BaseTransaction, utxos: Seq[BitcoinUTXOSpendingInfo]): BitcoinFundingInfo = {
     BitcoinFundingInfoImpl(tx, utxos)
-  }
-
-  def apply(wtx: WitnessTransaction, utxos: Seq[BitcoinUTXOSpendingInfo]): BitcoinFundingInfo = {
-    BitcoinFundingInfoImpl(wtx, utxos)
   }
 }

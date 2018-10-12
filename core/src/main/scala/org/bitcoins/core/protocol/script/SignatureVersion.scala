@@ -11,6 +11,3 @@ sealed trait SignatureVersion
 /** The original digest algorithm created by Satoshi */
 case object SigVersionBase extends SignatureVersion
 
-/** The digest algorithm implemented by BIP143 [[https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki]] */
-case object SigVersionWitnessV0 extends SignatureVersion
-

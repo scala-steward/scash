@@ -60,12 +60,6 @@ case object SignatureValidationErrorHighSValue extends SignatureValidationError
 case object SignatureValidationErrorHashType extends SignatureValidationError
 
 /**
- * Fails the script if the given public key was not compressed and the [[org.bitcoins.core.script.flag.ScriptVerifyWitnessPubKeyType]]
- * flag was set
- */
-case object SignatureValidationErrorWitnessPubKeyType extends SignatureValidationError
-
-/**
  * Fails the script if a an invalid signature is not an empty byte vector
  * See BIP146
  * [[https://github.com/bitcoin/bips/blob/master/bip-0146.mediawiki#nullfail]]

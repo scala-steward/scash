@@ -54,7 +54,6 @@ sealed abstract class TxBuilder {
    * This information is dependent on what the [[ScriptPubKey]] type is we are spending. For isntance, if we are spending a
    * regular [[P2PKHScriptPubKey]], we do not need a redeem script or script witness.
    *
-   * If we are spending a [[P2WPKHWitnessSPKV0]] we do not need a redeem script, but we need a [[ScriptWitness]]
    */
   def utxoMap: TxBuilder.UTXOMap
 
@@ -85,7 +84,7 @@ sealed abstract class TxBuilder {
   /**
    * The unsigned version of the tx with dummy signatures instead of real signatures in
    * the [[ScriptSignature]]s. This unsigned transaction has fee estimation done against
-   * the [[org.bitcoins.core.wallet.fee.SatoshisPerVirtualByte]] you passed in as a parameter
+   * the [[org.bitcoins.core.wallet.fee.SatoshisPerByte]] you passed in as a parameter
    * the change output is calculated and ready for signing.
    */
   def unsignedTx(implicit ec: ExecutionContext): Future[Transaction]
@@ -190,7 +189,6 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
     val output = utxo.output
     val signers = utxo.signers
     val redeemScriptOpt = utxo.redeemScriptOpt
-    val scriptWitnessOpt = utxo.scriptWitnessOpt
     val hashType = utxo.hashType
     val idx = unsignedTx.inputs.zipWithIndex.find(_._1.previousOutput == outpoint)
     if (idx.isEmpty) {
@@ -224,11 +222,10 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
                   unsignedTx.version,
                   unsignedTx.inputs.updated(inputIndex.toInt, input),
                   unsignedTx.outputs,
-                  unsignedTx.lockTime
-                )
+                  unsignedTx.lockTime)
 
                 val updatedOutput = TransactionOutput(output.value, redeemScript)
-                val updatedUTXOInfo = BitcoinUTXOSpendingInfo(outpoint, updatedOutput, signers, None, scriptWitnessOpt, hashType)
+                val updatedUTXOInfo = BitcoinUTXOSpendingInfo(outpoint, updatedOutput, signers, None, hashType)
                 val signedTxEither = signAndAddInput(updatedUTXOInfo, updatedTx, dummySignatures)
                 signedTxEither.map[BaseTransaction] { signedTx =>
                   val i = signedTx.inputs(inputIndex.toInt)
@@ -277,7 +274,7 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
     @tailrec
     def loop(remaining: Seq[BitcoinUTXOSpendingInfo], currentLockTime: UInt32): Try[UInt32] = remaining match {
       case Nil => Success(currentLockTime)
-      case BitcoinUTXOSpendingInfo(outpoint, output, signers, redeemScriptOpt, scriptWitOpt, hashType) :: t => output.scriptPubKey match {
+      case BitcoinUTXOSpendingInfo(outpoint, output, signers, redeemScriptOpt, hashType) :: t => output.scriptPubKey match {
         case cltv: CLTVScriptPubKey =>
           val lockTime = if (cltv.locktime.toLong > UInt32.max.toLong || cltv.locktime.toLong < 0) {
             TxBuilderError.IncompatibleLockTimes
@@ -293,11 +290,11 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
             } else Success(currentLockTime)
           }
           result
-        case _: P2SHScriptPubKey | _: P2WSHWitnessSPKV0 =>
+        case _: P2SHScriptPubKey =>
           if (redeemScriptOpt.isDefined) {
             //recursively call with redeem script as output script
             val o = TransactionOutput(output.value, redeemScriptOpt.get)
-            val i = BitcoinUTXOSpendingInfo(outpoint, o, signers, None, scriptWitOpt, hashType)
+            val i = BitcoinUTXOSpendingInfo(outpoint, o, signers, None, hashType)
             loop(i +: t, currentLockTime)
           } else {
             loop(t, currentLockTime)
@@ -323,7 +320,7 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
     @tailrec
     def loop(remaining: Seq[UTXOSpendingInfo], accum: Seq[TransactionInput]): Seq[TransactionInput] = remaining match {
       case Nil => accum.reverse
-      case BitcoinUTXOSpendingInfo(outpoint, output, signers, redeemScriptOpt, scriptWitOpt, hashType) :: t =>
+      case BitcoinUTXOSpendingInfo(outpoint, output, signers, redeemScriptOpt, hashType) :: t =>
         output.scriptPubKey match {
           case csv: CSVScriptPubKey =>
             val sequence = solveSequenceForCSV(csv.locktime)
@@ -333,15 +330,15 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
             val sequence = UInt32.zero
             val i = TransactionInput(outpoint, EmptyScriptSignature, sequence)
             loop(t, i +: accum)
-          case _: P2SHScriptPubKey | _: P2WSHWitnessSPKV0 =>
+          case _: P2SHScriptPubKey =>
             if (redeemScriptOpt.isDefined) {
               //recursively call with the redeem script in the output
               val o = TransactionOutput(output.value, redeemScriptOpt.get)
-              val i = BitcoinUTXOSpendingInfo(outpoint, o, signers, None, scriptWitOpt, hashType)
+              val i = BitcoinUTXOSpendingInfo(outpoint, o, signers, None, hashType)
               loop(i +: t, accum)
             } else loop(t, accum)
           case _: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: NonStandardScriptPubKey
-            | EmptyScriptPubKey | _: UnassignedWitnessScriptPubKey | _: EscrowTimeoutScriptPubKey =>
+            | EmptyScriptPubKey | _: EscrowTimeoutScriptPubKey =>
             //none of these script types affect the sequence number of a tx
             //the sequence only needs to be adjustd if we have replace by fee (RBF) enabled
             //see BIP125 for more information
@@ -483,7 +480,7 @@ object BitcoinTxBuilder {
     def loop(utxos: Seq[UTXOSpendingInfo], accum: UTXOMap): UTXOMap = utxos match {
       case Nil => accum
       case h :: t =>
-        val u = BitcoinUTXOSpendingInfo(h.outPoint, h.output, h.signers, h.redeemScriptOpt, h.scriptWitnessOpt, h.hashType)
+        val u = BitcoinUTXOSpendingInfo(h.outPoint, h.output, h.signers, h.redeemScriptOpt, h.hashType)
         val result: BitcoinTxBuilder.UTXOMap = accum.updated(h.outPoint, u)
         loop(t, result)
     }

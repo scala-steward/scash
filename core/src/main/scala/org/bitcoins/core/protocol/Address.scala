@@ -101,12 +101,8 @@ object P2PKHAddress extends AddressFactory[P2PKHAddress] {
 
   override def fromScriptPubKey(spk: ScriptPubKey, np: NetworkParameters): Try[P2PKHAddress] = spk match {
     case p2pkh: P2PKHScriptPubKey => Success(P2PKHAddress(p2pkh, np))
-    case x @ (_: P2PKScriptPubKey | _: MultiSignatureScriptPubKey
-      | _: P2SHScriptPubKey | _: LockTimeScriptPubKey
-      | _: WitnessScriptPubKey | _: EscrowTimeoutScriptPubKey
-      | _: NonStandardScriptPubKey | _: WitnessCommitment
-      | _: UnassignedWitnessScriptPubKey | EmptyScriptPubKey) =>
-      Failure(new IllegalArgumentException("Cannot create a address for the scriptPubKey: " + x))
+    case _ =>
+      Failure(new IllegalArgumentException("Cannot create a address for the scriptPubKey: " + spk))
   }
 }
 
@@ -152,11 +148,7 @@ object P2SHAddress extends AddressFactory[P2SHAddress] {
 
   override def fromScriptPubKey(spk: ScriptPubKey, np: NetworkParameters): Try[P2SHAddress] = spk match {
     case p2sh: P2SHScriptPubKey => Success(P2SHAddress(p2sh, np))
-    case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey
-      | _: LockTimeScriptPubKey | _: WitnessScriptPubKey
-      | _: EscrowTimeoutScriptPubKey | _: NonStandardScriptPubKey
-      | _: WitnessCommitment | _: UnassignedWitnessScriptPubKey | EmptyScriptPubKey) =>
-      Failure(new IllegalArgumentException("Cannot create a address for the scriptPubKey: " + x))
+    case _ => Failure(new IllegalArgumentException("Cannot create a address for the scriptPubKey: " + spk))
   }
 }
 
@@ -204,9 +196,9 @@ object Address extends AddressFactory[Address] {
   override def fromString(str: String): Try[Address] = {
     BitcoinAddress.fromString(str)
   }
-  override def fromScriptPubKey(spk: ScriptPubKey, network: NetworkParameters): Try[Address] = network match {
-    case bitcoinNetwork: BitcoinNetwork => BitcoinAddress.fromScriptPubKey(spk, network)
-  }
+  override def fromScriptPubKey(spk: ScriptPubKey, network: NetworkParameters): Try[Address] =
+    BitcoinAddress.fromScriptPubKey(spk, network)
+
   def apply(spk: ScriptPubKey, networkParameters: NetworkParameters): Try[Address] = {
     fromScriptPubKey(spk, networkParameters)
   }

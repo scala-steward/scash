@@ -14,9 +14,8 @@ trait ScriptFlagFactory {
   private def flags = Seq(ScriptVerifyNone, ScriptVerifyP2SH, ScriptVerifyStrictEnc,
     ScriptVerifyDerSig, ScriptVerifyLowS, ScriptVerifySigPushOnly, ScriptVerifyMinimalData,
     ScriptVerifyNullDummy, ScriptVerifyDiscourageUpgradableNOPs, ScriptVerifyCleanStack,
-    ScriptVerifyCheckLocktimeVerify, ScriptVerifyCheckSequenceVerify, ScriptVerifyWitness,
-    ScriptVerifyDiscourageUpgradableWitnessProgram, ScriptVerifyMinimalIf, ScriptVerifyNullFail,
-    ScriptVerifyWitnessPubKeyType)
+    ScriptVerifyCheckLocktimeVerify, ScriptVerifyCheckSequenceVerify,
+    ScriptVerifyMinimalIf, ScriptVerifyNullFail)
 
   /** Takes in a string and tries to match it with a [[ScriptFlag]]. */
   def fromString(str: String): Option[ScriptFlag] = {

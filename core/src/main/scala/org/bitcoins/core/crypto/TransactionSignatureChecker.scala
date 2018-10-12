@@ -5,7 +5,6 @@ import org.bitcoins.core.protocol.transaction.TransactionOutput
 import org.bitcoins.core.script.constant.ScriptToken
 import org.bitcoins.core.script.crypto._
 import org.bitcoins.core.script.flag.{ ScriptFlag, ScriptFlagUtil }
-import org.bitcoins.core.script.result.ScriptErrorWitnessPubKeyType
 import org.bitcoins.core.util.{ BitcoinSLogger, BitcoinSUtil, BitcoinScriptUtil }
 import scodec.bits.ByteVector
 
@@ -46,8 +45,7 @@ trait TransactionSignatureChecker extends BitcoinSLogger {
       logger.error("Hash type was not defined on the signature, got: " + signature.bytes.last)
       SignatureValidationErrorHashType
     } else if (pubKeyEncodedCorrectly.isDefined) {
-      val err = pubKeyEncodedCorrectly.get
-      val result = if (err == ScriptErrorWitnessPubKeyType) SignatureValidationErrorWitnessPubKeyType else SignatureValidationErrorPubKeyEncoding
+      val result = SignatureValidationErrorPubKeyEncoding
       logger.error("The public key given for signature checking was not encoded correctly, err: " + result)
       result
     } else {
@@ -55,27 +53,13 @@ trait TransactionSignatureChecker extends BitcoinSLogger {
       val hashTypeByte = if (signature.bytes.nonEmpty) signature.bytes.last else 0x00.toByte
       val hashType = HashType(ByteVector(0.toByte, 0.toByte, 0.toByte, hashTypeByte))
       val spk = ScriptPubKey.fromAsm(sigsRemovedScript)
-      val hashForSignature = txSignatureComponent match {
-        case b: BaseTxSigComponent =>
-          val sigsRemovedTxSigComponent = BaseTxSigComponent(
-            b.transaction, b.inputIndex, TransactionOutput(b.output.value, spk), b.flags)
-          TransactionSignatureSerializer.hashForSignature(
-            sigsRemovedTxSigComponent,
-            hashType)
-        case w: WitnessTxSigComponent =>
-          val sigsRemovedTxSigComponent = WitnessTxSigComponent(
-            w.transaction, w.inputIndex, TransactionOutput(w.output.value, spk), w.flags)
-          TransactionSignatureSerializer.hashForSignature(sigsRemovedTxSigComponent, hashType)
-        case r: WitnessTxSigComponentRebuilt =>
-          val sigsRemovedTxSigComponent = WitnessTxSigComponentRebuilt(
-            wtx = r.transaction,
-            inputIndex = r.inputIndex,
-            output = TransactionOutput(r.output.value, spk),
-            witScriptPubKey = r.witnessScriptPubKey,
-            flags = r.flags)
-          TransactionSignatureSerializer.hashForSignature(sigsRemovedTxSigComponent, hashType)
-      }
-
+      val hashForSignature = TransactionSignatureSerializer.hashForSignature(
+        BaseTxSigComponent(
+          txSignatureComponent.transaction,
+          txSignatureComponent.inputIndex,
+          TransactionOutput(txSignatureComponent.output.value, spk),
+          txSignatureComponent.flags),
+        hashType)
       logger.trace("Hash for signature: " + BitcoinSUtil.encodeHex(hashForSignature.bytes))
       val sigWithoutHashType = stripHashType(signature)
       val isValid = pubKey.verify(hashForSignature, sigWithoutHashType)
@@ -126,7 +110,7 @@ trait TransactionSignatureChecker extends BitcoinSLogger {
           multiSignatureEvaluator(txSignatureComponent, script, sigs, pubKeys.tail, flags, requiredSigs)
         case x @ (SignatureValidationErrorNotStrictDerEncoding | SignatureValidationErrorSignatureCount |
           SignatureValidationErrorPubKeyEncoding | SignatureValidationErrorHighSValue |
-          SignatureValidationErrorHashType | SignatureValidationErrorWitnessPubKeyType) =>
+          SignatureValidationErrorHashType) =>
           nullFailCheck(sigs, x, flags)
       }
     } else if (sigs.isEmpty) {
