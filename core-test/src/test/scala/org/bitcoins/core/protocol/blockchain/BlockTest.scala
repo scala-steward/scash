@@ -27,16 +27,16 @@ class BlockTest extends FlatSpec with MustMatchers {
     block.hex must be(hex)
   }
 
-  it must "parse a large block 00000000000000000008513c860373da0484f065983aeb063ebf81c172e81d48" in {
+  it must "parse a large block from height 400000" in {
 
-    val fileName = "/00000000000000000008513c860373da0484f065983aeb063ebf81c172e81d48.txt"
+    val fileName = "/400000.txt"
     val lines = Source.fromURL(getClass.getResource(fileName)).mkString
     val time = timeBlockParsing(Block.fromHex(lines))
     assert(time <= 15000)
   }
 
-  it must "parse a large block 000000000000000000050f70113ab1932c195442cb49bcc4ee4d7f426c8a3295" in {
-    val fileName = "/000000000000000000050f70113ab1932c195442cb49bcc4ee4d7f426c8a3295.txt"
+  it must "parse block from height 398100" in {
+    val fileName = "/398100.txt"
     val lines = Source.fromURL(getClass.getResource(fileName)).mkString
     val time = timeBlockParsing(Block.fromHex(lines))
     assert(time <= 15000)
