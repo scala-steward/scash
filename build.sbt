@@ -14,8 +14,8 @@ lazy val root = project
       secp256k1jni,
       core,
       coreGen,
-      coreTest,
-      rpc
+      coreTest//,
+      //rpc
     )
     .settings(commonSettings: _*)
 
