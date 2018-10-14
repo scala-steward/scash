@@ -23,7 +23,7 @@ import scala.util.Try
 class BitcoinTxBuilderSpec extends Properties("TxBuilderSpec") {
   private val logger = BitcoinSLogger.logger
   private val tc = TransactionConstants
-  val timeout = 10.seconds
+  val timeout = 7.seconds
   property("sign a mix of spks in a tx and then have it verified") = {
     Prop.forAllNoShrink(CreditingTxGen.outputs) {
       case creditingTxsInfo =>
