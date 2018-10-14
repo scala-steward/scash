@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/scala-cash/scash.svg?branch=master)](https://travis-ci.org/scala-cash/scash) [![Coverage Status](https://coveralls.io/repos/github/scala-cash/scash/badge.svg?branch=master)](https://coveralls.io/github/scalacash/scash?branch=master)[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/scash)
+[![Build Status](https://travis-ci.org/scala-cash/scash.svg?branch=master)](https://travis-ci.org/scala-cash/scash) [![Coverage Status](https://coveralls.io/repos/github/scala-cash/scash/badge.svg)](https://coveralls.io/github/scala-cash/scash) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/scash)
 
 # scash
 
