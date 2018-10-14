@@ -7,6 +7,9 @@ lazy val commonSettings = List(
   scalacOptions := compilerOpts,
   assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
 )
+
+coverageEnabled := true //has to be turned off when publishing
+
 lazy val root = project
     .in(file("."))
     .aggregate(

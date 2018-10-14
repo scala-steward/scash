@@ -32,13 +32,13 @@ class BlockTest extends FlatSpec with MustMatchers {
     val fileName = "/400000.txt"
     val lines = Source.fromURL(getClass.getResource(fileName)).mkString
     val time = timeBlockParsing(Block.fromHex(lines))
-    assert(time <= 15000)
+    assert(time <= 25000)
   }
 
   it must "parse block from height 398100" in {
     val fileName = "/398100.txt"
     val lines = Source.fromURL(getClass.getResource(fileName)).mkString
     val time = timeBlockParsing(Block.fromHex(lines))
-    assert(time <= 15000)
+    assert(time <= 25000)
   }
 }
