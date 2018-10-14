@@ -9,6 +9,6 @@ testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "
 
 coverageExcludedPackages := ".*gen"
 
-coverageMinimum := 90
+coverageMinimum := 80
 
 coverageFailOnMinimum := true
