@@ -8,7 +8,7 @@ testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck,
 
 coverageExcludedPackages := ".*gen"
 
-coverageMinimum := 90
+coverageMinimum := 80
 
 coverageFailOnMinimum := true
 
