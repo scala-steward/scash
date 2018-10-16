@@ -32,10 +32,10 @@ res0: Boolean = true
 And you're ready to go. A sample import:
 
 ```scala
-scala> import org.bitcoins.core.protocol.Address
-import org.bitcoins.core.protocol.Address
+scala> import org.scash.core.protocol.Address
+import org.scash.core.protocol.Address
 
 scala> Address("mzgBH6odmdukcKbjDwMFTU3ZvzrqJLGVW7")
-res0: org.bitcoins.core.protocol.Address = P2PKHAddressImpl(mzgBH6odmdukcKbjDwMFTU3ZvzrqJLGVW7)
+res0: org.scash.core.protocol.Address = P2PKHAddressImpl(mzgBH6odmdukcKbjDwMFTU3ZvzrqJLGVW7)
 
 ```
