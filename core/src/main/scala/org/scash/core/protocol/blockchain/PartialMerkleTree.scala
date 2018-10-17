@@ -1,10 +1,11 @@
 package org.scash.core.protocol.blockchain
 
-import org.scash.core.util._
 import org.scash.core.crypto.DoubleSha256Digest
 import org.scash.core.number.UInt32
-import org.scash.core.util.BitcoinSLogger
-import scodec.bits.{ BitVector, ByteVector }
+import org.scash.core.util.{BitcoinSLogger, _}
+import scodec.bits
+import scodec.bits.BitVector
+
 import scala.annotation.tailrec
 import scala.math._
 

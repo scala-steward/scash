@@ -1,9 +1,8 @@
 package org.scash.core.serializers.blockchain
 
-import org.scash.core.protocol.blockchain.{ Block, BlockHeader }
+import org.scash.core.protocol.blockchain.{Block, BlockHeader}
 import org.scash.core.protocol.transaction.Transaction
-import org.scash.core.serializers.RawSerializerHelper
-import org.scash.core.serializers.{ RawBitcoinSerializer, RawSerializerHelper }
+import org.scash.core.serializers.{RawBitcoinSerializer, RawSerializerHelper}
 import scodec.bits.ByteVector
 
 /**

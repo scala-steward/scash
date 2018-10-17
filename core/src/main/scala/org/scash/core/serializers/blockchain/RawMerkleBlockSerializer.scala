@@ -1,14 +1,13 @@
 package org.scash.core.serializers.blockchain
 
-import org.scash.core.number.UInt64
+import org.scash.core.crypto.DoubleSha256Digest
+import org.scash.core.number.{UInt32, UInt64}
 import org.scash.core.protocol.CompactSizeUInt
 import org.scash.core.protocol.blockchain.MerkleBlock
-import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.number.{ UInt32, UInt64 }
 import org.scash.core.serializers.RawBitcoinSerializer
 import org.scash.core.util.BitcoinSUtil
 import org.slf4j.LoggerFactory
-import scodec.bits.{ BitVector, ByteVector }
+import scodec.bits.{BitVector, ByteVector}
 
 import scala.annotation.tailrec
 

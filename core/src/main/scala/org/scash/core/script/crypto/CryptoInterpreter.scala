@@ -1,15 +1,13 @@
 package org.scash.core.script.crypto
 
-import org.scash.core.crypto._
-import org.scash.core.script.constant._
-import org.scash.core.script.control.{ ControlOperationsInterpreter, OP_VERIFY }
-import org.scash.core.script.flag.ScriptFlagUtil
-import org.scash.core.script.result._
-import org.scash.core.script.{ ScriptProgram, _ }
-import org.scash.core.util.{ BitcoinSLogger, BitcoinScriptUtil, CryptoUtil }
 import org.scash.core.consensus.Consensus
 import org.scash.core.crypto._
-import org.scash.core.script.{ ExecutedScriptProgram, ExecutionInProgressScriptProgram, PreExecutionScriptProgram, ScriptProgram }
+import org.scash.core.script.constant._
+import org.scash.core.script.control.{ControlOperationsInterpreter, OP_VERIFY}
+import org.scash.core.script.flag.ScriptFlagUtil
+import org.scash.core.script.result._
+import org.scash.core.script.{ExecutedScriptProgram, ExecutionInProgressScriptProgram, PreExecutionScriptProgram, ScriptProgram}
+import org.scash.core.util.{BitcoinSLogger, BitcoinScriptUtil, CryptoUtil}
 import scodec.bits.ByteVector
 
 import scala.annotation.tailrec

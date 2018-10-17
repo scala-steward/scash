@@ -1,26 +1,24 @@
 package org.scash.core.script.interpreter
 
-import org.scash.core.currency.CurrencyUnit
+import org.scash.core.consensus.Consensus
+import org.scash.core.currency.{CurrencyUnit, CurrencyUnits}
 import org.scash.core.protocol.CompactSizeUInt
 import org.scash.core.protocol.script._
 import org.scash.core.protocol.transaction._
+import org.scash.core.script
 import org.scash.core.script._
 import org.scash.core.script.arithmetic._
 import org.scash.core.script.bitwise._
-import org.scash.core.script.constant.{ ScriptToken, _ }
+import org.scash.core.script.constant._
 import org.scash.core.script.control._
 import org.scash.core.script.crypto._
 import org.scash.core.script.flag._
-import org.scash.core.script.locktime.{ LockTimeInterpreter, OP_CHECKLOCKTIMEVERIFY, OP_CHECKSEQUENCEVERIFY }
+import org.scash.core.script.locktime._
 import org.scash.core.script.reserved._
 import org.scash.core.script.result._
 import org.scash.core.script.splice._
 import org.scash.core.script.stack._
-import org.scash.core.util.{ BitcoinSLogger, BitcoinSUtil, BitcoinScriptUtil }
-import org.scash.core.consensus.Consensus
-import org.scash.core.currency.{ CurrencyUnit, CurrencyUnits }
-import org.scash.core.script
-import org.scash.core.script.{ ExecutedScriptProgram, ExecutionInProgressScriptProgram, PreExecutionScriptProgram, ScriptProgram }
+import org.scash.core.util.{BitcoinSLogger, BitcoinSUtil, BitcoinScriptUtil}
 
 import scala.annotation.tailrec
 /**

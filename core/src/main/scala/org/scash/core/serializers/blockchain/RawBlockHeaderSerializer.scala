@@ -1,9 +1,8 @@
 package org.scash.core.serializers.blockchain
 
-import org.scash.core.number.Int32
-import org.scash.core.protocol.blockchain.BlockHeader
 import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.number.{ Int32, UInt32 }
+import org.scash.core.number.{Int32, UInt32}
+import org.scash.core.protocol.blockchain.BlockHeader
 import org.scash.core.serializers.RawBitcoinSerializer
 import scodec.bits.ByteVector
 

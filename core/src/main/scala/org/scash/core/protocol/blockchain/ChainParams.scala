@@ -2,18 +2,16 @@ package org.scash.core.protocol.blockchain
 
 import java.nio.charset.StandardCharsets
 
-import org.scash.core.currency.Satoshis
-import org.scash.core.number.{ Int32, Int64 }
-import org.scash.core.protocol.script.{ ScriptPubKey, ScriptSignature }
-import org.scash.core.protocol.transaction._
-import org.scash.core.script.constant.{ BytesToPushOntoStack, ScriptConstant, ScriptNumber }
-import org.scash.core.script.crypto.OP_CHECKSIG
-import org.scash.core.util.{ BitcoinSUtil, BitcoinScriptUtil }
 import org.scash.core.consensus.Merkle
 import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.currency.{ CurrencyUnit, Satoshis }
-import org.scash.core.number.{ Int32, Int64, UInt32 }
+import org.scash.core.currency.{CurrencyUnit, Satoshis}
+import org.scash.core.number.{Int32, Int64, UInt32}
 import org.scash.core.policy.Policy
+import org.scash.core.protocol.script.{ScriptPubKey, ScriptSignature}
+import org.scash.core.protocol.transaction._
+import org.scash.core.script.constant.{BytesToPushOntoStack, ScriptConstant, ScriptNumber}
+import org.scash.core.script.crypto.OP_CHECKSIG
+import org.scash.core.util.BitcoinScriptUtil
 import scodec.bits.ByteVector
 
 /**

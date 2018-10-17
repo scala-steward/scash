@@ -1,13 +1,11 @@
 package org.scash.rpc.client
 
-import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.protocol.script.ScriptPubKey
-import play.api.libs.json.{ Json, Writes }
-import org.scash.rpc.serializers.JsonSerializers._
-import org.scash.core.crypto.{ DoubleSha256Digest, ECPrivateKey }
+import org.scash.core.crypto.{DoubleSha256Digest, ECPrivateKey}
 import org.scash.core.currency.Bitcoins
 import org.scash.core.number.UInt32
 import org.scash.core.protocol.BitcoinAddress
+import org.scash.core.protocol.script.ScriptPubKey
+import play.api.libs.json.{Json, Writes}
 
 object RpcOpts {
   case class FundRawTransactionOptions(
@@ -51,13 +49,9 @@ object RpcOpts {
   sealed abstract class AddressType
 
   case class Legacy() extends AddressType
-  case class P2SHSegwit() extends AddressType
-  case class Bech32() extends AddressType
 
   def addressTypeString(addressType: AddressType): String = addressType match {
     case Legacy() => "legacy"
-    case P2SHSegwit() => "p2sh-segwit"
-    case Bech32() => "bech32"
   }
 
   case class BlockTemplateRequest(

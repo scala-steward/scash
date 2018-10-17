@@ -1,10 +1,9 @@
 package org.scash.core.protocol.transaction
 
-import org.scash.core.currency.CurrencyUnit
+import org.scash.core.currency.{CurrencyUnit, CurrencyUnits}
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.protocol.script.ScriptPubKey
 import org.scash.core.serializers.transaction.RawTransactionOutputParser
-import org.scash.core.currency.{ CurrencyUnit, CurrencyUnits }
 import org.scash.core.util.Factory
 import scodec.bits.ByteVector
 

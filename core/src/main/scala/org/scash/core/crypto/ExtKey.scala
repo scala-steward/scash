@@ -3,14 +3,12 @@ package org.scash.core.crypto
 import java.math.BigInteger
 
 import org.bitcoin.NativeSecp256k1
-import org.scash.core.number.UInt32
-import org.scash.core.util._
-import org.scash.core.number.{ UInt32, UInt8 }
+import org.scash.core.number.{UInt32, UInt8}
 import org.scash.core.protocol.NetworkElement
-import org.scash.core.util.Factory
+import org.scash.core.util.{Factory, _}
 import scodec.bits.ByteVector
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 /**
  * Represents an extended key as defined by BIP32

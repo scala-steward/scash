@@ -1,14 +1,13 @@
 package org.scash.core.protocol.blockchain
 
-import org.scash.core.number.UInt64
-import org.scash.core.protocol.transaction.Transaction
-import org.scash.core.protocol.{ CompactSizeUInt, NetworkElement }
-import org.scash.core.serializers.blockchain.RawMerkleBlockSerializer
 import org.scash.core.bloom.BloomFilter
 import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.number.{ UInt32, UInt64 }
+import org.scash.core.number.{UInt32, UInt64}
+import org.scash.core.protocol.transaction.Transaction
+import org.scash.core.protocol.{CompactSizeUInt, NetworkElement}
+import org.scash.core.serializers.blockchain.RawMerkleBlockSerializer
 import org.scash.core.util.Factory
-import scodec.bits.{ BitVector, ByteVector }
+import scodec.bits.{BitVector, ByteVector}
 
 import scala.annotation.tailrec
 

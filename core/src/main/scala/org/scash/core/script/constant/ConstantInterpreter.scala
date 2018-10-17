@@ -1,10 +1,9 @@
 package org.scash.core.script.constant
 
+import org.scash.core.script.ScriptProgram
 import org.scash.core.script.flag.ScriptFlagUtil
 import org.scash.core.script.result._
-import org.scash.core.util.{ BitcoinSLogger, BitcoinSUtil, BitcoinScriptUtil }
-import org.scash.core.script.ScriptProgram
-import scodec.bits.ByteVector
+import org.scash.core.util.{BitcoinSLogger, BitcoinSUtil, BitcoinScriptUtil}
 
 import scala.annotation.tailrec
 

@@ -2,14 +2,13 @@ package org.scash.rpc.jsonmodels
 
 import java.io.File
 
-import org.scash.core.crypto.Sha256Hash160Digest
-import org.scash.core.protocol.script.ScriptPubKey
-import org.scash.core.protocol.transaction.Transaction
-import org.scash.core.wallet.fee.BitcoinFeeUnit
-import org.scash.core.crypto.{ DoubleSha256Digest, Sha256Hash160Digest }
+import org.scash.core.crypto.{DoubleSha256Digest, Sha256Hash160Digest}
 import org.scash.core.currency.Bitcoins
 import org.scash.core.number.UInt32
 import org.scash.core.protocol.BitcoinAddress
+import org.scash.core.protocol.script.ScriptPubKey
+import org.scash.core.protocol.transaction.Transaction
+import org.scash.core.wallet.fee.BitcoinFeeUnit
 
 sealed abstract class WalletResult
 

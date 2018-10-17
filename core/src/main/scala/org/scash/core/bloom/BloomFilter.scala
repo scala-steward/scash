@@ -1,16 +1,14 @@
 package org.scash.core.bloom
 
-import org.scash.core.crypto.{ DoubleSha256Digest, HashDigest, Sha256Hash160Digest }
-import org.scash.core.number.UInt64
-import org.scash.core.protocol.transaction.{ Transaction, TransactionOutPoint }
-import org.scash.core.script.constant.{ ScriptConstant, ScriptToken }
+import org.scash.core.crypto.{DoubleSha256Digest, HashDigest, Sha256Hash160Digest}
+import org.scash.core.number.{UInt32, UInt64}
+import org.scash.core.protocol.script.{MultiSignatureScriptPubKey, P2PKScriptPubKey, ScriptPubKey}
+import org.scash.core.protocol.transaction.{Transaction, TransactionOutPoint}
+import org.scash.core.protocol.{CompactSizeUInt, NetworkElement}
+import org.scash.core.script.constant.{ScriptConstant, ScriptToken}
 import org.scash.core.serializers.bloom.RawBloomFilterSerializer
-import org.scash.core.util.{ BitcoinSUtil, Factory }
-import org.scash.core.number.{ UInt32, UInt64 }
-import org.scash.core.protocol.script.{ MultiSignatureScriptPubKey, P2PKScriptPubKey, ScriptPubKey }
-import org.scash.core.protocol.{ CompactSizeUInt, NetworkElement }
-import org.scash.core.util.Factory
-import scodec.bits.{ BitVector, ByteVector }
+import org.scash.core.util.{BitcoinSUtil, Factory}
+import scodec.bits.{BitVector, ByteVector}
 
 import scala.annotation.tailrec
 import scala.util.hashing.MurmurHash3

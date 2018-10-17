@@ -1,10 +1,9 @@
 package org.scash.rpc.jsonmodels
 
-import org.scash.core.number.Int32
-import org.scash.core.wallet.fee.BitcoinFeeUnit
 import org.scash.core.crypto.DoubleSha256Digest
 import org.scash.core.currency.Bitcoins
-import org.scash.core.number.{ Int32, UInt32 }
+import org.scash.core.number.{Int32, UInt32}
+import org.scash.core.wallet.fee.BitcoinFeeUnit
 
 sealed abstract class BlockchainResult
 

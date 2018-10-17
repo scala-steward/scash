@@ -1,10 +1,9 @@
 package org.scash.core.script.bitwise
 
 import org.scash.core.script.constant._
-import org.scash.core.script.control.{ ControlOperationsInterpreter, OP_VERIFY }
+import org.scash.core.script.control.{ControlOperationsInterpreter, OP_VERIFY}
 import org.scash.core.script.result._
-import org.scash.core.script.{ ExecutedScriptProgram, ExecutionInProgressScriptProgram, PreExecutionScriptProgram, ScriptProgram }
-import org.scash.core.script.{ ExecutedScriptProgram, ExecutionInProgressScriptProgram, PreExecutionScriptProgram, ScriptProgram }
+import org.scash.core.script.{ExecutedScriptProgram, ExecutionInProgressScriptProgram, PreExecutionScriptProgram, ScriptProgram}
 import org.scash.core.util.BitcoinSLogger
 
 /**

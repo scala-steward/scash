@@ -1,8 +1,7 @@
 package org.scash.core.currency
 
-import org.scash.core.number.BaseNumbers
 import org.scash.core.consensus.Consensus
-import org.scash.core.number.{ BaseNumbers, Int64 }
+import org.scash.core.number.{BaseNumbers, Int64}
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.RawSatoshisSerializer
 import org.scash.core.util.Factory

@@ -8,25 +8,22 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
-import org.scash.core.crypto.{ DoubleSha256Digest, ECPublicKey }
-import org.scash.core.currency.Bitcoins
-import org.scash.core.protocol.blockchain.{ Block, BlockHeader, MerkleBlock }
+import org.scash.core.crypto.{DoubleSha256Digest, ECPrivateKey, ECPublicKey}
+import org.scash.core.currency.{Bitcoins, Satoshis}
+import org.scash.core.number.UInt32
+import org.scash.core.protocol.blockchain.{Block, BlockHeader, MerkleBlock}
 import org.scash.core.protocol.script.ScriptPubKey
-import org.scash.core.protocol.transaction.{ Transaction, TransactionInput, TransactionOutPoint }
-import org.scash.core.protocol.P2PKHAddress
-import org.scash.core.util.{ BitcoinSLogger, BitcoinSUtil }
+import org.scash.core.protocol.transaction.{Transaction, TransactionInput, TransactionOutPoint}
+import org.scash.core.protocol.{BitcoinAddress, P2PKHAddress}
+import org.scash.core.util.{BitcoinSLogger, BitcoinSUtil}
 import org.scash.rpc.client.RpcOpts.AddressType
 import org.scash.rpc.config.BitcoindInstance
 import org.scash.rpc.jsonmodels._
 import org.scash.rpc.serializers.JsonSerializers._
-import org.scash.core.crypto.{ DoubleSha256Digest, ECPrivateKey, ECPublicKey }
-import org.scash.core.currency.{ Bitcoins, Satoshis }
-import org.scash.core.number.UInt32
-import org.scash.core.protocol.{ BitcoinAddress, P2PKHAddress }
 import play.api.libs.json._
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.sys.process._
 import scala.util.Try
 

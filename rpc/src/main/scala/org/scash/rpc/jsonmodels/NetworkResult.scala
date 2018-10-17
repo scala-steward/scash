@@ -2,9 +2,8 @@ package org.scash.rpc.jsonmodels
 
 import java.net.URI
 
-import org.scash.core.number.UInt64
 import org.scash.core.currency.Bitcoins
-import org.scash.core.number.{ UInt32, UInt64 }
+import org.scash.core.number.{UInt32, UInt64}
 
 sealed abstract class NetworkResult
 

@@ -1,7 +1,6 @@
 package org.scash.core.consensus
 
-import org.scash.core.currency.Satoshis
-import org.scash.core.currency.{ CurrencyUnit, Satoshis }
+import org.scash.core.currency.{CurrencyUnit, Satoshis}
 import org.scash.core.number.Int64
 
 /**
