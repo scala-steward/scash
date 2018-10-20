@@ -1,8 +1,8 @@
 package org.scash.core.protocol
 
-import org.scash.core.number.{UInt32, UInt64}
+import org.scash.core.number.{ UInt32, UInt64 }
 import org.scash.core.protocol.script.ScriptSignature
-import org.scash.core.util.{BitcoinSUtil, Factory}
+import org.scash.core.util.{ BitcoinSUtil, Factory }
 import scodec.bits.ByteVector
 
 /**

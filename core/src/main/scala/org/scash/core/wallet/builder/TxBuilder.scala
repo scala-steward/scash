@@ -1,8 +1,8 @@
 package org.scash.core.wallet.builder
 
-import org.scash.core.config.{BitcoinNetwork, MainNet, NetworkParameters}
-import org.scash.core.currency.{CurrencyUnit, CurrencyUnits, Satoshis}
-import org.scash.core.number.{Int64, UInt32}
+import org.scash.core.config.{ BitcoinNetwork, MainNet, NetworkParameters }
+import org.scash.core.currency.{ CurrencyUnit, CurrencyUnits, Satoshis }
+import org.scash.core.number.{ Int64, UInt32 }
 import org.scash.core.policy.Policy
 import org.scash.core.protocol.script._
 import org.scash.core.protocol.transaction._
@@ -12,21 +12,21 @@ import org.scash.core.script.locktime.LockTimeInterpreter
 import org.scash.core.util.BitcoinSLogger
 import org.scash.core.wallet.fee.FeeUnit
 import org.scash.core.wallet.signer._
-import org.scash.core.wallet.utxo.{BitcoinUTXOSpendingInfo, UTXOSpendingInfo}
+import org.scash.core.wallet.utxo.{ BitcoinUTXOSpendingInfo, UTXOSpendingInfo }
 
 import scala.annotation.tailrec
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
 
 /**
-  * High level class to create a signed transaction that spends a set of
-  * unspent transaction outputs.
-  *
-  * The most important method in this class is the 'sign' method. This will start the signing procedure for a
-  * transaction and then return either a signed [[Transaction]] or a [[TxBuilderError]]
-  *
-  * For usage examples see TxBuilderSpec
-  */
+ * High level class to create a signed transaction that spends a set of
+ * unspent transaction outputs.
+ *
+ * The most important method in this class is the 'sign' method. This will start the signing procedure for a
+ * transaction and then return either a signed [[Transaction]] or a [[TxBuilderError]]
+ *
+ * For usage examples see TxBuilderSpec
+ */
 sealed abstract class TxBuilder {
   private val logger = BitcoinSLogger.logger
 
@@ -49,12 +49,12 @@ sealed abstract class TxBuilder {
   def largestFee: CurrencyUnit = creditingAmount - destinationAmount
 
   /**
-    * The list of [[org.scash.core.protocol.transaction.TransactionOutPoint]]s we are attempting to spend
-    * and the signers, redeem scripts, and script witnesses that might be needed to spend this outpoint.
-    * This information is dependent on what the [[ScriptPubKey]] type is we are spending. For isntance, if we are spending a
-    * regular [[P2PKHScriptPubKey]], we do not need a redeem script or script witness.
-    *
-    */
+   * The list of [[org.scash.core.protocol.transaction.TransactionOutPoint]]s we are attempting to spend
+   * and the signers, redeem scripts, and script witnesses that might be needed to spend this outpoint.
+   * This information is dependent on what the [[ScriptPubKey]] type is we are spending. For isntance, if we are spending a
+   * regular [[P2PKHScriptPubKey]], we do not need a redeem script or script witness.
+   *
+   */
   def utxoMap: TxBuilder.UTXOMap
 
   def utxos: Seq[UTXOSpendingInfo] = utxoMap.values.toSeq
@@ -63,16 +63,16 @@ sealed abstract class TxBuilder {
   def feeRate: FeeUnit
 
   /**
-    * This is where all the money that is NOT sent to destination outputs is spent too.
-    * If we don't specify a change output, a large miner fee may be paid as more than likely
-    * the difference between [[creditingAmount]] and [[destinationAmount]] is not a market rate miner fee
-    */
+   * This is where all the money that is NOT sent to destination outputs is spent too.
+   * If we don't specify a change output, a large miner fee may be paid as more than likely
+   * the difference between [[creditingAmount]] and [[destinationAmount]] is not a market rate miner fee
+   */
   def changeSPK: ScriptPubKey
 
   /**
-    * The network that this [[org.scash.core.wallet.builder.TxBuilder]] is signing a transaction for.
-    * An example could be [[MainNet]]
-    */
+   * The network that this [[org.scash.core.wallet.builder.TxBuilder]] is signing a transaction for.
+   * An example could be [[MainNet]]
+   */
   def network: NetworkParameters
 
   /** The outpoints that we are using in this transaction */
@@ -82,20 +82,20 @@ sealed abstract class TxBuilder {
   def redeemScriptOpt: Seq[Option[ScriptPubKey]] = utxos.map(_.redeemScriptOpt)
 
   /**
-    * The unsigned version of the tx with dummy signatures instead of real signatures in
-    * the [[ScriptSignature]]s. This unsigned transaction has fee estimation done against
-    * the [[org.scash.core.wallet.fee.SatoshisPerByte]] you passed in as a parameter
-    * the change output is calculated and ready for signing.
-    */
+   * The unsigned version of the tx with dummy signatures instead of real signatures in
+   * the [[ScriptSignature]]s. This unsigned transaction has fee estimation done against
+   * the [[org.scash.core.wallet.fee.SatoshisPerByte]] you passed in as a parameter
+   * the change output is calculated and ready for signing.
+   */
   def unsignedTx(implicit ec: ExecutionContext): Future[Transaction]
 
   def sign(implicit ec: ExecutionContext): Future[Transaction]
 }
 
 /**
-  * The [[org.scash.core.wallet.builder.TxBuilder]] for the
-  * bitcoin network(s) [[BitcoinNetwork]]
-  */
+ * The [[org.scash.core.wallet.builder.TxBuilder]] for the
+ * bitcoin network(s) [[BitcoinNetwork]]
+ */
 sealed abstract class BitcoinTxBuilder extends TxBuilder {
 
   private val logger = BitcoinSLogger.logger
@@ -141,15 +141,15 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
   }
 
   /**
-    * Signs the given transaction and then returns a signed tx that spends
-    * all of the given outputs.
-    * Checks the given invariants when the signing process is done
-    * An example of some invariants is that the fee on the signed transaction below a certain amount,
-    * or that RBF is enabled on the signed transaction.
-    *
-    * @param invariants - invariants that should hold true when we are done signing the transaction
-    * @return the signed transaction, or a [[TxBuilderError]] indicating what went wrong when signing the tx
-    */
+   * Signs the given transaction and then returns a signed tx that spends
+   * all of the given outputs.
+   * Checks the given invariants when the signing process is done
+   * An example of some invariants is that the fee on the signed transaction below a certain amount,
+   * or that RBF is enabled on the signed transaction.
+   *
+   * @param invariants - invariants that should hold true when we are done signing the transaction
+   * @return the signed transaction, or a [[TxBuilderError]] indicating what went wrong when signing the tx
+   */
   def sign(invariants: (Seq[BitcoinUTXOSpendingInfo], Transaction) => Boolean)(implicit ec: ExecutionContext): Future[Transaction] = {
     val utxos = utxoMap.values.toList
     val signedTxWithFee = unsignedTx.flatMap { utx: Transaction =>
@@ -170,9 +170,9 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
   }
 
   private def loop(
-                    remaining: List[BitcoinUTXOSpendingInfo],
-                    txInProgress: Transaction,
-                    dummySignatures: Boolean)(implicit ec: ExecutionContext): Future[Transaction] = remaining match {
+    remaining: List[BitcoinUTXOSpendingInfo],
+    txInProgress: Transaction,
+    dummySignatures: Boolean)(implicit ec: ExecutionContext): Future[Transaction] = remaining match {
     case Nil => Future.successful(txInProgress)
     case info :: t =>
       val partiallySigned = signAndAddInput(info, txInProgress, dummySignatures)
@@ -180,12 +180,12 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
   }
 
   /**
-    * This function creates a newly signed input, and then adds it to the unsigned transaction
-    *
-    * @param utxo       - the information needed to validly spend the given output
-    * @param unsignedTx - the transaction that we are spending this output in
-    * @return either the transaction with the signed input added, or a [[TxBuilderError]]
-    */
+   * This function creates a newly signed input, and then adds it to the unsigned transaction
+   *
+   * @param utxo       - the information needed to validly spend the given output
+   * @param unsignedTx - the transaction that we are spending this output in
+   * @return either the transaction with the signed input added, or a [[TxBuilderError]]
+   */
   private def signAndAddInput(utxo: BitcoinUTXOSpendingInfo, unsignedTx: Transaction, dummySignatures: Boolean)(implicit ec: ExecutionContext): Future[Transaction] = {
     val outpoint = utxo.outPoint
     val output = utxo.output
@@ -210,8 +210,8 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
             case _: MultiSignatureScriptPubKey => MultiSigSigner.sign(signers, output, unsignedTx, inputIndex, hashType, dummySignatures).map(_.transaction)
             case _: P2SHScriptPubKey => Future.fromTry(TxBuilderError.NestedP2SHSPK)
             case _: CSVScriptPubKey | _: CLTVScriptPubKey
-                 | _: NonStandardScriptPubKey | _: EscrowTimeoutScriptPubKey
-                 | EmptyScriptPubKey => Future.fromTry(TxBuilderError.NoSigner)
+              | _: NonStandardScriptPubKey | _: EscrowTimeoutScriptPubKey
+              | EmptyScriptPubKey => Future.fromTry(TxBuilderError.NoSigner)
           }
         case p2sh: P2SHScriptPubKey =>
           redeemScriptOpt match {
@@ -246,12 +246,12 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
   }
 
   /**
-    * Returns a valid sequence number for the given [[ScriptNumber]]
-    * A transaction needs a valid sequence number to spend a OP_CHECKSEQUENCEVERIFY script.
-    * See BIP68/112 for more information
-    * [[https://github.com/bitcoin/bips/blob/master/bip-0068.mediawiki]]
-    * [[https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki]]
-    */
+   * Returns a valid sequence number for the given [[ScriptNumber]]
+   * A transaction needs a valid sequence number to spend a OP_CHECKSEQUENCEVERIFY script.
+   * See BIP68/112 for more information
+   * [[https://github.com/bitcoin/bips/blob/master/bip-0068.mediawiki]]
+   * [[https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki]]
+   */
   private def solveSequenceForCSV(scriptNum: ScriptNumber): UInt32 = LockTimeInterpreter.isCSVLockByBlockHeight(scriptNum) match {
     case true =>
       //means that we need to have had scriptNum blocks bassed since this tx was included a block to be able to spend this output
@@ -267,11 +267,11 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
   }
 
   /**
-    * This helper function calculates the appropriate locktime for a transaction.
-    * To be able to spend [[CLTVScriptPubKey]]'s you need to have the transaction's
-    * locktime set to the same value (or higher) than the output it is spending.
-    * See BIP65 for more info
-    */
+   * This helper function calculates the appropriate locktime for a transaction.
+   * To be able to spend [[CLTVScriptPubKey]]'s you need to have the transaction's
+   * locktime set to the same value (or higher) than the output it is spending.
+   * See BIP65 for more info
+   */
   private def calcLockTime(utxos: Seq[BitcoinUTXOSpendingInfo]): Try[UInt32] = {
     @tailrec
     def loop(remaining: Seq[BitcoinUTXOSpendingInfo], currentLockTime: UInt32): Try[UInt32] = remaining match {
@@ -302,9 +302,9 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
             loop(t, currentLockTime)
           }
         case _: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: P2SHScriptPubKey
-             | _: NonStandardScriptPubKey
-             | EmptyScriptPubKey | _: CSVScriptPubKey
-             | _: EscrowTimeoutScriptPubKey =>
+          | _: NonStandardScriptPubKey
+          | EmptyScriptPubKey | _: CSVScriptPubKey
+          | _: EscrowTimeoutScriptPubKey =>
           //non of these scripts affect the locktime of a tx
           loop(t, currentLockTime)
       }
@@ -314,11 +314,11 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
   }
 
   /**
-    * This helper function calculates the appropriate sequence number for each transaction input.
-    * [[CLTVScriptPubKey]] and [[CSVScriptPubKey]]'s need certain sequence numbers on the inputs
-    * to make them spendable.
-    * See BIP68/112 and BIP65 for more info
-    */
+   * This helper function calculates the appropriate sequence number for each transaction input.
+   * [[CLTVScriptPubKey]] and [[CSVScriptPubKey]]'s need certain sequence numbers on the inputs
+   * to make them spendable.
+   * See BIP68/112 and BIP65 for more info
+   */
   private def calcSequenceForInputs(utxos: Seq[UTXOSpendingInfo]): Seq[TransactionInput] = {
     @tailrec
     def loop(remaining: Seq[UTXOSpendingInfo], accum: Seq[TransactionInput]): Seq[TransactionInput] = remaining match {
@@ -341,7 +341,7 @@ sealed abstract class BitcoinTxBuilder extends TxBuilder {
               loop(i +: t, accum)
             } else loop(t, accum)
           case _: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: NonStandardScriptPubKey
-               | EmptyScriptPubKey | _: EscrowTimeoutScriptPubKey =>
+            | EmptyScriptPubKey | _: EscrowTimeoutScriptPubKey =>
             //none of these script types affect the sequence number of a tx
             //the sequence only needs to be adjustd if we have replace by fee (RBF) enabled
             //see BIP125 for more information
@@ -396,9 +396,9 @@ object TxBuilder {
   }
 
   /**
-    * Checks that the [[TxBuilder.creditingAmount]] >= [[TxBuilder.destinationAmount]]
-    * and then does a sanity check on the tx's fee
-    */
+   * Checks that the [[TxBuilder.creditingAmount]] >= [[TxBuilder.destinationAmount]]
+   * and then does a sanity check on the tx's fee
+   */
   def sanityAmountChecks(txBuilder: TxBuilder, signedTx: Transaction): Try[Unit] = {
     val spentAmount: CurrencyUnit = signedTx.outputs.map(_.value).fold(CurrencyUnits.zero)(_ + _)
     val creditingAmount = txBuilder.creditingAmount
@@ -418,13 +418,13 @@ object TxBuilder {
   }
 
   /**
-    * Checks if the fee is within a 'valid' range
-    *
-    * @param estimatedFee the estimated amount of fee we should pay
-    * @param actualFee    the actual amount of fee the transaction pays
-    * @param feeRate      the fee rate in satoshis/vbyte we paid per byte on this tx
-    * @return
-    */
+   * Checks if the fee is within a 'valid' range
+   *
+   * @param estimatedFee the estimated amount of fee we should pay
+   * @param actualFee    the actual amount of fee the transaction pays
+   * @param feeRate      the fee rate in satoshis/vbyte we paid per byte on this tx
+   * @return
+   */
   def isValidFeeRange(estimatedFee: CurrencyUnit, actualFee: CurrencyUnit, feeRate: FeeUnit): Try[Unit] = {
 
     //what the number '25' represents is the allowed variance -- in bytes -- between the size of the two
@@ -451,26 +451,26 @@ object BitcoinTxBuilder {
   type UTXOMap = Map[TransactionOutPoint, BitcoinUTXOSpendingInfo]
 
   private case class BitcoinTxBuilderImpl(
-                                           destinations: Seq[TransactionOutput],
-                                           utxoMap: UTXOMap,
-                                           feeRate: FeeUnit,
-                                           changeSPK: ScriptPubKey,
-                                           network: BitcoinNetwork) extends BitcoinTxBuilder
+    destinations: Seq[TransactionOutput],
+    utxoMap: UTXOMap,
+    feeRate: FeeUnit,
+    changeSPK: ScriptPubKey,
+    network: BitcoinNetwork) extends BitcoinTxBuilder
 
   private val logger = BitcoinSLogger.logger
 
   /**
-    * @param destinations where the money is going in the signed tx
-    * @param utxos        extra information needed to spend the outputs in the creditingTxs
-    * @param feeRate      the desired fee rate for this tx
-    * @param changeSPK    where we should send the change from the creditingTxs
-    * @return either a instance of a [[TxBuilder]],
-    *         from which you can call [[TxBuilder.sign]] to generate a signed tx,
-    *         or a [[TxBuilderError]]
-    */
+   * @param destinations where the money is going in the signed tx
+   * @param utxos        extra information needed to spend the outputs in the creditingTxs
+   * @param feeRate      the desired fee rate for this tx
+   * @param changeSPK    where we should send the change from the creditingTxs
+   * @return either a instance of a [[TxBuilder]],
+   *         from which you can call [[TxBuilder.sign]] to generate a signed tx,
+   *         or a [[TxBuilderError]]
+   */
   def apply(
-             destinations: Seq[TransactionOutput],
-             utxos: BitcoinTxBuilder.UTXOMap, feeRate: FeeUnit, changeSPK: ScriptPubKey, network: BitcoinNetwork): Future[BitcoinTxBuilder] = {
+    destinations: Seq[TransactionOutput],
+    utxos: BitcoinTxBuilder.UTXOMap, feeRate: FeeUnit, changeSPK: ScriptPubKey, network: BitcoinNetwork): Future[BitcoinTxBuilder] = {
     if (feeRate.toLong <= 0) {
       Future.fromTry(TxBuilderError.LowFee)
     } else {
@@ -479,9 +479,9 @@ object BitcoinTxBuilder {
   }
 
   def apply(
-             destinations: Seq[TransactionOutput],
-             utxos: Seq[BitcoinUTXOSpendingInfo], feeRate: FeeUnit, changeSPK: ScriptPubKey,
-             network: BitcoinNetwork): Future[BitcoinTxBuilder] = {
+    destinations: Seq[TransactionOutput],
+    utxos: Seq[BitcoinUTXOSpendingInfo], feeRate: FeeUnit, changeSPK: ScriptPubKey,
+    network: BitcoinNetwork): Future[BitcoinTxBuilder] = {
     @tailrec
     def loop(utxos: Seq[UTXOSpendingInfo], accum: UTXOMap): UTXOMap = utxos match {
       case Nil => accum

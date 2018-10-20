@@ -1,7 +1,7 @@
 package org.scash.core.serializers.script
 
 import org.scash.core.protocol.CompactSizeUInt
-import org.scash.core.protocol.script.{EmptyScriptPubKey, ScriptPubKey}
+import org.scash.core.protocol.script.{ EmptyScriptPubKey, ScriptPubKey }
 import org.scash.core.script.constant.ScriptToken
 import org.scash.core.serializers.RawBitcoinSerializer
 import scodec.bits.ByteVector

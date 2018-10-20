@@ -1,11 +1,13 @@
 package org.scash.rpc.client
 
-import org.scash.core.crypto.{DoubleSha256Digest, ECPrivateKey}
+import org.scash.core.crypto.DoubleSha256Digest
+import org.scash.core.protocol.script.ScriptPubKey
+import play.api.libs.json.{ Json, Writes }
+import org.scash.rpc.serializers.JsonSerializers._
+import org.scash.core.crypto.{ DoubleSha256Digest, ECPrivateKey }
 import org.scash.core.currency.Bitcoins
 import org.scash.core.number.UInt32
 import org.scash.core.protocol.BitcoinAddress
-import org.scash.core.protocol.script.ScriptPubKey
-import play.api.libs.json.{Json, Writes}
 
 object RpcOpts {
   case class FundRawTransactionOptions(

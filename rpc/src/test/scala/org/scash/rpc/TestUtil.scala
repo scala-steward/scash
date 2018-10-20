@@ -1,17 +1,17 @@
 package org.scash.rpc
 
-import java.io.{File, PrintWriter}
+import java.io.{ File, PrintWriter }
 import java.net.URI
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import org.scash.rpc.client.BitcoindRpcClient
-import org.scash.rpc.config.{BitcoindAuthCredentials, BitcoindInstance}
+import org.scash.rpc.config.{ BitcoindAuthCredentials, BitcoindInstance }
 import org.scash.core.config.RegTest
 import org.scash.core.util.BitcoinSLogger
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration.{ DurationInt, FiniteDuration }
 import scala.util.Try
 
 trait TestUtil extends BitcoinSLogger {

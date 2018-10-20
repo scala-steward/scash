@@ -6,23 +6,23 @@ import java.util.Scanner
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import org.scash.core.crypto.{DoubleSha256Digest, ECPublicKey}
+import org.scash.core.crypto.{ DoubleSha256Digest, ECPublicKey }
 import org.scash.core.currency.Bitcoins
-import org.scash.core.protocol.transaction.{Transaction, TransactionInput, TransactionOutPoint}
-import org.scash.rpc.client.{BitcoindRpcClient, RpcOpts}
-import org.scalatest.{AsyncFlatSpec, BeforeAndAfter, BeforeAndAfterAll}
+import org.scash.core.protocol.transaction.{ Transaction, TransactionInput, TransactionOutPoint }
+import org.scash.rpc.client.{ BitcoindRpcClient, RpcOpts }
+import org.scalatest.{ AsyncFlatSpec, BeforeAndAfter, BeforeAndAfterAll }
 import org.scash.core.number.Int64
 import org.scash.core.protocol.P2PKHAddress
-import org.scash.core.protocol.script.{P2SHScriptSignature, ScriptPubKey, ScriptSignature}
+import org.scash.core.protocol.script.{ P2SHScriptSignature, ScriptPubKey, ScriptSignature }
 import org.scash.core.wallet.fee.SatoshisPerByte
-import org.scash.rpc.jsonmodels.{GetBlockWithTransactionsResult, GetTransactionResult, RpcAddress}
-import org.scash.core.crypto.{DoubleSha256Digest, ECPrivateKey, ECPublicKey}
-import org.scash.core.currency.{Bitcoins, Satoshis}
-import org.scash.core.number.{Int64, UInt32}
-import org.scash.core.protocol.{BitcoinAddress, P2PKHAddress}
+import org.scash.rpc.jsonmodels.{ GetBlockWithTransactionsResult, GetTransactionResult, RpcAddress }
+import org.scash.core.crypto.{ DoubleSha256Digest, ECPrivateKey, ECPublicKey }
+import org.scash.core.currency.{ Bitcoins, Satoshis }
+import org.scash.core.number.{ Int64, UInt32 }
+import org.scash.core.protocol.{ BitcoinAddress, P2PKHAddress }
 import org.scash.core.util.BitcoinSLogger
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.DurationInt
 import scala.util.Try
 
@@ -824,13 +824,6 @@ class BitcoindRpcClientTest
       succeed
     }
 
-    client.getRawChangeAddress(RpcOpts.P2SHSegwit()).map { address =>
-      succeed
-    }
-
-    client.getRawChangeAddress(RpcOpts.Bech32()).map { address =>
-      succeed
-    }
   }
 
   it should "be able to get the amount recieved by some address" in {

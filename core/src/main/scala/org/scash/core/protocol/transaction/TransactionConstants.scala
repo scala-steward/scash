@@ -1,6 +1,6 @@
 package org.scash.core.protocol.transaction
 
-import org.scash.core.number.{Int32, UInt32}
+import org.scash.core.number.{ Int32, UInt32 }
 
 /**
  * Created by chris on 2/12/16.

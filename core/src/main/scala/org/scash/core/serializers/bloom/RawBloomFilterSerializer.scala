@@ -1,6 +1,6 @@
 package org.scash.core.serializers.bloom
 
-import org.scash.core.bloom.{BloomFilter, BloomFlag}
+import org.scash.core.bloom.{ BloomFilter, BloomFlag }
 import org.scash.core.number.UInt32
 import org.scash.core.protocol.CompactSizeUInt
 import org.scash.core.serializers.RawBitcoinSerializer

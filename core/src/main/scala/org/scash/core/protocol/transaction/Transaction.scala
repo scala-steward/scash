@@ -1,10 +1,10 @@
 package org.scash.core.protocol.transaction
 
 import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.number.{Int32, UInt32}
+import org.scash.core.number.{ Int32, UInt32 }
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.transaction.RawBaseTransactionParser
-import org.scash.core.util.{CryptoUtil, Factory}
+import org.scash.core.util.{ CryptoUtil, Factory }
 import scodec.bits.ByteVector
 
 /**

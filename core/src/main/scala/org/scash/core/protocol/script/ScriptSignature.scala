@@ -1,13 +1,13 @@
 package org.scash.core.protocol.script
 
-import org.scash.core.crypto.{ECDigitalSignature, ECPublicKey}
-import org.scash.core.protocol.{CompactSizeUInt, NetworkElement}
+import org.scash.core.crypto.{ ECDigitalSignature, ECPublicKey }
+import org.scash.core.protocol.{ CompactSizeUInt, NetworkElement }
 import org.scash.core.script.constant._
 import org.scash.core.serializers.script.ScriptParser
-import org.scash.core.util.{Factory, _}
+import org.scash.core.util.{ Factory, _ }
 import scodec.bits.ByteVector
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Created by chris on 12/26/15.

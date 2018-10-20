@@ -1,20 +1,20 @@
 package org.scash.rpc.serializers
 
 import java.io.File
-import java.net.{InetAddress, URI}
+import java.net.{ InetAddress, URI }
 
-import org.scash.core.crypto.{DoubleSha256Digest, ECPublicKey, Sha256Hash160Digest}
-import org.scash.core.currency.{Bitcoins, Satoshis}
-import org.scash.core.number.{Int32, Int64, UInt32, UInt64}
-import org.scash.core.protocol.blockchain.{Block, BlockHeader, MerkleBlock}
-import org.scash.core.protocol.script.{ScriptPubKey, ScriptSignature}
+import org.scash.core.crypto.{ DoubleSha256Digest, ECPublicKey, Sha256Hash160Digest }
+import org.scash.core.currency.{ Bitcoins, Satoshis }
+import org.scash.core.number.{ Int32, Int64, UInt32, UInt64 }
+import org.scash.core.protocol.blockchain.{ Block, BlockHeader, MerkleBlock }
+import org.scash.core.protocol.script.{ ScriptPubKey, ScriptSignature }
 import org.scash.core.protocol.transaction._
-import org.scash.core.protocol.{Address, BitcoinAddress, P2PKHAddress, P2SHAddress}
-import org.scash.core.wallet.fee.{BitcoinFeeUnit, SatoshisPerByte}
+import org.scash.core.protocol.{ Address, BitcoinAddress, P2PKHAddress, P2SHAddress }
+import org.scash.core.wallet.fee.{ BitcoinFeeUnit, SatoshisPerByte }
 import org.scash.rpc.jsonmodels.RpcAddress
 import play.api.libs.json._
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 object JsonReaders {
   // For use in implementing reads method of Reads[T] where T is constructed from a JsNumber via numFunc

@@ -4,7 +4,7 @@ import org.scash.core.crypto.TxSigComponent
 import org.scash.core.script.constant._
 import org.scash.core.script.flag.ScriptFlag
 import org.scash.core.script.result._
-import org.scash.core.util.{BitcoinSLogger, BitcoinScriptUtil}
+import org.scash.core.util.{ BitcoinSLogger, BitcoinScriptUtil }
 
 /**
  * Created by chris on 2/3/16.

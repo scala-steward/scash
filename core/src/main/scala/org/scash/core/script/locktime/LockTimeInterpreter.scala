@@ -1,9 +1,9 @@
 package org.scash.core.script.locktime
 
-import org.scash.core.number.{Int64, UInt32}
+import org.scash.core.number.{ Int64, UInt32 }
 import org.scash.core.protocol.transaction.TransactionConstants
 import org.scash.core.script.ScriptProgram
-import org.scash.core.script.constant.{ScriptConstant, ScriptNumber, ScriptToken}
+import org.scash.core.script.constant.{ ScriptConstant, ScriptNumber, ScriptToken }
 import org.scash.core.script.flag.ScriptFlagUtil
 import org.scash.core.script.result._
 import org.scash.core.util.BitcoinSLogger

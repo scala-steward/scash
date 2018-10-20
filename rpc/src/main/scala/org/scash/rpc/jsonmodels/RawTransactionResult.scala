@@ -3,9 +3,9 @@ package org.scash.rpc.jsonmodels
 import org.scash.core.crypto.DoubleSha256Digest
 import org.scash.core.currency.Bitcoins
 import org.scash.core.number.UInt32
-import org.scash.core.protocol.script.{ScriptPubKey, ScriptSignature}
-import org.scash.core.protocol.transaction.{Transaction, TransactionInput}
-import org.scash.core.protocol.{BitcoinAddress, P2PKHAddress, P2SHAddress}
+import org.scash.core.protocol.script.{ ScriptPubKey, ScriptSignature }
+import org.scash.core.protocol.transaction.{ Transaction, TransactionInput }
+import org.scash.core.protocol.{ BitcoinAddress, P2PKHAddress, P2SHAddress }
 
 sealed abstract class RawTransactionResult
 

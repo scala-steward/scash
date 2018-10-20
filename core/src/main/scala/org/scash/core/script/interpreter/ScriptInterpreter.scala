@@ -1,7 +1,7 @@
 package org.scash.core.script.interpreter
 
 import org.scash.core.consensus.Consensus
-import org.scash.core.currency.{CurrencyUnit, CurrencyUnits}
+import org.scash.core.currency.{ CurrencyUnit, CurrencyUnits }
 import org.scash.core.protocol.CompactSizeUInt
 import org.scash.core.protocol.script._
 import org.scash.core.protocol.transaction._
@@ -18,7 +18,7 @@ import org.scash.core.script.reserved._
 import org.scash.core.script.result._
 import org.scash.core.script.splice._
 import org.scash.core.script.stack._
-import org.scash.core.util.{BitcoinSLogger, BitcoinSUtil, BitcoinScriptUtil}
+import org.scash.core.util.{ BitcoinSLogger, BitcoinSUtil, BitcoinScriptUtil }
 
 import scala.annotation.tailrec
 /**

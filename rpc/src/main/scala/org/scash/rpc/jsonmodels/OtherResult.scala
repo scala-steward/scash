@@ -1,6 +1,6 @@
 package org.scash.rpc.jsonmodels
 
-import org.scash.core.crypto.{DoubleSha256Digest, ECPublicKey, Sha256Hash160Digest}
+import org.scash.core.crypto.{ DoubleSha256Digest, ECPublicKey, Sha256Hash160Digest }
 import org.scash.core.currency.Satoshis
 import org.scash.core.number.UInt32
 import org.scash.core.protocol.BitcoinAddress
