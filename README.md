@@ -6,10 +6,10 @@ This is the core functionality of scash.
 
 This repostitory includes the following functionality:
   - Native Scala objects for various protocol types ([transactions](https://github.com/scala-cash/scash/blob/master/core/src/main/scala/org/scash/core/protocol/transaction/Transaction.scala), [inputs](https://github.com/scala-cash/scash/blob/master/core/src/main/scala/org/scash/core/protocol/transaction/TransactionInput.scala), [outputs](https://github.com/scala-cash/scash/blob/master/core/src/main/scala/org/scash/core/protocol/transaction/TransactionOutput.scala), [scripts signatures](https://github.com/scala-cash/scash/blob/master/core/src/main/scala/org/scash/core/protocol/script/ScriptSignature.scala), [scriptpubkeys](https://github.com/scala-cash/scash/blob/master/core/src/main/scala/org/scash/core/protocol/script/ScriptPubKey.scala))
-  - [Serializers and deserializers for bitcoin data structures mentioned above](https://github.com/scala-cash/scash/blob/master/core/src/main/scala/org/scash/core/src/main/scala/org/bitcoins/core/serializers)
-  - [An implementation of Bitcoin's Script programming language](https://github.com/bitcoin-s/bitcoin-s-core/blob/master/core/src/main/scala/org/bitcoins/core/script) 
-    - Passes all tests found in Bitcoin Core's regression test suite called [script_test.json](https://github.com/bitcoin/bitcoin/blob/master/src/test/data/script_tests.json)
-    - Passes all tests inside of Bitcoin Core's transaction regression test suite [tx_valid.json](https://github.com/bitcoin/bitcoin/blob/master/src/test/data/tx_valid.json) / [tx_invalid.json](https://github.com/bitcoin/bitcoin/blob/master/src/test/data/tx_invalid.json) / 
+  - [Serializers and deserializers for bitcoin data structures mentioned above](https://github.com/scala-cash/scash/blob/master/core/src/main/scala/org/scash/core/src/main/scala/org/scash/core/serializers)
+  - [An implementation of Bitcoin's Script programming language](https://github.com/scala-cash/scash/blob/master/core/src/main/scala/org/scash/core/script) 
+    - Passes all tests found in Bitcoin ABC's regression test suite called [script_test.json](https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/test/data/script_tests.jsonn)
+    - Passes all tests inside of Bitcoin ABC's transaction regression test suite [tx_valid.json](https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/test/data/tx_valid.json) / [tx_invalid.json](https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/test/data/tx_invalid.json) / 
     [sighash.json](https://github.com/bitcoin/bitcoin/blob/master/src/test/data/sighash.json)
   - Integration with [bitcoin core's optimized secp256k1](https://github.com/bitcoin-core/secp256k1/) library
   - A robust set of [generators](https://github.com/scala-cash/scash/tree/master/core-gen/src/test/scala/org/scash/core/gen), which are used in property based testing
@@ -21,9 +21,14 @@ This repostitory includes the following functionality:
 
 # Design Principles
   - Immutable data structures everywhere
+  - Functional Programming following these 3 properties (WIP):
+    1. Totality
+    2. Determinism
+    3. No Side Effects
+
   - Algebraic Data Types to allow the compiler to check for exhaustiveness on match statements
   - Using [property based testing](http://www.scalatest.org/user_guide/property_based_testing) to test robustness of code 
-
+ 
 # Setting up libsecp256k1
 
 libsecp256k1 needs to be built with the java interface enabled. Use the following commands to build secp256k1 with jni enabled. [Here is the official documentation for doing this in secp256k1](https://github.com/bitcoin-core/secp256k1/blob/master/src/java/org/bitcoin/NativeSecp256k1.java#L35)
@@ -63,7 +68,6 @@ $ sbt assembly
 [warn] Merging 'META-INF/MANIFEST.MF' with strategy 'discard'
 [warn] Strategy 'discard' was applied to a file
 [info] SHA-1: 6ea465dcc996cefb68fc334778cac60d892bd7f0
-[info] Packaging /home/chris/dev/bitcoin-s-core/target/scala-2.11/bitcoin-s-core-assembly-0.0.1.jar ...
 [info] Done packaging.
 [success] Total time: 337 s, completed Jul 20, 2017 1:53:11 PM
 ```
@@ -106,7 +110,7 @@ Transactions are run through the interpreter to check the validity of the Transa
 Here is an example of a transaction spending a scriptPubKey which is correctly evaluated with our interpreter implementation:
 
 ```scala
-chris@chris:~/dev/bitcoins-core$ sbt console
+sbt console
 ...
 
 scala> import org.scash.core.protocol.script._
@@ -144,7 +148,7 @@ res0: org.scash.core.script.result.ScriptResult = ScriptOk
 To run the entire test suite all you need to do is run the following command
 ```scala 
 
-chris@chris:~/dev/bitcoins-core$ sbt test
+/sbt test
 [info] Elapsed time: 4 min 36.760 sec 
 [info] ScalaCheck
 [info] Passed: Total 149, Failed 0, Errors 0, Passed 149
@@ -160,7 +164,7 @@ chris@chris:~/dev/bitcoins-core$ sbt test
 
 To run a specific suite of tests you can specify the suite name in the following way
 ```scala
-chris@chris:~/dev/bitcoins-core$ sbt
+sbt
 > testOnly *ScriptInterpreterTest*
 [info] ScriptInterpreterTest:
 [info] ScriptInterpreter

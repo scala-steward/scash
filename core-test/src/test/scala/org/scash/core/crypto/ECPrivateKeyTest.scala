@@ -21,7 +21,7 @@ class ECPrivateKeyTest extends FlatSpec with MustMatchers {
     CryptoTestUtil.privateKey.publicKey.hex must be(BitcoinSUtil.encodeHex(bitcoinjPublicKeyBytes))
   }
 
-  it must "create a bitcoin-s private key from a bitcoinj private key, then convert to the same public key" in {
+  it must "create a scash private key from a bitcoinj private key, then convert to the same public key" in {
     val bitcoinjKey = new org.bitcoinj.core.ECKey()
     val bitcoinsPrivKey = ECPrivateKey(ByteVector(bitcoinjKey.getSecretBytes))
     val bitcoinsPublicKey = bitcoinsPrivKey.publicKey
@@ -30,7 +30,7 @@ class ECPrivateKeyTest extends FlatSpec with MustMatchers {
     bitcoinsPublicKey.bytes.toArray must be(bitcoinjPublicKey)
   }
 
-  it must "create a bitcionj private key from a bitcoins private key and get the same public key" in {
+  it must "create a bitcionj private key from a scash private key and get the same public key" in {
     val bitcoinsPrivKey = ECPrivateKey.freshPrivateKey
     val bitcoinjPrivKey = org.bitcoinj.core.ECKey.fromPrivate(bitcoinsPrivKey.bytes.toArray)
     val bitcoinjPublicKey = bitcoinjPrivKey.getPubKey

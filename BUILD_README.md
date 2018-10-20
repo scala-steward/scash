@@ -3,7 +3,7 @@ SBT - http://www.scala-sbt.org/download.html
 With SBT downloaded, open a terminal, and go to the directory in which you'd like to install scash:
 
 ```shell
-$ git clone https://github.com/bitcoin-s/scash.git
+$ git clone https://github.com/scala-cash/scash.git
 ```
 scash uses secp256k1 for signature verfication, you need to compile it and install it on your machine:
 

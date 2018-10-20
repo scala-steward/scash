@@ -62,10 +62,10 @@ sealed abstract class TransactionSignatureSerializer {
         // OP_CODESEPARATOR instruction having no purpose as it was only meant to be used internally, not actually
         // ever put into scripts. Deleting OP_CODESEPARATOR is a step that should never be required but if we don't
         // do it, we could split off the main chain.
-        logger.trace("Before Bitcoin-S Script to be connected: " + script)
+        logger.trace("Before scash Script to be connected: " + script)
         val scriptWithOpCodeSeparatorsRemoved: Seq[ScriptToken] = removeOpCodeSeparators(script)
 
-        logger.trace("After Bitcoin-S Script to be connected: " + scriptWithOpCodeSeparatorsRemoved)
+        logger.trace("After scash Script to be connected: " + scriptWithOpCodeSeparatorsRemoved)
 
         val inputToSign = inputSigsRemoved(inputIndex.toInt)
 

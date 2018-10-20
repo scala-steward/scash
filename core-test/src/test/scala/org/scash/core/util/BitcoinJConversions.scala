@@ -24,7 +24,7 @@ trait BitcoinjConversions {
   private def params = TestNet3Params.get
   private def logger = LoggerFactory.getLogger(this.getClass().toString)
   /**
-   * Converts a bitcoinj script to a bitcoin-s ScriptPubKey
+   * Converts a bitcoinj script to a scash ScriptPubKey
    *
    * @param bitcoinjScript
    * @return
@@ -154,7 +154,7 @@ trait BitcoinjConversions {
   def publicKey(key: ECPublicKey): ECKey = publicKey(key.bytes)
 
   /**
-   * Builds a bitcoinj transaction out of a bitcoin-s transaction
+   * Builds a bitcoinj transaction out of a scash transaction
    *
    * @param tx
    * @return

@@ -41,7 +41,7 @@ class ECPublicKeyTest extends FlatSpec with MustMatchers {
 
   }
 
-  it must "verify a piece of data was signed with a bitcoins private key inside of bitcoinj" in {
+  it must "verify a piece of data was signed with a scash private key inside of bitcoinj" in {
     val bitcoinsPrivKey = ECPrivateKey.freshPrivateKey
     val hash = DoubleSha256Digest(ByteVector(Sha256Hash.ZERO_HASH.getBytes))
     val bitcoinsSignature = bitcoinsPrivKey.sign(hash)

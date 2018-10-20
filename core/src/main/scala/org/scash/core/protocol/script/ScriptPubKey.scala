@@ -389,7 +389,7 @@ object CLTVScriptPubKey extends ScriptFactory[CLTVScriptPubKey] {
    * [[UndefinedOP_NOP]] in the script, which means we definitely don't have a valid locktime script
    * See this example of what happened before we added this check:
    *
-   * [[https://travis-ci.org/bitcoin-s/scash/builds/201652191#L2526]]
+   * [[https://travis-ci.org/bitcoin-s/bitcoin-s-core/builds/201652191#L2526]]
    */
   def validScriptAfterLockTime(asm: Seq[ScriptToken]): Boolean = {
     !asm.exists(_.isInstanceOf[UndefinedOP_NOP])

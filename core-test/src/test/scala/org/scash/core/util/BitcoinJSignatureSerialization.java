@@ -181,7 +181,7 @@ public class BitcoinJSignatureSerialization {
             logger.error("bitcoins: " + hashHex);
             logger.error("bitcoinj: " + referenceImplementationHex );
             throw new RuntimeException("Difference between BitcoinJSignatureSerialization & Actual Bitcoinj\n" +
-                "bitcoin-s: " + hashHex + "\n" +
+                "scash: " + hashHex + "\n" +
                 "bitcoin-j: " + referenceImplementationHex);
         }
         return hash.getBytes();
