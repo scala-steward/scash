@@ -11,7 +11,7 @@ import scodec.bits.ByteVector
 
 /**
  * Compact sized unsigned integer as described in:
- * https://bitcoin.org/en/developer-reference#compactsize-unsigned-integers
+ * https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/transaction.md#compactsize-unsigned-integers
  */
 sealed abstract class CompactSizeUInt extends NetworkElement {
 
@@ -63,7 +63,7 @@ object CompactSizeUInt extends Factory[CompactSizeUInt] {
   /**
    * This function is responsible for calculating what the compact size unsigned integer is for a
    * sequence of bytes
-   * https://bitcoin.org/en/developer-reference#compactsize-unsigned-integers.
+   * https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/transaction.md#compactsize-unsigned-integers
    */
   def calculateCompactSizeUInt(bytes: ByteVector): CompactSizeUInt = {
     //means we can represent the number with a single byte
