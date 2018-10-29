@@ -93,7 +93,7 @@ class ScriptSignatureTest extends FlatSpec with MustMatchers {
     scriptSig.hex must be(TestUtil.p2pkScriptSig.hex)
   }
 
-  /*
+
   it must "read sighash.json and return result" in {
     import org.scash.core.protocol.script.testprotocol.SignatureHashTestCaseProtocol._
     //["raw_transaction, script, input_index, hashType, signature_hash (result)"],
@@ -128,5 +128,4 @@ class ScriptSignatureTest extends FlatSpec with MustMatchers {
       hashForSig must be(DoubleSha256Digest(flipHash))
     }
   }
-*/
 }
