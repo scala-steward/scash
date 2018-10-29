@@ -27,7 +27,7 @@ sealed abstract class TransactionSignatureSerializer {
   private lazy val errorHash: DoubleSha256Digest = DoubleSha256Digest(BitcoinSUtil.decodeHex("0100000000000000000000000000000000000000000000000000000000000000"))
 
   /**
-   * Implements the signature serialization algorithim that Satoshi Nakamoto originally created
+   * Implements the signature serialization algorithm that Satoshi Nakamoto originally created
    * and the new signature serialization algorithm as specified by BIP143
    * [[https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki]]
    * [[https://github.com/bitcoin/bitcoin/blob/f8528134fc188abc5c7175a19680206964a8fade/src/script/interpreter.cpp#L1113]]
@@ -55,24 +55,14 @@ sealed abstract class TransactionSignatureSerializer {
         inputSigsRemoved.map(input =>
           require(input.scriptSignature.asm.isEmpty, "Input asm was not empty " + input.scriptSignature.asm))
 
-        // This step has no purpose beyond being synchronized with Bitcoin Core's bugs. OP_CODESEPARATOR
-        // is a legacy holdover from a previous, broken design of executing scripts that shipped in Bitcoin 0.1.
-        // It was seriously flawed and would have let anyone take anyone elses money. Later versions switched to
-        // the design we use today where scripts are executed independently but share a stack. This left the
-        // OP_CODESEPARATOR instruction having no purpose as it was only meant to be used internally, not actually
-        // ever put into scripts. Deleting OP_CODESEPARATOR is a step that should never be required but if we don't
-        // do it, we could split off the main chain.
-        logger.trace("Before scash Script to be connected: " + script)
-        val scriptWithOpCodeSeparatorsRemoved: Seq[ScriptToken] = removeOpCodeSeparators(script)
-
-        logger.trace("After scash Script to be connected: " + scriptWithOpCodeSeparatorsRemoved)
+        logger.trace("After scash Script to be connected: " + script)
 
         val inputToSign = inputSigsRemoved(inputIndex.toInt)
 
         // Set the input to the script of its output. Bitcoin Core does this but the step has no obvious purpose as
         // the signature covers the hash of the prevout transaction which obviously includes the output script
         // already. Perhaps it felt safer to him in some way, or is another leftover from how the code was written.
-        val scriptSig = ScriptSignature.fromAsm(scriptWithOpCodeSeparatorsRemoved)
+        val scriptSig = ScriptSignature.fromAsm(script)
         logger.trace(s"scriptSig $scriptSig")
         val inputWithConnectedScript = TransactionInput(inputToSign.previousOutput, scriptSig, inputToSign.sequence)
 
@@ -211,13 +201,6 @@ sealed abstract class TransactionSignatureSerializer {
     BaseTransaction(spendingTransaction.version, Seq(input), spendingTransaction.outputs, spendingTransaction.lockTime)
   }
 
-  /** Removes [[OP_CODESEPARATOR]] operations then returns the script. */
-  def removeOpCodeSeparators(script: Seq[ScriptToken]): Seq[ScriptToken] = {
-    if (script.contains(OP_CODESEPARATOR)) {
-      val scriptWithoutOpCodeSeparators: Seq[ScriptToken] = script.filterNot(_ == OP_CODESEPARATOR)
-      scriptWithoutOpCodeSeparators
-    } else script
-  }
 }
 
 object TransactionSignatureSerializer extends TransactionSignatureSerializer
