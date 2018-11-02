@@ -56,6 +56,8 @@ object HashType extends Factory[HashType] {
 
   def isSigHashSingle(num: Int32): Boolean = (num & Int32(0x1f)) == Int32(3)
 
+  def isSigHashForkId(num: Int32): Boolean = (num & Int32(0x40)) == Int32(0x40)
+
   def isSigHashAnyoneCanPay(num: Int32): Boolean = (num & Int32(0x80)) == Int32(0x80)
 
   def isSigHashAllAnyoneCanPay(num: Int32): Boolean = {
@@ -123,6 +125,8 @@ object HashType extends Factory[HashType] {
    */
   val sigHashAnyoneCanPayNum = Int32(0x80)
 
+  val sigHashForkid = 0x40.toByte
+
   val sigHashAnyoneCanPayByte = 0x80.toByte
 
   val sigHashAnyoneCanPay: SIGHASH_ANYONECANPAY = SIGHASH_ANYONECANPAY(sigHashAnyoneCanPayNum)
@@ -157,8 +161,6 @@ object HashType extends Factory[HashType] {
 
   /**
    * Checks if the given digital signature has a valid hash type
-   * Mimics this functionality inside of Bitcoin Core
-   * https://github.com/bitcoin/bitcoin/blob/b83264d9c7a8ddb79f64bd9540caddc8632ef31f/src/script/interpreter.cpp#L186
    */
   def isDefinedHashtypeSignature(sig: ECDigitalSignature): Boolean = {
     sig.bytes.nonEmpty && hashTypeBytes.contains(sig.bytes.last)

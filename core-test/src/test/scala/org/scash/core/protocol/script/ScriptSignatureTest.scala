@@ -4,11 +4,12 @@ import org.scash.core.crypto._
 import org.scash.core.currency.CurrencyUnits
 import org.scash.core.number.Int32
 import org.scash.core.policy.Policy
-import org.scash.core.protocol.script.testprotocol.SignatureHashTestCase
+import org.scash.core.protocol.script.testprotocol.{ LegacySignatureHashTestCase, SignatureHashTestCase }
 import org.scash.core.protocol.transaction.{ Transaction, TransactionOutput }
 import org.scash.core.script.crypto.{ HashType, SIGHASH_ALL }
 import org.scash.core.serializers.script.RawScriptSignatureParser
 import org.scash.core.util.{ BitcoinSLogger, BitcoinSUtil, TestUtil }
+import org.scash.core.script.flag.{ ScriptEnableReplayProtection, ScriptEnableSigHashForkId }
 import org.scalatest.{ FlatSpec, MustMatchers }
 import scodec.bits.ByteVector
 import spray.json._
@@ -93,39 +94,86 @@ class ScriptSignatureTest extends FlatSpec with MustMatchers {
     scriptSig.hex must be(TestUtil.p2pkScriptSig.hex)
   }
 
-
-  it must "read sighash.json and return result" in {
-    import org.scash.core.protocol.script.testprotocol.SignatureHashTestCaseProtocol._
-    //["raw_transaction, script, input_index, hashType, signature_hash (result)"],
-    /*
-    val lines =
-      """
-        | [
-        | 	["a0aa3126041621a6dea5b800141aa696daf28408959dfb2df96095db9fa425ad3f427f2f6103000000015360290e9c6063fa26912c2e7fb6a0ad80f1c5fea1771d42f12976092e7a85a4229fdb6e890000000001abc109f6e47688ac0e4682988785744602b8c87228fcef0695085edf19088af1a9db126e93000000000665516aac536affffffff8fe53e0806e12dfd05d67ac68f4768fdbe23fc48ace22a5aa8ba04c96d58e2750300000009ac51abac63ab5153650524aa680455ce7b000000000000499e50030000000008636a00ac526563ac5051ee030000000003abacabd2b6fe000000000003516563910fb6b5", "65", 0, -1391424484, "48d6a1bd2cd9eec54eb866fc71209418a950402b5d7e52363bfb75c98e141175"]
-        | ]
-        |
-      """.stripMargin
-*/
+  it must "read sighash.json and return result for all types of sigs" in {
+    import org.scash.core.protocol.script.testprotocol.HashTestCaseProtocol._
+    //"raw_transaction,
+    // script,
+    // input_index,
+    // hashType,
+    // signature_hash (regular) bip143,
+    // signature_hash old(no forkid),
+    // signature_hash(replay protected)"
 
     val source = Source.fromURL(this.getClass.getResource("/sighash.json"))
     val lines = try source.getLines.filterNot(_.isEmpty).map(_.trim).mkString("\n") finally source.close()
-    val testCases: Seq[SignatureHashTestCase] = lines.parseJson.convertTo[Seq[SignatureHashTestCase]]
+    val testCases = lines.parseJson.convertTo[Seq[SignatureHashTestCase]]
 
     for {
-      testCase <- testCases
+      testCaseI <- testCases.zipWithIndex
     } yield {
-      logger.info("testCase: " + testCase)
+      val (test, _) = testCaseI
+
+      Transaction(test.transaction.hex) must be(test.transaction)
+
+      val output = TransactionOutput(CurrencyUnits.zero, test.script)
+
+      val regTx = TxSigComponent(
+        test.transaction,
+        test.inputIndex,
+        output,
+        List(ScriptEnableSigHashForkId))
+
+      val oldTx = TxSigComponent(
+        test.transaction,
+        test.inputIndex,
+        output,
+        (Policy.standardFlags.toSet - ScriptEnableSigHashForkId).toList)
+
+      val repTx = TxSigComponent(
+        test.transaction,
+        test.inputIndex,
+        output,
+        List(ScriptEnableReplayProtection, ScriptEnableSigHashForkId))
+
+      Vector(regTx, oldTx, repTx)
+        .map(TransactionSignatureSerializer.hashForSignature(_, test.hashType))
+        .zip(List(test.regularSigHash.hex, test.noForkKidSigHash.hex, test.replayProtectedSigHash.hex)
+          .map(BitcoinSUtil.flipEndianness))
+        .map { case (sig, test) => sig must be(DoubleSha256Digest(test)) }
+    }
+  }
+
+  it must "read sighash_bip143.json and return result" in {
+    import org.scash.core.protocol.script.testprotocol.HashTestCaseProtocol._
+    //"raw_transaction,
+    // script,
+    // input_index,
+    // hashType,
+    // signature_ bip143
+
+    val source = Source.fromURL(this.getClass.getResource("/sighash_bip143.json"))
+    val lines = try source.getLines.filterNot(_.isEmpty).map(_.trim).mkString("\n") finally source.close()
+    val testCases = lines.parseJson.convertTo[Seq[LegacySignatureHashTestCase]]
+
+    for {
+      testCaseI <- testCases.zipWithIndex
+    } yield {
+      val (testCase, _) = testCaseI
+
       Transaction(testCase.transaction.hex) must be(testCase.transaction)
+
       val output = TransactionOutput(CurrencyUnits.zero, testCase.script)
-      val txSigComponent = BaseTxSigComponent(
+
+      val regTx = TxSigComponent(
         testCase.transaction,
         testCase.inputIndex,
         output,
-        Policy.standardFlags)
+        List(ScriptEnableSigHashForkId))
 
-      val hashForSig = TransactionSignatureSerializer.hashForSignature(txSigComponent, testCase.hashType)
-      val flipHash = BitcoinSUtil.flipEndianness(testCase.hash.hex)
-      hashForSig must be(DoubleSha256Digest(flipHash))
+      val test = TransactionSignatureSerializer.hashForSignature(regTx, testCase.hashType)
+
+      test must be(DoubleSha256Digest(BitcoinSUtil.flipEndianness(testCase.regularSigHash.hex)))
+
     }
   }
 }

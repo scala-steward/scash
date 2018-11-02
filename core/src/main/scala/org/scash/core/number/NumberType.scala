@@ -62,7 +62,9 @@ sealed abstract class Number[T <: Number[T]] extends NetworkElement {
 
   def |(num: T): T = apply(checkResult(underlying | num.underlying))
   def &(num: T): T = apply(checkResult(underlying & num.underlying))
+  def ^(num: T): T = apply(checkResult(underlying ^ num.underlying))
   def unary_- : T = apply(-underlying)
+
   private def checkResult(result: BigInt): A = {
     require((result & andMask) == result, "Result was out of bounds, got: " + result)
     result
@@ -219,7 +221,7 @@ object UInt32 extends Factory[UInt32] with BaseNumbers[UInt32] {
 
   lazy val zero = UInt32(0)
   lazy val one = UInt32(1)
-
+  zero.hex
   lazy val min = zero
   lazy val max = UInt32(4294967295L)
 
