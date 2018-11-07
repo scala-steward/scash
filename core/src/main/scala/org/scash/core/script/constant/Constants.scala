@@ -38,6 +38,8 @@ trait ScriptOperation extends ScriptToken {
 sealed abstract class ScriptConstant extends ScriptToken {
   /** Returns if the [[ScriptConstant]] is encoded in the shortest possible way. */
   def isShortestEncoding: Boolean = BitcoinScriptUtil.isShortestEncoding(this)
+
+  def ++(that: ScriptConstant) = ScriptConstant(bytes ++ that.bytes)
 }
 
 /** Represents a [[ScriptNumber]] in the Script language. */
@@ -337,6 +339,7 @@ object ScriptConstant extends Factory[ScriptConstant] {
   lazy val negativeZero = ScriptConstant("80")
   lazy val negativeOne = ScriptConstant("81")
 
+  val empty = ScriptConstant(ByteVector.empty)
   /** Creates a [[ScriptConstant]] from a sequence of bytes. */
   def fromBytes(bytes: ByteVector): ScriptConstant = ScriptConstantImpl(bytes)
 
