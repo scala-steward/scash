@@ -9,7 +9,7 @@ this is a fork of bitcoin-s which is a library for bitcoin core. Work is still o
 - [X] Enforce [UAHF rules](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/uahf-technical-spec.md)
 - [X] Enforce [Nov17 HF Rules](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/nov-13-hardfork-spec.md)
 - [ ] Support [cashaddr](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)
-- [ ] Integrate [May18 HF OP_CODES](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/may-2018-hardfork.md)( ~~CAT~~, SPLIT, AND, XOR, OR, DIV, MOD, BIN2NUM, NUM2BIN) (in progress)
+- [ ] Integrate [May18 HF OP_CODES](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/may-2018-hardfork.md)( ~~CAT~~, ~~SPLIT~~, AND, XOR, OR, DIV, MOD, BIN2NUM, NUM2BIN) (in progress)
 - [ ] Integrate [OP_CHECKDATASIG](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/op_checkdatasig.md)
 - [ ] Enforce [Nov18 HF Rules](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2018-nov-upgrade.md)
 - [ ] Implement features in [May19 HF](https://github.com/bitcoincashorg/bitcoincash.org/pull/143)
@@ -32,7 +32,7 @@ This repostitory includes the following functionality:
 
 # Design Principles
   - Immutable data structures everywhere
-  - Functional Programming following these 3 properties (WIP):
+  - Functional Programming (FP) following these 3 properties (WIP):
     1. Totality
     2. Determinism
     3. No Side Effects
@@ -56,6 +56,7 @@ $ sbt -Djava.library.path=/usr/local/lib test
 
 # TODO
 Things to be done after BCH support
+  - rewrite API to be FP principled
   - introduce FP friendly libraries
   - spv node [`scashspv`](https://github.com/scala-cash/scashspv)
 
