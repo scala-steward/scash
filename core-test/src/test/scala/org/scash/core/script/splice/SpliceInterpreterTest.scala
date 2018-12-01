@@ -6,13 +6,14 @@ package org.scash.core.script.splice
  */
 import org.scash.core.script.{ ExecutedScriptProgram, ScriptProgram }
 import org.scash.core.script.constant._
-import org.scash.core.script.result.{ ScriptError, ScriptErrorInvalidStackOperation, ScriptErrorPushSize }
+import org.scash.core.script.result.{ ScriptErrorInvalidSplitRange, ScriptErrorInvalidStackOperation, ScriptErrorPushSize }
 import org.scash.core.util.{ BitcoinSUtil, TestUtil }
-import org.scalatest.{ FlatSpec, MustMatchers }
+import org.scalatest.FlatSpec
+import org.scash.core.TestHelpers
 import org.scash.core.consensus.Consensus
 import scodec.bits.ByteVector
 
-class SpliceInterpreterTest extends FlatSpec with MustMatchers {
+class SpliceInterpreterTest extends FlatSpec with TestHelpers {
   val SI = SpliceInterpreter
 
   "SpliceInterpreter" must "evaluate an OP_SIZE on OP_0 correctly" in {
@@ -22,7 +23,6 @@ class SpliceInterpreterTest extends FlatSpec with MustMatchers {
     val newProgram = SI.opSize(program)
     newProgram.stack must be(List(OP_0, OP_0))
     newProgram.script.isEmpty must be(true)
-
   }
 
   it must "determine the size of script number 0 correctly" in {
@@ -79,30 +79,6 @@ class SpliceInterpreterTest extends FlatSpec with MustMatchers {
   def str2ByteVector(str: String) =
     BitcoinSUtil.decodeHex(BitcoinSUtil.flipEndianness(ByteVector(str.getBytes)))
 
-  it must "evaluate an OP_CAT with empty elements correctly" in {
-    val r = str2ByteVector("myString")
-
-    val stack = List(ScriptConstant(r), ScriptConstant.empty)
-    val stack2 = List(ScriptConstant.empty, ScriptConstant(r))
-    val script = List(OP_CAT)
-
-    List(stack, stack2)
-      .map(ScriptProgram(TestUtil.testProgramExecutionInProgress, _, script))
-      .map(SI.opCat).map(_.stack.head.bytes must be(r))
-  }
-
-  def checkOpError(
-    stack: List[ScriptToken],
-    op: ScriptOperation,
-    ex: ScriptError)(
-    interpreter: ScriptProgram => ScriptProgram) = {
-    val p = ScriptProgram(TestUtil.testProgramExecutionInProgress, stack, List(op))
-    interpreter(p) match {
-      case e: ExecutedScriptProgram => e.error must be(Some(ex))
-      case _ => assert(false)
-    }
-  }
-
   it must "evaluate an OP_CAT that is bigger than `maxScriptElementSize` and fail with ScriptErrorPushSize" in {
     val stack = List(
       ScriptConstant(ByteVector.fill(Consensus.maxScriptElementSize)(1)),
@@ -110,5 +86,58 @@ class SpliceInterpreterTest extends FlatSpec with MustMatchers {
 
     checkOpError(stack, OP_CAT, ScriptErrorPushSize)(SI.opCat)
     checkOpError(stack.reverse, OP_CAT, ScriptErrorPushSize)(SI.opCat)
+  }
+
+  val inputs = List(
+    (ScriptConstant.empty, ScriptConstant.empty),
+    (ScriptConstant.zero, ScriptConstant.zero),
+    (ScriptConstant("0xab"), ScriptConstant("0xcd")),
+    (ScriptConstant("0xabcdef"), ScriptConstant("0x12345678")))
+
+  it must "evaluate all OP_CAT successfully" in {
+    inputs.map {
+      case (a, b) =>
+        checkBinaryOp(a, b, OP_CAT, List(ScriptConstant(a.bytes ++ b.bytes)))(SI.opCat)
+
+        //Check empty concats
+        checkBinaryOp(a, ScriptConstant.empty, OP_CAT, List(a))(SI.opCat)
+        checkBinaryOp(b, ScriptConstant.empty, OP_CAT, List(b))(SI.opCat)
+        checkBinaryOp(ScriptConstant.empty, a, OP_CAT, List(a))(SI.opCat)
+        checkBinaryOp(ScriptConstant.empty, b, OP_CAT, List(b))(SI.opCat)
+    }
+  }
+
+  it must "evaluate all OP_SPLIT successfully" in {
+    inputs.map {
+      case (a, b) =>
+        SI.opSplit(
+          ScriptProgram(
+            TestUtil.testProgramExecutionInProgress,
+            List(ScriptNumber(a.size), ScriptConstant(a.bytes ++ b.bytes)),
+            List(OP_SPLIT)))
+          .stack must be(List(a, b).reverse)
+    }
+  }
+
+  it must "split and cat successfully" in {
+    inputs.map {
+      case (a, b) =>
+        val p = ScriptProgram(
+          TestUtil.testProgramExecutionInProgress,
+          List(ScriptNumber(a.size), ScriptConstant(a.bytes ++ b.bytes)),
+          List(OP_SPLIT, OP_CAT))
+        (SI.opSplit _ andThen SI.opCat)(p).stack must be(List(ScriptConstant(a.bytes ++ b.bytes)))
+    }
+  }
+
+  it must "split and fail due to invalid range" in {
+    inputs.map {
+      case (a, b) =>
+        checkOpError(List(ScriptNumber(a.size + 1), a), OP_SPLIT, ScriptErrorInvalidSplitRange)(SI.opSplit)
+        checkOpError(List(ScriptNumber(b.size + 1), b), OP_SPLIT, ScriptErrorInvalidSplitRange)(SI.opSplit)
+        checkOpError(List(ScriptNumber(ScriptConstant(a.bytes ++ b.bytes).size + 1), ScriptConstant(a.bytes ++ b.bytes)), OP_SPLIT, ScriptErrorInvalidSplitRange)(SI.opSplit)
+        checkOpError(List(ScriptNumber(-1), a), OP_SPLIT, ScriptErrorInvalidSplitRange)(SI.opSplit)
+
+    }
   }
 }
