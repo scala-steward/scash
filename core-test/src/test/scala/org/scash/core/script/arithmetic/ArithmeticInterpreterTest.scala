@@ -581,4 +581,11 @@ class ArithmeticInterpreterTest extends FlatSpec with TestHelpers {
       r.stack.head must be(ex)
       r.script.isEmpty must be(true)
   }
+
+  it must "throw errors for OP_MOD" in inputDivMod.map {
+    case (n1, n2, _, _) =>
+      val f = checkOpError(OP_MOD, AI.opMod) _
+      f(List(n1, ScriptNumber.zero), ScriptErrorModByZero)
+      f(List(n2, ScriptNumber.zero), ScriptErrorModByZero)
+  }
 }
