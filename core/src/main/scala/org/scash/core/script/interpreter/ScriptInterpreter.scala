@@ -196,10 +196,6 @@ sealed abstract class ScriptInterpreter {
             case _ if p.script.intersect(Seq(OP_VERIF, OP_VERNOTIF)).nonEmpty =>
               logger.error("Script is invalid even when a OP_VERIF or OP_VERNOTIF occurs in an unexecuted OP_IF branch")
               loop(ScriptProgram(p, ScriptErrorBadOpCode), opCount)
-            //disabled splice operation
-            case _ if p.script.intersect(Seq(OP_NUM2BIN, OP_BIN2NUM)).nonEmpty =>
-              logger.error("Script is invalid because it contains a disabled splice operation")
-              loop(ScriptProgram(p, ScriptErrorDisabledOpCode), opCount)
             //disabled bitwise operations
             case _ if p.script.intersect(Seq(OP_INVERT)).nonEmpty =>
               logger.error("Script is invalid because it contains a disabled bitwise operation")
@@ -348,6 +344,8 @@ sealed abstract class ScriptInterpreter {
             //splice operations
             case OP_CAT :: t => loop(SpliceInterpreter.opCat(p), calcOpCount(opCount, OP_CAT))
             case OP_SPLIT :: t => loop(SpliceInterpreter.opSplit(p), calcOpCount(opCount, OP_SPLIT))
+            case OP_NUM2BIN :: t => loop(SpliceInterpreter.opNum2Bin(p), calcOpCount(opCount, OP_NUM2BIN))
+            case OP_BIN2NUM :: t => loop(SpliceInterpreter.opBin2Num(p), calcOpCount(opCount, OP_BIN2NUM))
             case OP_SIZE :: t => loop(SpliceInterpreter.opSize(p), calcOpCount(opCount, OP_SIZE))
 
             //locktime operations

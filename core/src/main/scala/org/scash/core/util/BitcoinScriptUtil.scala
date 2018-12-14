@@ -1,5 +1,8 @@
 package org.scash.core.util
-
+/**
+ *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
+ *   Copyright (c) 2018 Flores Lorca (MIT License)
+ */
 import org.scash.core.consensus.Consensus
 import org.scash.core.crypto.{ ECDigitalSignature, ECPublicKey, TxSigComponent }
 import org.scash.core.number.UInt32
@@ -13,9 +16,6 @@ import scodec.bits.ByteVector
 
 import scala.annotation.tailrec
 
-/**
- * Created by chris on 3/2/16.
- */
 trait BitcoinScriptUtil extends BitcoinSLogger {
 
   /** Takes in a sequence of script tokens and converts them to their hexadecimal value */
@@ -184,14 +184,39 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
 
   def calculatePushOp(bytes: ByteVector): Seq[ScriptToken] = calculatePushOp(ScriptConstant(bytes))
 
+  def toMinimalEncoding(n: ByteVector): ScriptConstant =
+    if (BitcoinScriptUtil.isMinimalEncoding(n)) {
+      ScriptConstant(n)
+    } else {
+      val last = n.last
+
+      @tailrec
+      def go(i: Long): ByteVector = {
+        if (i == 0)
+          ByteVector.empty
+        else {
+          val b = n(i - 1)
+          if (b != 0x00) {
+            if ((b & 0x80) >= 1) {
+              // We found a byte with it sign bit set so we need one more byte.
+              n.update(i, last).slice(0, i + 1)
+            } else {
+              // the sign bit is clear, we can use it.
+              n.update(i - 1, (b | last).toByte).slice(0, i)
+            }
+          } else go(i - 1)
+        }
+      }
+      ScriptConstant(go(n.size - 1))
+    }
+
   /**
    * Whenever a [[ScriptConstant]] is interpreted to a number BIP62 could enforce that number to be encoded
    * in the smallest encoding possible
-   * [[https://github.com/bitcoin/bitcoin/blob/a6a860796a44a2805a58391a009ba22752f64e32/src/script/script.h#L220-L237]]
    */
-  def isShortestEncoding(constant: ScriptConstant): Boolean = isShortestEncoding(constant.bytes)
+  def isMinimalEncoding(constant: ScriptConstant): Boolean = isMinimalEncoding(constant.bytes)
 
-  def isShortestEncoding(bytes: ByteVector): Boolean = {
+  def isMinimalEncoding(bytes: ByteVector): Boolean = {
     // If the most-significant-byte - excluding the sign bit - is zero
     // then we're not minimal. Note how this test also rejects the
     // negative-zero encoding, 0x80.
@@ -201,9 +226,9 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
       // it would conflict with the sign bit. An example of this case
       // is +-255, which encode to 0xff00 and 0xff80 respectively.
       // (big-endian).
-      if (bytes.size <= 1 || (bytes(bytes.size - 2) & 0x80) == 0) {
+      if (bytes.size <= 1 || (bytes(bytes.size - 2) & 0x80) == 0)
         false
-      } else true
+      else true
     } else true
   }
 
@@ -212,7 +237,7 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
    * in the smallest encoding possible
    * https://github.com/bitcoin/bitcoin/blob/a6a860796a44a2805a58391a009ba22752f64e32/src/script/script.h#L220-L237
    */
-  def isShortestEncoding(hex: String): Boolean = isShortestEncoding(BitcoinSUtil.decodeHex(hex))
+  def isMinimalEncoding(hex: String): Boolean = isMinimalEncoding(BitcoinSUtil.decodeHex(hex))
   /**
    * Checks the [[ECPublicKey]] encoding according to bitcoin core's function:
    * [[https://github.com/bitcoin/bitcoin/blob/master/src/script/interpreter.cpp#L202]].
