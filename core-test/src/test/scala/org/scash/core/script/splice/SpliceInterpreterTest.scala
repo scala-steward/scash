@@ -145,18 +145,29 @@ class SpliceInterpreterTest extends FlatSpec with TestHelpers {
     }
   }
 
+  // Merge leading byte when sign bit isn't used.
+  val k = 0x7F.toByte
+  val negK = 0xFF.toByte
+  val zero = ScriptNumber.zero
+
+  val inputsConversion = List(
+    (ByteVector.empty, ByteVector.empty),
+    (ByteVector.fromValidHex("abcdef00"), ByteVector.fromValidHex("abcdef00")),
+    (ByteVector.fromValidHex("abcd7f00"), ByteVector.fromValidHex("abcd7f")),
+    (ByteVector.fromValidHex("0xabcdef4280"), ByteVector.fromValidHex("0xabcdefc2")), //known values
+    (ByteVector.fromValidHex("0xabcd7f4200"), ByteVector.fromValidHex("0xabcd7f42")) //Reductions
+  )
+
   it must "call OP_NUM2BIN correctly" in {
     val f = compare(OP_NUM2BIN, SI.opNum2Bin) _
-    val zero = ScriptNumber.zero
-    val empty = ScriptConstant.empty
 
-    // Merge leading byte when sign bit isn't used.
-    val k = 0x7F.toByte
-    val negK = 0xFF.toByte
+    val empty = ScriptConstant.empty
 
     //empty ones
     f(List(zero, empty), empty)
-    f(List(zero, empty), empty)
+
+    // NUM2BIN must not generate oversized push.
+    f(List(ScriptNumber(Consensus.maxScriptElementSize), ScriptNumber(ByteVector.empty)), ScriptConstant(ByteVector.fill(Consensus.maxScriptElementSize)(0x00)))
 
     0.to(Consensus.maxScriptElementSize - 1).map { s =>
 
@@ -176,34 +187,15 @@ class SpliceInterpreterTest extends FlatSpec with TestHelpers {
       f(List(ScriptNumber(paddedK.size), ScriptNumber(ByteVector(k))), ScriptConstant(paddedK))
     }
 
-    val bin1 = ByteVector.fromValidHex("abcdef00")
-    val bin2 = ScriptConstant(ByteVector.fromValidHex("abcd7f00"))
-
-    // Some known values
-    f(List(ScriptNumber(4), ScriptNumber(bin1)), ScriptConstant(bin1))
-    f(List(ScriptNumber(4), ScriptNumber(ByteVector.fromValidHex("abcd7f"))), bin2)
-
-    val bin3 = ScriptConstant(ByteVector.fromValidHex("0xabcdef4280"))
-    val bin4 = ScriptConstant(ByteVector.fromValidHex("0xabcd7f4200"))
-
-    //Reductions
-    f(List(ScriptNumber(5), ScriptNumber(ByteVector.fromValidHex("0xabcdefc2"))), bin3)
-    f(List(ScriptNumber(5), ScriptNumber(ByteVector.fromValidHex("0xabcd7f42"))), bin4)
-
-    // NUM2BIN must not generate oversized push.
-    f(List(ScriptNumber(Consensus.maxScriptElementSize), ScriptNumber(ByteVector.empty)), ScriptConstant(ByteVector.fill(Consensus.maxScriptElementSize)(0x00)))
+    inputsConversion.map {
+      case (a, b) =>
+        f(List(ScriptNumber(a.size), ScriptNumber(b)), ScriptConstant(a))
+    }
   }
 
   it must "call OP_BIN2NUM correctly" in {
     val f = compare(OP_BIN2NUM, SI.opBin2Num) _
-
-    val zero = ScriptNumber.zero
     val empty = ScriptConstant.empty
-
-    // Merge leading byte when sign bit isn't used.
-    val k = 0x7F.toByte
-    val negK = 0xFF.toByte
-
     //empty ones
     f(List(empty), zero)
 
@@ -225,20 +217,43 @@ class SpliceInterpreterTest extends FlatSpec with TestHelpers {
 
     }
 
-    val bin1 = ByteVector.fromValidHex("abcdef00")
-    val bin2 = ScriptConstant(ByteVector.fromValidHex("abcd7f00"))
+    inputsConversion.map {
+      case (a, b) =>
+        f(List(ScriptConstant(a)), ScriptNumber(b))
+    }
+  }
 
-    // Some known values
-    f(List(ScriptConstant(bin1)), ScriptNumber(bin1))
-    f(List(bin2), ScriptNumber(ByteVector.fromValidHex("abcd7f")))
+  it must "demonstrate that BIN2NUM is indempotent" in {
+    inputsConversion.map {
+      case (a, b) =>
+        val p = ScriptProgram(TestUtil.testProgramExecutionInProgress, List(ScriptConstant(a)), List(OP_BIN2NUM, OP_BIN2NUM))
+        val p1 = SI.opBin2Num(p)
+        val p2 = SI.opBin2Num(p1)
+        p2.stack.head must be(ScriptNumber(b))
+    }
+  }
 
-    val bin3 = ScriptConstant(ByteVector.fromValidHex("0xabcdef4280"))
-    val bin4 = ScriptConstant(ByteVector.fromValidHex("0xabcd7f4200"))
+  it must "do a round trip for BIN2NUM -> NUM2BIN" in {
+    inputsConversion.map {
+      case (a, b) =>
+        val p = ScriptProgram(TestUtil.testProgramExecutionInProgress, List(ScriptConstant(a)), List(OP_BIN2NUM, OP_NUM2BIN))
+        val p1 = SI.opBin2Num(p)
+        val p2 = ScriptProgram(TestUtil.testProgramExecutionInProgress, ScriptNumber(a.size) +: p1.stack, p1.script)
+        val p3 = SI.opNum2Bin(p2)
+        p1.stack.head must be(ScriptNumber(b)) //BIN2NUM
+        p3.stack.head must be(ScriptConstant(a)) //Back to BIN
+    }
+  }
 
-    //Reductions
-    f(List(bin3), ScriptNumber(ByteVector.fromValidHex("0xabcdefc2")))
-    f(List(bin4), ScriptNumber(ByteVector.fromValidHex("0xabcd7f42")))
-
+  it must "do a round trip for NUM2BIN -> BIN2NUM" in {
+    inputsConversion.map {
+      case (a, b) =>
+        val p = ScriptProgram(TestUtil.testProgramExecutionInProgress, List(ScriptNumber(a.size), ScriptNumber(b)), List(OP_NUM2BIN, OP_BIN2NUM))
+        val p1 = SI.opNum2Bin(p)
+        val p2 = SI.opBin2Num(p1)
+        p1.stack.head must be(ScriptConstant(a)) //NUM2BIN
+        p2.stack.head must be(ScriptNumber(b)) //BIN2NUM
+    }
   }
 
   it must "NUM2BIN errors" in {
