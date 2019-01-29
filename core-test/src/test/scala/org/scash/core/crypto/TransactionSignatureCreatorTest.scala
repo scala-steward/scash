@@ -146,7 +146,7 @@ class TransactionSignatureCreatorTest extends FlatSpec with MustMatchers with Sc
         inputIndex = inputIndex,
         output = TransactionOutput(CurrencyUnits.zero, scriptPubKey),
         Policy.standardScriptVerifyFlags)
-      val txSignature = TransactionSignatureCreator.createSig(txSignatureComponent, privateKey, HashType.sigHashAll)
+      val txSignature = TransactionSignatureCreator.createSig(txSignatureComponent, privateKey, HashType.sigHashAllForkId)
 
       //add the signature to the scriptSig instead of having an empty scriptSig
       val signedScriptSig = MultiSignatureScriptSignature(Seq(txSignature))
@@ -180,7 +180,7 @@ class TransactionSignatureCreatorTest extends FlatSpec with MustMatchers with Sc
         inputIndex = inputIndex,
         output = TransactionOutput(CurrencyUnits.zero, redeemScript),
         Policy.standardScriptVerifyFlags)
-      val txSignature = TransactionSignatureCreator.createSig(txSignatureComponent, privateKey, HashType.sigHashAll)
+      val txSignature = TransactionSignatureCreator.createSig(txSignatureComponent, privateKey, HashType.sigHashAllForkId)
 
       val signedScriptSig = MultiSignatureScriptSignature(Seq(txSignature))
       val p2shScriptSig = P2SHScriptSignature(signedScriptSig, redeemScript)
@@ -215,7 +215,7 @@ class TransactionSignatureCreatorTest extends FlatSpec with MustMatchers with Sc
     val sign: ByteVector => Future[ECDigitalSignature] = {
       bytes: ByteVector => Future(privateKey.sign(bytes))
     }
-    val txSignature = TransactionSignatureCreator.createSig(txSignatureComponent, sign, HashType.sigHashAll)
+    val txSignature = TransactionSignatureCreator.createSig(txSignatureComponent, sign, HashType.sigHashAllForkId)
 
     val signedScriptSig = txSignature.map(sig => MultiSignatureScriptSignature(Seq(sig)))
     val p2shScriptSig = signedScriptSig.map(ss => P2SHScriptSignature(ss, redeemScript))
