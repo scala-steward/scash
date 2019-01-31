@@ -3,7 +3,6 @@ package org.scash.core.protocol.transaction
 import org.scash.core.crypto.TxSigComponent
 import org.scash.core.currency.CurrencyUnits
 import org.scash.core.number.UInt32
-import org.scash.core.protocol.script._
 import org.scash.core.protocol.transaction.testprotocol.CoreTransactionTestCase
 import org.scash.core.protocol.transaction.testprotocol.CoreTransactionTestCaseProtocol._
 import org.scash.core.script.PreExecutionScriptProgram
@@ -12,6 +11,7 @@ import org.scash.core.script.result.ScriptOk
 import org.scash.core.serializers.transaction.RawBaseTransactionParser
 import org.scash.core.util.{ BitcoinSLogger, BitcoinSUtil, TestUtil }
 import org.scalatest.{ FlatSpec, MustMatchers }
+import scalaz.\/
 import spray.json._
 
 import scala.io.Source
@@ -36,7 +36,7 @@ class TransactionTest extends FlatSpec with MustMatchers {
     EmptyTransaction.txId.hex must be("0000000000000000000000000000000000000000000000000000000000000000")
   }
 
-  it must "calculate the size of a tranaction correctly" in {
+  it must "calculate the size of a transaction correctly" in {
     val rawTx = TestUtil.rawTransaction
     val tx = Transaction(rawTx)
     //size is in bytes so divide by 2
@@ -61,116 +61,79 @@ class TransactionTest extends FlatSpec with MustMatchers {
     val btx = BaseTransaction.fromHex(hex)
     btx.hex must be(hex)
   }
+
   it must "read all of the tx_valid.json's contents and return ScriptOk" in {
-    val source = Source.fromURL(getClass.getResource("/tx_valid.json"))
-
-    //use this to represent a single test case from script_valid.json
-    /*    val lines =
-      """
-          |[[[["0000000000000000000000000000000000000000000000000000000000000100", 0, "0x51", 1000],
-          |["0000000000000000000000000000000000000000000000000000000000000100", 1, "0x00 0x20 0x4d6c2a32c87821d68fc016fca70797abdb80df6cd84651d40a9300c6bad79e62", 1000]],
-          |"0100000000010200010000000000000000000000000000000000000000000000000000000000000000000000ffffffff00010000000000000000000000000000000000000000000000000000000000000100000000ffffffff01d00700000000000001510003483045022100e078de4e96a0e05dcdc0a414124dd8475782b5f3f0ed3f607919e9a5eeeb22bf02201de309b3a3109adb3de8074b3610d4cf454c49b61247a2779a0bcbf31c889333032103596d3451025c19dbbdeb932d6bf8bfb4ad499b95b6f88db8899efac102e5fc711976a9144c9c3dfac4207d5d8cb89df5722cb3d712385e3f88ac00000000", "P2SH,WITNESS"]
-          |]
-          |""".stripMargin*/
-
-    val lines = try source.getLines.filterNot(_.isEmpty).map(_.trim) mkString "\n" finally source.close()
-    val json = lines.parseJson
-    val testCasesOpt: Seq[Option[CoreTransactionTestCase]] = json.convertTo[Seq[Option[CoreTransactionTestCase]]]
-    val testCases: Seq[CoreTransactionTestCase] = testCasesOpt.flatten
-    for {
-      testCase <- testCases
-      (outPoint, scriptPubKey, amountOpt) <- testCase.creditingTxsInfo
-      tx = testCase.spendingTx
-      (input, inputIndex) = findInput(tx, outPoint).getOrElse((EmptyTransactionInput, 0))
-    } yield {
-      require(
-        outPoint.txId == input.previousOutput.txId,
-        "OutPoint txId not the same as input prevout txid\noutPoint.txId: " + outPoint.txId + "\n" +
-          "input prevout txid: " + input.previousOutput.txId)
-      val txSigComponent = amountOpt match {
-        case Some(amount) => scriptPubKey match {
-          case p2sh: P2SHScriptPubKey =>
-            TxSigComponent(
-              transaction = tx,
-              inputIndex = UInt32(inputIndex),
-              output = TransactionOutput(amount, p2sh),
-              flags = testCase.flags)
-          case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey
-            | _: CLTVScriptPubKey | _: EscrowTimeoutScriptPubKey | _: NonStandardScriptPubKey | EmptyScriptPubKey) =>
-            val output = TransactionOutput(amount, x)
-            TxSigComponent(tx, UInt32(inputIndex), output, testCase.flags)
-        }
-        case None =>
-          TxSigComponent(
+    parseTxFile("tx_valid").map(testCase =>
+      testCase.creditingTxsInfo.map {
+        case (outPoint, scriptPubKey, amountOpt) =>
+          val tx = testCase.spendingTx
+          val (input, inputIndex) = findInput(tx, outPoint).getOrElse((EmptyTransactionInput, 0))
+          require(
+            outPoint.txId == input.previousOutput.txId,
+            "OutPoint txId not the same as input prevout txid\noutPoint.txId: " + outPoint.txId + "\n" +
+              "input prevout txid: " + input.previousOutput.txId)
+          val amount = amountOpt.getOrElse(CurrencyUnits.zero)
+          val txSigComponent = TxSigComponent(
             transaction = tx,
             inputIndex = UInt32(inputIndex),
-            output = TransactionOutput(CurrencyUnits.zero, scriptPubKey),
+            output = TransactionOutput(amount, scriptPubKey),
             flags = testCase.flags)
-      }
-      val program = PreExecutionScriptProgram(txSigComponent)
-      withClue(testCase.raw + " input index: " + inputIndex) {
-        ScriptInterpreter.run(program) must equal(ScriptOk)
-      }
-    }
+          val program = PreExecutionScriptProgram(txSigComponent)
+          withClue(testCase.raw + " input index: " + inputIndex) {
+            ScriptInterpreter.run(program) must equal(ScriptOk)
+          }
+      })
   }
 
   it must "read all of the tx_invalid.json's contents and return a ScriptError" in {
-
-    val source = Source.fromURL(getClass.getResource("/tx_invalid.json"))
-    //use this to represent a single test case from script_valid.json
-    /*    val lines =
-        """
-          |[[[["0000000000000000000000000000000000000000000000000000000000000000",-1,"1"]], "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0151ffffffff010000000000000000015100000000", "P2SH"]]
-        """.stripMargin*/
-    val lines = try source.getLines.filterNot(_.isEmpty).map(_.trim) mkString "\n" finally source.close()
-    val json = lines.parseJson
-    val testCasesOpt: Seq[Option[CoreTransactionTestCase]] = json.convertTo[Seq[Option[CoreTransactionTestCase]]]
-    val testCases: Seq[CoreTransactionTestCase] = testCasesOpt.flatten
-    for {
-      testCase <- testCases
-    } yield {
-      val txInputValidity: Seq[Boolean] = for {
-        (outPoint, scriptPubKey, amountOpt) <- testCase.creditingTxsInfo
-        tx = testCase.spendingTx
-        (input, inputIndex) = findInput(tx, outPoint).getOrElse((EmptyTransactionInput, 0))
-      } yield {
-        val isValidTx = ScriptInterpreter.checkTransaction(tx)
-        if (isValidTx) {
-          val txSigComponent = amountOpt match {
-            case Some(amount) => scriptPubKey match {
-              case p2sh: P2SHScriptPubKey =>
-                TxSigComponent(
-                  transaction = tx,
-                  inputIndex = UInt32(inputIndex),
-                  output = TransactionOutput(amount, scriptPubKey),
-                  flags = testCase.flags)
-              case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey
-                | _: CLTVScriptPubKey | _: EscrowTimeoutScriptPubKey | _: NonStandardScriptPubKey | EmptyScriptPubKey) =>
-                TxSigComponent(
-                  transaction = tx,
-                  inputIndex = UInt32(inputIndex),
-                  output = TransactionOutput(amount, x),
-                  flags = testCase.flags)
-            }
-            case None =>
-              TxSigComponent(
-                transaction = tx,
-                inputIndex = UInt32(inputIndex),
-                output = TransactionOutput(CurrencyUnits.zero, scriptPubKey),
-                flags = testCase.flags)
+    parseTxFile("tx_invalid").map { testCase =>
+      val txInputValidity = testCase.creditingTxsInfo.map {
+        case (outPoint, scriptPubKey, amountOpt) =>
+          val tx = testCase.spendingTx
+          val (_, inputIndex) = findInput(tx, outPoint).getOrElse((EmptyTransactionInput, 0))
+          val isValidTx = ScriptInterpreter.checkTransaction(tx)
+          if (isValidTx) {
+            val amount = amountOpt.getOrElse(CurrencyUnits.zero)
+            val txSigComponent = TxSigComponent(
+              transaction = tx,
+              inputIndex = UInt32(inputIndex),
+              output = TransactionOutput(amount, scriptPubKey),
+              flags = testCase.flags)
+            val program = PreExecutionScriptProgram(txSigComponent)
+            ScriptInterpreter.run(program) == ScriptOk
+          } else {
+            logger.error("Transaction does not pass CheckTransaction()")
+            isValidTx
           }
-          val program = PreExecutionScriptProgram(txSigComponent)
-          ScriptInterpreter.run(program) == ScriptOk
-        } else {
-          logger.error("Transaction does not pass CheckTransaction()")
-          isValidTx
-        }
       }
       withClue(testCase.raw) {
         //only one input is required to be false to make the transaction invalid
         txInputValidity.contains(false) must be(true)
       }
     }
+  }
+
+  def parseTxFile(name: String) = {
+    val source = Source.fromURL(getClass.getResource(s"/$name.json"))
+    //use this to represent a single test case from the json file
+    /*    val lines =
+        """
+          |[[[["0000000000000000000000000000000000000000000000000000000000000000",-1,"1"]], "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0151ffffffff010000000000000000015100000000", "P2SH"]]
+        """.stripMargin*/
+
+    \/.fromTryCatchThrowable[String, Throwable](source.getLines.filterNot(_.isEmpty).map(_.trim) mkString "\n")
+      .fold(
+        _ => {
+          source.close()
+          Nil
+        },
+        lines => {
+          source.close()
+          lines
+            .parseJson
+            .convertTo[Seq[Option[CoreTransactionTestCase]]]
+            .flatten
+        })
   }
 
   private def findInput(tx: Transaction, outPoint: TransactionOutPoint): Option[(TransactionInput, Int)] = {
