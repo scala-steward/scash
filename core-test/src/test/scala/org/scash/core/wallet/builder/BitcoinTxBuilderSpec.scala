@@ -95,19 +95,7 @@ class BitcoinTxBuilderSpec extends Properties("TxBuilderSpec") {
       case (input: TransactionInput, idx: Int) =>
         val outpoint = input.previousOutput
         val creditingTx = utxos.find(u => u.outPoint.txId == outpoint.txId).get
-        val output = creditingTx.output
-        val spk = output.scriptPubKey
-        val amount = output.value
-        val txSigComponent = spk match {
-          case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey
-            | _: CSVScriptPubKey | _: CLTVScriptPubKey | _: NonStandardScriptPubKey | _: EscrowTimeoutScriptPubKey
-            | EmptyScriptPubKey) =>
-            val o = TransactionOutput(CurrencyUnits.zero, x)
-            TxSigComponent(tx, UInt32(idx), o, Policy.standardFlags)
-          case p2sh: P2SHScriptPubKey =>
-            val o = TransactionOutput(CurrencyUnits.zero, p2sh)
-            TxSigComponent(tx, UInt32(idx), o, Policy.standardFlags)
-        }
+        val txSigComponent = TxSigComponent(tx, UInt32(idx), creditingTx.output, Policy.standardFlags)
         PreExecutionScriptProgram(txSigComponent)
     }
     ScriptInterpreter.runAllVerify(programs)
