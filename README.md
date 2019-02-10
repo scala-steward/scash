@@ -49,10 +49,19 @@ $ sh autogen.sh && ./configure --enable-jni --enable-experimental --enable-modul
 $ sudo make install #optional, this installs the lib on your system
 ```
 
-Now you should be able to run secp256k1 with something like this. Or you can just copy `libsecp256k1.so` to your system library path. 
+By default, `.jvmopts` adds the freshly compiled `secp256k1` to the JVM classpath. It should therefore be sufficient to start `sbt` by simply doing
+
+```bash
+$ sbt
 ```
-$ sbt -Djava.library.path=/usr/local/lib test
+
+If you run into classpath problems, you can manually specify the JVM classpath like this:
+
 ```
+$ sbt -Djava.library.path=/your/class/path 
+```
+
+You can also copy `libsecp256k1.so` to your system library path. 
 
 # TODO
 Things to be done after BCH support
