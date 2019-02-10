@@ -5,6 +5,8 @@ import org.scash.core.protocol.transaction.Transaction
 import org.scash.core.util.BitcoinSUtil
 import org.scalatest.{ FlatSpec, MustMatchers }
 
+import scala.util.Try
+
 /**
  * Created by chris on 5/24/16.
  */
@@ -25,6 +27,10 @@ class MerkleTest extends FlatSpec with MustMatchers {
 
     val transactions = Seq(coinbaseTx, tx1)
     Merkle.computeMerkleRoot(transactions).hex must be(BitcoinSUtil.flipEndianness("8fb300e3fdb6f30a4c67233b997f99fdd518b968b9a3fd65857bfe78b2600719"))
+  }
+
+  it must "fail to compute the merkle root for a block which has 0 transactions" in {
+    Try(Merkle.computeMerkleRoot(Seq.empty[Transaction])).isFailure must be(true)
   }
 
   it must "correctly compute the merkle root for a block with 3 transactions" in {

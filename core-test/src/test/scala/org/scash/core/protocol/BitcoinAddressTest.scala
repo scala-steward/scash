@@ -6,6 +6,8 @@ import org.scash.core.protocol.script.ScriptPubKey
 import org.scash.core.util.Base58
 import org.scalatest.{ FlatSpec, MustMatchers }
 
+import scala.util.Try
+
 class BitcoinAddressTest extends FlatSpec with MustMatchers {
 
   "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" must "be a valid bitcoin address" in {
@@ -32,6 +34,7 @@ class BitcoinAddressTest extends FlatSpec with MustMatchers {
   "A string that is 25 characters long" must "not be a valid bitcoin address" in {
     val address = "3J98t1WpEZ73CNmQviecrnyiW"
     BitcoinAddress.fromString(address).isFailure must be(true)
+    Try(BitcoinAddress.fromStringExn("")).isFailure must be(true)
   }
 
   "A string that is 36 characters long" must "not be a valid bitcoin address" in {

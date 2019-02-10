@@ -14,6 +14,8 @@ import org.scash.core.policy.Policy
 import scodec.bits.ByteVector
 import scodec.bits._
 
+import scala.util.Try
+
 class ArithmeticInterpreterTest extends FlatSpec with TestHelpers {
 
   val AI = ArithmeticInterpreter
@@ -586,5 +588,33 @@ class ArithmeticInterpreterTest extends FlatSpec with TestHelpers {
       val f = checkOpError(OP_MOD, AI.opMod) _
       f(List(n1, ScriptNumber.zero), ScriptErrorModByZero)
       f(List(n2, ScriptNumber.zero), ScriptErrorModByZero)
+  }
+
+  it must "fail to evaluate all OP codes if the script stack is empty" in {
+    val stack = List(ScriptNumber.zero)
+    val script = List()
+    val program = ScriptProgram(TestUtil.testProgram, stack, script)
+    Try(AI.opAdd(program)).isFailure must be(true)
+    Try(AI.op1Add(program)).isFailure must be(true)
+    Try(AI.op1Sub(program)).isFailure must be(true)
+    Try(AI.opSub(program)).isFailure must be(true)
+    Try(AI.opMod(program)).isFailure must be(true)
+    Try(AI.opDiv(program)).isFailure must be(true)
+    Try(AI.opAbs(program)).isFailure must be(true)
+    Try(AI.opNegate(program)).isFailure must be(true)
+    Try(AI.opNot(program)).isFailure must be(true)
+    Try(AI.op0NotEqual(program)).isFailure must be(true)
+    Try(AI.opBoolAnd(program)).isFailure must be(true)
+    Try(AI.opBoolOr(program)).isFailure must be(true)
+    Try(AI.opNumEqual(program)).isFailure must be(true)
+    Try(AI.opNumEqualVerify(program)).isFailure must be(true)
+    Try(AI.opNumNotEqual(program)).isFailure must be(true)
+    Try(AI.opLessThan(program)).isFailure must be(true)
+    Try(AI.opLessThanOrEqual(program)).isFailure must be(true)
+    Try(AI.opGreaterThan(program)).isFailure must be(true)
+    Try(AI.opGreaterThanOrEqual(program)).isFailure must be(true)
+    Try(AI.opMin(program)).isFailure must be(true)
+    Try(AI.opMax(program)).isFailure must be(true)
+    Try(AI.opWithin(program)).isFailure must be(true)
   }
 }
