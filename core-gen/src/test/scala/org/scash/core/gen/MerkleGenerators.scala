@@ -12,7 +12,6 @@ import org.scash.core.util.BitcoinSLogger
  * Created by chris on 8/12/16.
  */
 abstract class MerkleGenerator {
-  private val logger = BitcoinSLogger.logger
 
   /** Generates a merkle block with the given txs matched inside the [[org.scash.core.protocol.blockchain.PartialMerkleTree]] */
   def merkleBlockWithInsertedTxIds(txs: Seq[Transaction]): Gen[(MerkleBlock, Block, Seq[DoubleSha256Digest])] = for {

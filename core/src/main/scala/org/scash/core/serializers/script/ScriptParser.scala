@@ -129,7 +129,7 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
   private def parse(bytes: ByteVector): List[ScriptToken] = {
     @tailrec
     def loop(bytes: ByteVector, accum: List[ScriptToken]): List[ScriptToken] = {
-      //logger.debug("Byte to be parsed: " + bytes.headOption)
+
       if (bytes.nonEmpty) {
         val op = ScriptOperation(bytes.head).get
         val parsingHelper: ParsingHelper = parseOperationByte(op, accum, bytes.tail)
@@ -165,7 +165,6 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    * for examples of this
    */
   def parseBytesFromString(s: String): List[ScriptConstant] = {
-    //logger.debug("Parsing bytes from string " + s)
     val scriptConstants = (raw"\b0x([0-9a-f]+)\b".r
       .findAllMatchIn(s.toLowerCase)
       .map(g =>
@@ -192,18 +191,17 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    */
   private def parseOperationByte(op: ScriptOperation, accum: List[ScriptToken], tail: ByteVector): ParsingHelper = {
     op match {
-      case bytesToPushOntoStack: BytesToPushOntoStack =>
-        //logger.debug("Parsing operation byte: " +bytesToPushOntoStack )
+      case bytes: BytesToPushOntoStack =>
         //means that we need to push x amount of bytes on to the stack
-        val (constant, newTail) = sliceConstant(bytesToPushOntoStack, tail)
+        val (constant, newTail) = sliceConstant(bytes, tail)
         val scriptConstant = ScriptConstant(constant)
-        ParsingHelper(newTail, scriptConstant +: bytesToPushOntoStack +: accum)
+        ParsingHelper(newTail, scriptConstant :: bytes :: accum)
       case OP_PUSHDATA1 => parseOpPushData(op, accum, tail)
       case OP_PUSHDATA2 => parseOpPushData(op, accum, tail)
       case OP_PUSHDATA4 => parseOpPushData(op, accum, tail)
       case _ =>
         //means that we need to push the operation onto the stack
-        ParsingHelper(tail, op +: accum)
+        ParsingHelper(tail, op :: accum)
     }
   }
 
