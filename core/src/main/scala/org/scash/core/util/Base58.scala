@@ -5,7 +5,7 @@ import org.scash.core.crypto.ECPrivateKey
 import org.scash.core.protocol.blockchain.Base58Type._
 import scodec.bits.ByteVector
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Created by chris on 5/16/16.

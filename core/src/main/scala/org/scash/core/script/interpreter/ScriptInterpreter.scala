@@ -133,7 +133,6 @@ sealed abstract class ScriptInterpreter {
         flags = p.flags,
         lastCodeSeparator = None)
 
-      /*ScriptProgram(p.txSignatureComponent, stack.tail,s.asm)*/
       if (ScriptFlagUtil.requirePushOnly(p2shRedeemScriptProgram.flags) && !BitcoinScriptUtil.isPushOnly(s.asm)) {
         logger.error("p2sh redeem script must be push only operations whe SIGPUSHONLY flag is set")
         ScriptProgram(p2shRedeemScriptProgram, ScriptErrorSigPushOnly)
