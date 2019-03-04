@@ -122,14 +122,10 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
     @tailrec
     def loop(tokens: Seq[ScriptToken]): Boolean = tokens match {
       case h :: t => h match {
-        case scriptOp: ScriptOperation =>
-          if (scriptOp.opCode < OP_16.opCode) {
-            loop(t)
-          } else {
-            false
-          }
-
-        case _: ScriptToken => loop(t)
+        case op: ScriptOperation =>
+          if (op.opCode < OP_16.opCode) loop(t)
+          else false
+        case _ => loop(t)
       }
       case Nil => true
     }
@@ -222,20 +218,17 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
    */
   def isMinimalEncoding(constant: ScriptConstant): Boolean = isMinimalEncoding(constant.bytes)
 
+  // If the most-significant-byte - excluding the sign bit - is zero
+  // then we're not minimal. Note how this test also rejects the
+  // negative-zero encoding, 0x80.
+  // One exception: if there's more than one byte and the most
+  // significant bit of the second-most-significant-byte is set
+  // it would conflict with the sign bit. An example of this case
+  // is +-255, which encode to 0xff00 and 0xff80 respectively.
+  // (big-endian).
   def isMinimalEncoding(bytes: ByteVector): Boolean = {
-    // If the most-significant-byte - excluding the sign bit - is zero
-    // then we're not minimal. Note how this test also rejects the
-    // negative-zero encoding, 0x80.
-    if ((bytes.size > 0 && (bytes.last & 0x7f) == 0)) {
-      // One exception: if there's more than one byte and the most
-      // significant bit of the second-most-significant-byte is set
-      // it would conflict with the sign bit. An example of this case
-      // is +-255, which encode to 0xff00 and 0xff80 respectively.
-      // (big-endian).
-      if (bytes.size <= 1 || (bytes(bytes.size - 2) & 0x80) == 0)
-        false
-      else true
-    } else true
+    if ((bytes.nonEmpty && (bytes.last & 0x7f) == 0) && (bytes.size <= 1 || (bytes(bytes.size - 2) & 0x80) == 0)) false
+    else true
   }
 
   /**

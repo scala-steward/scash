@@ -10,7 +10,6 @@ import org.scash.core.currency.{ CurrencyUnit, CurrencyUnits }
 import org.scash.core.protocol.CompactSizeUInt
 import org.scash.core.protocol.script._
 import org.scash.core.protocol.transaction._
-import org.scash.core.script
 import org.scash.core.script._
 import org.scash.core.script.arithmetic._
 import org.scash.core.script.bitwise._
@@ -90,15 +89,7 @@ sealed abstract class ScriptInterpreter {
    * Runs the given [[PreExecutionScriptProgram]] and
    * return if that script was valid or not
    */
-  def runVerify(p: PreExecutionScriptProgram): Boolean = { ScriptInterpreter.run(p) == ScriptOk }
-
-  /**
-   * Every given [[script.PreExecutionScriptProgram]] and returns
-   * it's [[org.scash.core.script.result.ScriptResult]]
-   */
-  def runAll(programs: Seq[PreExecutionScriptProgram]): Seq[ScriptResult] = {
-    programs.map(p => ScriptInterpreter.run(p))
-  }
+  def runVerify(p: PreExecutionScriptProgram): Boolean = run(p) == ScriptOk
 
   /**
    * Runs all the given [[ScriptProgram]] and return
@@ -392,7 +383,7 @@ sealed abstract class ScriptInterpreter {
    */
   def checkTransaction(transaction: Transaction): Boolean = {
     val inputOutputsNotZero = !(transaction.inputs.isEmpty || transaction.outputs.isEmpty)
-    val txNotLargerThanBlock = transaction.bytes.size < Consensus.maxTxSize
+    val txSize = Consensus.minTxSize < transaction.bytes.size && transaction.bytes.size < Consensus.maxTxSize
     val outputsSpendValidAmountsOfMoney = !transaction.outputs.exists(o =>
       o.value < CurrencyUnits.zero || o.value > Consensus.maxMoney)
 
@@ -409,7 +400,7 @@ sealed abstract class ScriptInterpreter {
         //since this is not a coinbase tx we cannot have any empty previous outs inside of inputs
         !transaction.inputs.exists(_.previousOutput == EmptyTransactionOutPoint)
     }
-    inputOutputsNotZero && txNotLargerThanBlock && outputsSpendValidAmountsOfMoney && noDuplicateInputs &&
+    inputOutputsNotZero && txSize && outputsSpendValidAmountsOfMoney && noDuplicateInputs &&
       allOutputsValidMoneyRange && noDuplicateInputs && isValidScriptSigForCoinbaseTx
   }
 
