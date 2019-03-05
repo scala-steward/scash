@@ -12,7 +12,7 @@ this is a fork of bitcoin-s which is a library for bitcoin core. Work is still o
 - [X] Integrate [OP_CHECKDATASIG](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/op_checkdatasig.md)
 - [X] Enforce [Nov18 HF Rules](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2018-nov-upgrade.md) 
 - [ ] Implement [Schnorr](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2019-05-15-schnorr.md)
-- [ ] Support [Segwit recovery txs])(https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2019-05-15-segwit-recovery.md)
+- [ ] Support [Segwit recovery txs](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2019-05-15-segwit-recovery.md)
 - [ ] Support [cashaddr](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)
 
 This is the core functionality of scash.
