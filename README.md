@@ -10,9 +10,10 @@ this is a fork of bitcoin-s which is a library for bitcoin core. Work is still o
 - [X] Enforce [Nov17 HF Rules](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/nov-13-hardfork-spec.md)
 - [X] Integrate [May18 HF OP_CODES](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/may-2018-hardfork.md)( CAT, SPLIT, AND, XOR, OR, DIV, MOD, BIN2NUM, NUM2BIN)
 - [X] Integrate [OP_CHECKDATASIG](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/op_checkdatasig.md)
-- [ ] Enforce [Nov18 HF Rules](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2018-nov-upgrade.md) (in progress)
+- [X] Enforce [Nov18 HF Rules](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2018-nov-upgrade.md) (in progress)
+- [ ] Implement [Schnorr](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2019-05-15-schnorr.md)
+- [ ] Support [Segwit recovery txs])(https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/2019-05-15-segwit-recovery.md)
 - [ ] Support [cashaddr](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)
-- [ ] Implement features in [May19 HF](https://github.com/bitcoincashorg/bitcoincash.org/pull/143)
 
 This is the core functionality of scash.
 
