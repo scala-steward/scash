@@ -4,7 +4,6 @@ package org.scash.core.script.interpreter
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
  */
-
 import org.scash.core.consensus.Consensus
 import org.scash.core.currency.{ CurrencyUnit, CurrencyUnits }
 import org.scash.core.protocol.CompactSizeUInt
@@ -67,7 +66,7 @@ sealed abstract class ScriptInterpreter {
       } else {
         scriptPubKey match {
           case _: P2SHScriptPubKey =>
-            if (p2shEnabled) executeP2shScript(scriptSigExecutedProgram)
+            if (p2shEnabled) executeRedeemScript(scriptSigExecutedProgram)
             else scriptPubKeyExecutedProgram
           case _: P2PKHScriptPubKey | _: P2PKScriptPubKey | _: MultiSignatureScriptPubKey | _: CSVScriptPubKey
             | _: CLTVScriptPubKey | _: NonStandardScriptPubKey | _: EscrowTimeoutScriptPubKey | EmptyScriptPubKey =>
@@ -105,51 +104,35 @@ sealed abstract class ScriptInterpreter {
    * scriptPubKey, then finally the serialized redeemScript is decoded and run with the arguments in the p2sh script signature
    * a p2sh script returns true if both of those intermediate steps evaluate to true
    *
-   * @param scriptPubKeyExecutedProgram the program with the script signature pushed onto the stack
+   * @param p the program with the script signature pushed onto the stack
    * @param originalProgram the original program, used for setting errors & checking that the original script signature contains push only tokens
    * @param p2shScriptPubKey the p2sh scriptPubKey that contains the value the redeemScript must hash to
    * @return the executed program
    */
-  private def executeP2shScript(
-    scriptPubKeyExecutedProgram: ExecutedScriptProgram): ExecutedScriptProgram = {
-
-    /** Helper function to actually run a p2sh script */
-    def run(p: ExecutedScriptProgram, stack: Seq[ScriptToken], s: ScriptPubKey): ExecutedScriptProgram = {
-      logger.debug("Running p2sh script: " + stack)
-      val p2shRedeemScriptProgram = ExecutionInProgressScriptProgram(
-        txSignatureComponent = p.txSignatureComponent,
-        stack = p.stack.tail,
-        script = s.asm.toList,
-        originalScript = p.originalScript,
-        altStack = Nil,
-        flags = p.flags,
-        lastCodeSeparator = None)
-
-      if (ScriptFlagUtil.requirePushOnly(p2shRedeemScriptProgram.flags) && !BitcoinScriptUtil.isPushOnly(p.txSignatureComponent.scriptSignature.asm)) {
-        logger.error("p2sh redeem script must be push only operations whe SIGPUSHONLY flag is set")
-        ScriptProgram(p2shRedeemScriptProgram, ScriptErrorSigPushOnly)
-      } else loop(p2shRedeemScriptProgram, 0)
-    }
-
-    val scriptSig = scriptPubKeyExecutedProgram.txSignatureComponent.scriptSignature
-    val scriptSigAsm: Seq[ScriptToken] = scriptSig.asm
+  private def executeRedeemScript(p: ExecutedScriptProgram): ExecutedScriptProgram = {
+    val scriptSig = p.txSignatureComponent.scriptSignature
     //need to check if the scriptSig is push only as required by bitcoin cash
-    if (!BitcoinScriptUtil.isPushOnly(scriptSigAsm)) {
-      ScriptProgram(scriptPubKeyExecutedProgram, ScriptErrorSigPushOnly)
-    } else if (scriptPubKeyExecutedProgram.error.isDefined) {
-      scriptPubKeyExecutedProgram
-    } else if (scriptPubKeyExecutedProgram.stackTopIsTrue) {
-      logger.debug("Hashes matched between the p2shScriptSignature & the p2shScriptPubKey")
+    if (!BitcoinScriptUtil.isPushOnly(scriptSig.asm)) ScriptProgram(p, ScriptErrorSigPushOnly)
+    else if (p.error.isDefined) p
+    else if (p.stackTopIsTrue) {
       //we need to run the deserialized redeemScript & the scriptSignature without the serialized redeemScript
-      val stack = scriptPubKeyExecutedProgram.stack
-      val redeemScriptBytes = stack.head.bytes
+      val redeemScriptBytes = p.stack.head.bytes
       val c = CompactSizeUInt.calculateCompactSizeUInt(redeemScriptBytes)
       val redeemScript = ScriptPubKey(c.bytes ++ redeemScriptBytes)
       logger.debug("redeemScript: " + redeemScript.asm)
-      run(scriptPubKeyExecutedProgram, stack, redeemScript)
+      val redeemProgram = ExecutionInProgressScriptProgram(
+        txSignatureComponent = p.txSignatureComponent,
+        stack = p.stack.tail,
+        script = redeemScript.asm.toList,
+        originalScript = p.originalScript,
+        altStack = Nil,
+        flags = p.flags,
+        lastCodeSeparator = None
+      )
+      loop(redeemProgram, 0)
     } else {
       logger.warn("P2SH scriptPubKey hash did not match the hash for the serialized redeemScript")
-      scriptPubKeyExecutedProgram
+      p
     }
   }
 
