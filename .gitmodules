@@ -2,3 +2,6 @@
 	path = secp256k1
 	url = https://github.com/scala-cash/secp256k1.git
 	branch = parse
+[submodule "Submod"]
+	url = https://github.com/scala-cash/secp256k1.git
+	branch = master
