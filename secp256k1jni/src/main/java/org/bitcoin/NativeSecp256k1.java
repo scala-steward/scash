@@ -476,9 +476,76 @@ public class NativeSecp256k1 {
 
         w.lock();
         try {
-          return secp256k1_context_randomize(byteBuff, Secp256k1Context.getContext()) == 1;
+            return secp256k1_context_randomize(byteBuff, Secp256k1Context.getContext()) == 1;
         } finally {
-          w.unlock();
+            w.unlock();
+        }
+    }
+
+    /**
+     * libsecp256k1 Create a Schnorr signature.
+     *
+     * @param data Message hash, 32 bytes
+     * @param seckey Secret key, 32 bytes
+     * @return sig byte array of signature
+     */
+    public static byte[] schnorrSign(byte[] data, byte[] seckey) throws AssertFailException {
+        checkArgument(data.length == 32 && seckey.length <= 32);
+
+        ByteBuffer byteBuff = nativeECDSABuffer.get();
+        if (byteBuff == null || byteBuff.capacity() < data.length + seckey.length) {
+            byteBuff = ByteBuffer.allocateDirect(32 + 32);
+            byteBuff.order(ByteOrder.nativeOrder());
+            nativeECDSABuffer.set(byteBuff);
+        }
+        byteBuff.rewind();
+        byteBuff.put(data);
+        byteBuff.put(seckey);
+
+        byte[][] retByteArray;
+
+        r.lock();
+        try {
+            retByteArray = secp256k1_schnorr_sign(byteBuff, Secp256k1Context.getContext());
+        } finally {
+            r.unlock();
+        }
+
+        byte[] sigArr = retByteArray[0];
+        int retVal = new BigInteger(new byte[] { retByteArray[1][0] }).intValue();
+
+        assertEquals(sigArr.length, 64, "Got bad signature length.");
+
+        return retVal == 0 ? new byte[0] : sigArr;
+    }
+
+    /**
+     * Verifies the given Schnorr signature in native code.
+     * Calling when enabled == false is undefined (probably library not loaded)
+     *
+     * @param data The data which was signed, must be exactly 32 bytes
+     * @param signature The signature exactly 64 bytes
+     * @param pub The public key which did the signing which is the same ecdsa
+     */
+    public static boolean schnorrVerify(byte[] data, byte[] signature, byte[] pub) {
+        checkArgument(data.length == 32 && signature.length == 64 && (pub.length == 33 || pub.length == 65));
+
+        ByteBuffer byteBuff = nativeECDSABuffer.get();
+        if (byteBuff == null || byteBuff.capacity() < 32 + 64 + pub.length) {
+            byteBuff = ByteBuffer.allocateDirect(32 + 64 + pub.length);
+            byteBuff.order(ByteOrder.nativeOrder());
+            nativeECDSABuffer.set(byteBuff);
+        }
+        byteBuff.rewind();
+        byteBuff.put(data);
+        byteBuff.put(signature);
+        byteBuff.put(pub);
+
+        r.lock();
+        try {
+            return secp256k1_schnorr_verify(byteBuff, Secp256k1Context.getContext(), pub.length) == 1;
+        } finally {
+            r.unlock();
         }
     }
 
@@ -505,6 +572,10 @@ public class NativeSecp256k1 {
     private static native byte[][] secp256k1_ec_pubkey_create(ByteBuffer byteBuff, long context, boolean compressed);
 
     private static native byte[][] secp256k1_ec_pubkey_decompress(ByteBuffer byteBuff, long context, int inputLen);
+
+    private static native byte[][] secp256k1_schnorr_sign(ByteBuffer byteBuff, long context);
+
+    private static native int secp256k1_schnorr_verify(ByteBuffer byteBuff, long context, int pubLen);
 
     private static native byte[][] secp256k1_ecdh(ByteBuffer byteBuff, long context, int inputLen);
 

@@ -50,10 +50,9 @@ public class NativeSecp256k1Test {
     }
 
     /**
-      * This tests secret key verify() for a invalid secretkey
-      */
-    @Test
-    public void testSecKeyVerifyNeg() throws AssertFailException{
+     * This tests secret key verify() for an invalid secretkey
+     */
+    public static void testSecKeyVerifyNeg() throws AssertFailException{
         byte[] sec = DatatypeConverter.parseHexBinary("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
         boolean result = NativeSecp256k1.secKeyVerify( sec );
@@ -95,7 +94,7 @@ public class NativeSecp256k1Test {
 
         byte[] resultArr = NativeSecp256k1.sign(data, sec);
         String sigString = DatatypeConverter.printHexBinary(resultArr);
-        assertEquals( sigString, "30440220182A108E1448DC8F1FB467D06A0F3BB8EA0533584CB954EF8DA112F1D60E39A202201C66F36DA211C087F3AF88B50EDF4F9BDAA6CF5FD6817E74DCA34DB12390C6E9" , "testSignPos");
+        assertEquals( sigString, "3045022100F51D069AA46EDB4E2E77773FE364AA2AF6818AF733EA542CFC4D546640A58D8802204F1C442AC9F26F232451A0C3EE99F6875353FC73902C68055C19E31624F687CC" , "testSignPos");
     }
 
     /**
@@ -216,6 +215,56 @@ public class NativeSecp256k1Test {
 
         boolean result1 = NativeSecp256k1.isValidPubKey(pubkey);
         assertEquals(result1, false, "testIsValidPubKeyNeg");
+    }
+
+    /**
+     * This tests signSchnorr() for a valid secretkey
+     */
+    @Test
+    public void testSchnorrSign() throws AssertFailException{
+        byte[] data = DatatypeConverter.parseHexBinary("5255683DA567900BFD3E786ED8836A4E7763C221BF1AC20ECE2A5171B9199E8A"); //sha256(sha256("Very deterministic message"))
+        byte[] sec = DatatypeConverter.parseHexBinary("12B004FFF7F4B69EF8650E767F18F11EDE158148B425660723B9F9A66E61F747");
+
+        byte[] resultArr = NativeSecp256k1.schnorrSign(data, sec);
+        String sigString = DatatypeConverter.printHexBinary(resultArr);
+        assertEquals( sigString, "2C56731AC2F7A7E7F11518FC7722A166B02438924CA9D8B4D111347B81D0717571846DE67AD3D913A8FDF9D8F3F73161A4C48AE81CB183B214765FEB86E255CE" , "testSchnorrSign");
+    }
+
+    /**
+     * This tests schnorrVerify() for a valid signature
+     */
+    @Test
+    public void testSchnorrVerifyPos() throws AssertFailException{
+        byte[] data0 = DatatypeConverter.parseHexBinary("0000000000000000000000000000000000000000000000000000000000000000");
+        byte[] sig0 = DatatypeConverter.parseHexBinary("787A848E71043D280C50470E8E1532B2DD5D20EE912A45DBDD2BD1DFBF187EF67031A98831859DC34DFFEEDDA86831842CCD0079E1F92AF177F7F22CC1DCED05");
+        byte[] pub0 = DatatypeConverter.parseHexBinary("0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798");
+        boolean result0 = NativeSecp256k1.schnorrVerify(data0, sig0, pub0);
+        assertEquals( result0, true , "testSchnorrVerifyPos0");
+
+        byte[] data1 = DatatypeConverter.parseHexBinary("243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89");
+        byte[] sig1 = DatatypeConverter.parseHexBinary("2A298DACAE57395A15D0795DDBFD1DCB564DA82B0F269BC70A74F8220429BA1D1E51A22CCEC35599B8F266912281F8365FFC2D035A230434A1A64DC59F7013FD");
+        byte[] pub1 = DatatypeConverter.parseHexBinary("02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659");
+        boolean result1 = NativeSecp256k1.schnorrVerify(data1, sig1, pub1);
+        assertEquals( result1, true , "testSchnorrVerifyPos1");
+
+        byte[] data2 = DatatypeConverter.parseHexBinary("5E2D58D8B3BCDF1ABADEC7829054F90DDA9805AAB56C77333024B9D0A508B75C");
+        byte[] sig2 = DatatypeConverter.parseHexBinary("00DA9B08172A9B6F0466A2DEFD817F2D7AB437E0D253CB5395A963866B3574BE00880371D01766935B92D2AB4CD5C8A2A5837EC57FED7660773A05F0DE142380");
+        byte[] pub2 = DatatypeConverter.parseHexBinary("03FAC2114C2FBB091527EB7C64ECB11F8021CB45E8E7809D3C0938E4B8C0E5F84B");
+        boolean result2 = NativeSecp256k1.schnorrVerify(data2, sig2, pub2);
+        assertEquals( result2, true , "testSchnorrVerifyPos2");
+
+    }
+
+    /**
+     * This tests schnorrVerify() for a invalid signature
+     */
+    @Test
+    public void testSchnorrVerifyNeg() throws AssertFailException{
+        byte[] data = DatatypeConverter.parseHexBinary("4DF3C3F68FCC83B27E9D42C90431A72499F17875C81A599B566C9889B9696703");
+        byte[] sig = DatatypeConverter.parseHexBinary("00000000000000000000003B78CE563F89A0ED9414F5AA28AD0D96D6795F9C6302A8DC32E64E86A333F20EF56EAC9BA30B7246D6D25E22ADB8C6BE1AEB08D49D");
+        byte[] pub = DatatypeConverter.parseHexBinary("03EEFDEA4CDB677750A420FEE807EACF21EB9898AE79B9768766E4FAA04A2D4A34");
+        boolean result = NativeSecp256k1.schnorrVerify(data, sig, pub);
+        assertEquals( result, false , "testSchnorrVerifyNeg");
     }
 
     @Test
