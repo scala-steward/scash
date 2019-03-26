@@ -201,6 +201,11 @@ case object ScriptErrorSigNullFail extends ScriptError {
   override def description = "NULLFAIL"
 }
 
+//SCRIPT_ERR_SIG_BADLENGTH
+case object ScriptErrorSigBadLength extends ScriptError {
+  override def description = "SIG_BADLENGTH"
+}
+
 //SCRIPT_ERR_DISCOURAGE_UPGRADABLE_NOPS
 case object ScriptErrorDiscourageUpgradableNOPs extends ScriptError {
   override def description: String = "DISCOURAGE_UPGRADABLE_NOPS"
