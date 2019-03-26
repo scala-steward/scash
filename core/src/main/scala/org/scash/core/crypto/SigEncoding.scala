@@ -5,11 +5,11 @@ package org.scash.core.crypto
  */
 
 import org.scash.core.script
-import org.scash.core.script.crypto.{ SigHashType, HashType }
+import org.scash.core.script.crypto.{HashType, SigHashType}
 import org.scash.core.script.flag._
 import org.scash.core.script.result._
 import org.scash.core.util.BitcoinSLogger
-import scalaz.{ \/, \/- }
+import scalaz.{\/, \/-}
 import scodec.bits.ByteVector
 
 object SigEncoding {
@@ -158,6 +158,22 @@ object SigEncoding {
     if (flags.contains(ScriptEnableSchnorr) && sig.size == 64) \/-(sig)
     else checkRawSigECDSAEncoding(sig, flags)
 
+  def checkSigHashEncoding(
+    sig: ByteVector,
+    flags: Seq[ScriptFlag]
+  ): ScriptError \/ Boolean = {
+    if (ScriptFlagUtil.requireStrictEncoding(flags)) {
+      val f = script.to(true) _
+      for {
+        _ <- f(ScriptErrorSigHashType, !(SigHashType.isDefined(sig)))
+        useForkId = SigHashType.fromByte(sig.last).has(HashType.FORKID)
+        forkIdEnabled = ScriptFlagUtil.sighashForkIdEnabled(flags)
+        _ <- f(ScriptErrorIllegalForkId, !forkIdEnabled && useForkId)
+        _ <- f(ScriptErrorMustUseForkId, forkIdEnabled && !useForkId)
+      } yield true
+    } else \/-(true)
+  }
+
   def checkTxSigEncoding(
     sig: => ByteVector,
     flags: Seq[ScriptFlag]): ScriptError \/ ByteVector =
@@ -165,37 +181,19 @@ object SigEncoding {
     if (sig.isEmpty) \/-(sig)
     else for {
       _ <- checkRawSigEncoding(sig.init, flags)
-      ec <- if (ScriptFlagUtil.requireStrictEncoding(flags)) {
-        val f = script.to(sig) _
-        for {
-          _ <- f(ScriptErrorSigHashType, !(SigHashType.isDefined(sig)))
-          useForkId = SigHashType.fromByte(sig.last).has(HashType.FORKID)
-          forkIdEnabled = ScriptFlagUtil.sighashForkIdEnabled(flags)
-          _ <- f(ScriptErrorIllegalForkId, !forkIdEnabled && useForkId)
-          _ <- f(ScriptErrorMustUseForkId, forkIdEnabled && !useForkId)
-        } yield sig
-      } else \/-(sig)
-    } yield ec
+      _ <- checkSigHashEncoding(sig, flags)
+    } yield sig
 
   def checkTxECDSASigEncoding(
     sig: => ECDigitalSignature,
-    flags: Seq[ScriptFlag]): ScriptError \/ ECDigitalSignature =
-  //allow empty sigs
-    if (sig.isEmpty)
-      \/-(sig)
+    flags: Seq[ScriptFlag]
+  ): ScriptError \/ ECDigitalSignature =
+    //allow empty sigs
+    if (sig.isEmpty) \/-(sig)
     else for {
       _ <- checkRawSigECDSAEncoding(sig.bytes.init, flags)
-      ec <- if (ScriptFlagUtil.requireStrictEncoding(flags)) {
-        val f = script.to(sig) _
-        for {
-          _ <- f(ScriptErrorSigHashType, !(SigHashType.isDefined(sig.bytes)))
-          useForkId = SigHashType.fromByte(sig.bytes.last).has(HashType.FORKID)
-          forkIdEnabled = ScriptFlagUtil.sighashForkIdEnabled(flags)
-          _ <- f(ScriptErrorIllegalForkId, !forkIdEnabled && useForkId)
-          _ <- f(ScriptErrorMustUseForkId, forkIdEnabled && !useForkId)
-        } yield sig
-      } else \/-(sig)
-    } yield ec
+      _ <- checkSigHashEncoding(sig.bytes, flags)
+    } yield sig
 
   def checkDataSigEncoding(
     sig: => ECDigitalSignature,
