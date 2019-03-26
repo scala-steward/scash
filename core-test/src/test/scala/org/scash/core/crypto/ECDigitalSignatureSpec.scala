@@ -22,7 +22,7 @@ class ECDigitalSignatureSpec extends Properties("ECDigitalSignatureSpec") {
     Prop.forAll(CryptoGenerators.doubleSha256Digest, CryptoGenerators.privateKey) {
       case (hash, key) =>
         val sig = key.sign(hash)
-        key.publicKey.verify(hash, sig)
+        key.publicKey.verifyECDSA(hash, sig)
     }
 
   property("must not reuse r values") = {

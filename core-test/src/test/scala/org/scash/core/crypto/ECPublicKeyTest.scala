@@ -17,7 +17,7 @@ class ECPublicKeyTest extends FlatSpec with MustMatchers {
     val hash = DoubleSha256Digest(ByteVector(Sha256Hash.ZERO_HASH.getBytes))
     val signature: ECDigitalSignature = key.sign(hash)
 
-    val isValid: Boolean = key.publicKey.verify(ByteVector(Sha256Hash.ZERO_HASH.getBytes), signature)
+    val isValid: Boolean = key.publicKey.verifyECDSA(ByteVector(Sha256Hash.ZERO_HASH.getBytes), signature)
     isValid must be(true)
   }
 
@@ -28,7 +28,7 @@ class ECPublicKeyTest extends FlatSpec with MustMatchers {
     val signature: ECDigitalSignature = key.sign(hash)
 
     val wrongPublicKey = ECPublicKey.freshPublicKey
-    val isValid: Boolean = wrongPublicKey.verify(hash, signature)
+    val isValid: Boolean = wrongPublicKey.verifyECDSA(hash, signature)
     isValid must be(false)
   }
 
@@ -37,7 +37,7 @@ class ECPublicKeyTest extends FlatSpec with MustMatchers {
     val bitcoinjSignature = bitcoinjPrivKey.sign(Sha256Hash.ZERO_HASH)
     val bitcoinsSignature = ECDigitalSignature(ByteVector(bitcoinjSignature.encodeToDER()))
     val bitcoinsPublicKey = ECPublicKey(ByteVector(bitcoinjPrivKey.getPubKey))
-    bitcoinsPublicKey.verify(ByteVector(Sha256Hash.ZERO_HASH.getBytes), bitcoinsSignature) must be(true)
+    bitcoinsPublicKey.verifyECDSA(ByteVector(Sha256Hash.ZERO_HASH.getBytes), bitcoinsSignature) must be(true)
 
   }
 

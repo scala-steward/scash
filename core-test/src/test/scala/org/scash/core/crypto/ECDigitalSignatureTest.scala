@@ -72,7 +72,7 @@ class ECDigitalSignatureTest extends FlatSpec
       CryptoGenerators.privateKey) {
       case (hash, key) =>
         val sig = key.sign(hash)
-        assert(key.publicKey.verify(hash, sig))
+        assert(key.publicKey.verifyECDSA(hash, sig))
     }
   }
 

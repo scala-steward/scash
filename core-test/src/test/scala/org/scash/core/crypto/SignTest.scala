@@ -28,7 +28,7 @@ class SignTest extends FlatSpec with MustMatchers with PropertyChecks {
         val pubKey = signTestImpl.publicKey
         val sigF = signTestImpl.signFunction(hash.bytes)
 
-        sigF.map(sig => assert(pubKey.verify(hash.hex, sig)))
+        sigF.map(sig => assert(pubKey.verifyECDSA(hash, sig)))
 
     }
   }

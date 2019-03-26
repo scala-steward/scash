@@ -49,7 +49,7 @@ trait TxSigCheck extends BitcoinSLogger {
     val txSComp = TxSigComponent(txSig.transaction, txSig.inputIndex, TransactionOutput(txSig.output.value, spk), txSig.flags)
     val hashForSignature = TransactionSignatureSerializer.hashForSignature(txSComp, hashType)
     val stripHashByte = ECDigitalSignature(sig.bytes.init)
-    val success = pubKey.verify(hashForSignature, stripHashByte)
+    val success = pubKey.verifyECDSA(hashForSignature, stripHashByte)
 
     nullFailCheck(sig.point[List], flags, success)
   }

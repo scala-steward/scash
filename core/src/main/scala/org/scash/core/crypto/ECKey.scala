@@ -215,10 +215,10 @@ object ECPrivateKey extends Factory[ECPrivateKey] {
  * Created by chris on 2/16/16.
  */
 sealed abstract class ECPublicKey extends BaseECKey {
-  def verify(hash: HashDigest, signature: ECDigitalSignature): Boolean = verify(hash.bytes, signature)
+  def verifyECDSA(hash: HashDigest, signature: ECDigitalSignature): Boolean = verifyECDSA(hash.bytes, signature)
 
   /** Verifies if a given piece of data is signed by the [[ECPrivateKey]]'s corresponding [[ECPublicKey]]. */
-  def verify(data: ByteVector, signature: ECDigitalSignature): Boolean = {
+  def verifyECDSA(data: ByteVector, signature: ECDigitalSignature): Boolean = {
     val result = NativeSecp256k1.verify(data.toArray, signature.bytes.toArray, bytes.toArray)
     if (!result) {
       //if signature verification fails with libsecp256k1 we need to use our old
@@ -230,8 +230,6 @@ sealed abstract class ECPublicKey extends BaseECKey {
       oldVerify(data, signature)
     } else result
   }
-
-  def verify(hex: String, signature: ECDigitalSignature): Boolean = verify(BitcoinSUtil.decodeHex(hex), signature)
 
   override def toString = "ECPublicKey(" + hex + ")"
 

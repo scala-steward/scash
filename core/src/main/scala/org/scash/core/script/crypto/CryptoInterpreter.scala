@@ -207,7 +207,7 @@ sealed abstract class CryptoInterpreter {
           if (sig.isEmpty) \/-(OP_FALSE)
           else for {
             hash <- CryptoUtil.sha256Opt(msg.bytes).toRightDisjunction(ScriptErrorUnknownError)
-            success <- \/-(pubKey.verify(hash, sig))
+            success <- \/-(pubKey.verifyECDSA(hash, sig))
             _ <- checkFlag(p.flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !success)
           } yield if (success) OP_TRUE else OP_FALSE
       } yield ScriptProgram(p, success :: p.stack.drop(3), p.script.tail)
