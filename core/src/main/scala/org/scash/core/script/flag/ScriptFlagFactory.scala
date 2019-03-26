@@ -29,7 +29,8 @@ trait ScriptFlagFactory {
     ScriptVerifyCompressedPubkeytype,
     ScriptEnableSigHashForkId,
     ScriptEnableReplayProtection,
-    ScriptEnableCheckDataSig
+    ScriptEnableCheckDataSig,
+    ScriptEnableSchnorr
   )
 
 
