@@ -1,6 +1,5 @@
 package org.scash.core.script.crypto
 
-import org.scash.core.crypto.ECDigitalSignature
 import org.scash.core.number.UInt32
 import org.scash.core.script.crypto.BaseHashType._
 import org.scash.core.script.crypto.HashType.HashType
@@ -101,8 +100,8 @@ object SigHashType {
    * Checks if the given digital signature has a valid hash type
    */
 
-  def isDefined(sig: ECDigitalSignature): Boolean = {
-    sig.bytes.lastOption.fold(false) { last =>
+  def isDefined(sig: ByteVector): Boolean = {
+    sig.lastOption.fold(false) { last =>
       val byte = last & ~(forkIdByte | anyoneCanPayByte)
       byte >= BaseHashType.ALL.byte && byte <= BaseHashType.SINGLE.byte
     }

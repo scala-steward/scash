@@ -182,7 +182,7 @@ sealed abstract class CryptoInterpreter {
         s <- script.getTwo(p.stack)
         pubKey = ECPublicKey(s._1.bytes)
         sig = ECDigitalSignature(s._2.bytes)
-        _ <- SigEncoding.checkTxSigEncoding(sig, p.flags)
+        _ <- SigEncoding.checkTxSigEncoding(sig.bytes, p.flags)
         _ <- SigEncoding.checkPubKeyEncoding(pubKey, p.flags)
         nonSepScript = BitcoinScriptUtil.removeOpCodeSeparator(p)
         r <- TxSigCheck.checkSig(p.txSignatureComponent, nonSepScript, pubKey, sig, p.flags)
