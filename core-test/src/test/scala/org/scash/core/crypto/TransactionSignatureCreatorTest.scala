@@ -51,8 +51,7 @@ class TransactionSignatureCreatorTest extends FlatSpec with MustMatchers with Sc
       Policy.standardScriptVerifyFlags)
     val privateKey = ECPrivateKey.fromWIFToPrivateKey("cTTh7jNtZhg3vHTjvYK8zcHkLfsMAS8iqL7pfZ6eVAVHHF8fN1qy")
     val txSignature = TransactionSignatureCreator.createSig(txSignatureComponent, privateKey, SigHashType.bchALL)
-    println(s"txSig ${txSignature.bytes.toHex}")
-    println(s"expected ${expectedSig.bytes.toHex}")
+    
     txSignature.r must be(expectedSig.r)
     txSignature.s must be(expectedSig.s)
     txSignature.hex must be(expectedSig.hex)

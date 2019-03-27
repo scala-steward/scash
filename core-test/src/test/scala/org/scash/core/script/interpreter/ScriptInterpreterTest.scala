@@ -21,15 +21,10 @@ import scala.io.Source
 
 class ScriptInterpreterTest extends FlatSpec with MustMatchers {
 
-  "ScriptInterpreter" must "evaluate all the scripts from the bitcoin core script_tests.json" in {
+  "ScriptInterpreter" must "evaluate all the scripts from script_tests.json" in {
 
     val source = Source.fromURL(getClass.getResource("/script_tests.json"))
 
-    //use this to represent a single test case from script_valid.json
-    /*    val lines =
-      """
-          | [["", "DEPTH 0 EQUAL", "P2SH,STRICTENC", "OK", "Test the test: we should have an empty stack after scriptSig evaluation"]]
-   """.stripMargin*/
     val lines = try source.getLines.filterNot(_.isEmpty).map(_.trim) mkString "\n" finally source.close()
     val json = lines.parseJson
     val testCases = json.convertTo[Seq[Option[ScripTestCase]]].flatten

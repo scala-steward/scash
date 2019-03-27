@@ -196,12 +196,12 @@ object SigEncoding {
     } yield sig
 
   def checkDataSigEncoding(
-    sig: => ECDigitalSignature,
+    sig: => ByteVector,
     flags: Seq[ScriptFlag]): ScriptError \/ ByteVector =
     // Empty signature. Not strictly DER encoded, but allowed to provide a
     // compact way to provide an invalid signature for use with CHECK(MULTI)SIG
-    if (sig.isEmpty) \/-(sig.bytes)
-    else checkRawSigEncoding(sig.bytes, flags)
+    if (sig.isEmpty) \/-(sig)
+    else checkRawSigEncoding(sig, flags)
 
   /**
    * Determines if the given pubkey is valid in accordance to the given [[ScriptFlag]].
