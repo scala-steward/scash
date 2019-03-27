@@ -219,16 +219,24 @@ sealed abstract class ECPublicKey extends BaseECKey {
 
   /** Verifies if a given piece of data is signed by the [[ECPrivateKey]]'s corresponding [[ECPublicKey]]. */
   def verifyECDSA(data: ByteVector, signature: ECDigitalSignature): Boolean = {
-    val result = NativeSecp256k1.verify(data.toArray, signature.bytes.toArray, bytes.toArray)
-    if (!result) {
-      //if signature verification fails with libsecp256k1 we need to use our old
-      //verification function from spongy castle, this is needed because early blockchain
-      //transactions can have weird non strict der encoded digital signatures
-      //bitcoin core implements this functionality here:
-      //https://github.com/bitcoin/bitcoin/blob/master/src/pubkey.cpp#L16-L165
-      //TODO: Implement functionality in Bitcoin Core linked above
-      oldVerify(data, signature)
-    } else result
+    if (!isFullyValid) false
+    else {
+      val result = NativeSecp256k1.verify(data.toArray, signature.bytes.toArray, bytes.toArray)
+      if (!result) {
+        //if signature verification fails with libsecp256k1 we need to use our old
+        //verification function from spongy castle, this is needed because early blockchain
+        //transactions can have weird non strict der encoded digital signatures
+        //bitcoin core implements this functionality here:
+        //https://github.com/bitcoin/bitcoin/blob/master/src/pubkey.cpp#L16-L165
+        //TODO: Implement functionality in Bitcoin Core linked above
+        oldVerify(data, signature)
+      } else result
+    }
+  }
+
+  def verifySchnorr(hash: HashDigest, signature: ByteVector): Boolean = {
+    if (!isFullyValid || signature.size != 64) false
+    else NativeSecp256k1.schnorrVerify(hash.bytes.toArray, signature.toArray, bytes.toArray)
   }
 
   override def toString = "ECPublicKey(" + hex + ")"

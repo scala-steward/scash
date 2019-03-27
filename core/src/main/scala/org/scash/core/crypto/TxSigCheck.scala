@@ -6,13 +6,13 @@ package org.scash.core.crypto
  */
 import org.scash.core.script.constant.ScriptToken
 import org.scash.core.script.crypto._
-import org.scash.core.script.flag.{ ScriptFlag, ScriptVerifyNullFail }
-import org.scash.core.util.{ BitcoinSLogger, BitcoinScriptUtil }
+import org.scash.core.script.flag.{ScriptEnableSchnorr, ScriptFlag, ScriptVerifyNullFail}
+import org.scash.core.util.{BitcoinSLogger, BitcoinScriptUtil}
 import org.scash.core.script
 import org.scash.core.protocol.script.ScriptPubKey
 import org.scash.core.protocol.transaction.TransactionOutput
-import org.scash.core.script.result.{ ScriptError, ScriptErrorInvalidStackOperation, ScriptErrorSigNullFail }
-import scalaz.{ -\/, \/, \/- }
+import org.scash.core.script.result.{ScriptError, ScriptErrorInvalidStackOperation, ScriptErrorSigNullFail}
+import scalaz.{-\/, \/, \/-}
 import scalaz.std.list._
 import scalaz.syntax.applicative._
 
@@ -48,8 +48,9 @@ trait TxSigCheck extends BitcoinSLogger {
     val spk = ScriptPubKey.fromAsm(sigsRemovedScript)
     val txSComp = TxSigComponent(txSig.transaction, txSig.inputIndex, TransactionOutput(txSig.output.value, spk), txSig.flags)
     val hashForSignature = TransactionSignatureSerializer.hashForSignature(txSComp, hashType)
-    val stripHashByte = ECDigitalSignature(sig.bytes.init)
-    val success = pubKey.verifyECDSA(hashForSignature, stripHashByte)
+    val success = if (flags.contains(ScriptEnableSchnorr) && sig.bytes.length == 64)
+      pubKey.verifySchnorr(hashForSignature, sig.bytes.init)
+    else pubKey.verifyECDSA(hashForSignature, ECDigitalSignature(sig.bytes.init))
 
     nullFailCheck(sig.point[List], flags, success)
   }
