@@ -69,5 +69,10 @@ class ScriptFlagsTest extends FlatSpec with MustMatchers {
   "ScriptEnableReplayProtection" must "have the flag 1 << 17" in {
     ScriptEnableReplayProtection.flag must be(1 << 17)
   }
-
+  "ScriptEnableCheckDataSig" must "have the flag 1 << 18" in {
+    ScriptEnableCheckDataSig.flag must be(1 << 18)
+  }
+  "ScriptEnableSchnorr" must "have the flag 1 << 19" in {
+    ScriptEnableSchnorr.flag must be(1 << 19)
+  }
 }
