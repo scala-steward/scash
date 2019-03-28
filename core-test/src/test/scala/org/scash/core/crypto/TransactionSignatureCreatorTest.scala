@@ -210,7 +210,7 @@ class TransactionSignatureCreatorTest extends FlatSpec with MustMatchers with Sc
       output = TransactionOutput(CurrencyUnits.zero, redeemScript),
       flags = Policy.standardScriptVerifyFlags)
     val sign: ByteVector => Future[ECDigitalSignature] = {
-      bytes: ByteVector => Future(privateKey.sign(bytes))
+      bytes: ByteVector => Future(privateKey.signECDSA(bytes))
     }
     val txSignature = TransactionSignatureCreator.createSig(txSignatureComponent, sign, SigHashType.bchALL)
 

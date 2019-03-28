@@ -27,9 +27,9 @@ import scala.util.{ Failure, Success, Try }
  */
 sealed abstract class BaseECKey extends NetworkElement with Sign {
 
-  override def signFunction: ByteVector => Future[ECDigitalSignature] = { bytes =>
+  override def signECDSAFunction: ByteVector => Future[ECDigitalSignature] = { bytes =>
     import scala.concurrent.ExecutionContext.Implicits.global
-    Future(sign(bytes))
+    Future(signECDSA(bytes))
   }
   /**
    * Signs a given sequence of bytes with the signingKey
@@ -43,7 +43,7 @@ sealed abstract class BaseECKey extends NetworkElement with Sign {
     ECDigitalSignature(ByteVector(signature))
   }
 
-  override def sign(dataToSign: ByteVector): ECDigitalSignature = sign(dataToSign, this)
+  override def signECDSA(dataToSign: ByteVector): ECDigitalSignature = sign(dataToSign, this)
 
   def sign(hash: HashDigest, signingKey: BaseECKey): ECDigitalSignature = sign(hash.bytes, signingKey)
 
