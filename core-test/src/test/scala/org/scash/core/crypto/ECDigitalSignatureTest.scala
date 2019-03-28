@@ -71,7 +71,7 @@ class ECDigitalSignatureTest extends FlatSpec
     forAll(CryptoGenerators.doubleSha256Digest,
       CryptoGenerators.privateKey) {
       case (hash, key) =>
-        val sig = key.sign(hash)
+        val sig = key.signECDSA(hash)
         assert(key.publicKey.verifyECDSA(hash, sig))
     }
   }
@@ -81,8 +81,8 @@ class ECDigitalSignatureTest extends FlatSpec
       CryptoGenerators.doubleSha256Digest,
       CryptoGenerators.doubleSha256Digest) {
       case (key, hash1, hash2) =>
-        val sig1 = key.sign(hash1)
-        val sig2 = key.sign(hash2)
+        val sig1 = key.signECDSA(hash1)
+        val sig2 = key.signECDSA(hash2)
         assert(sig1.r != sig2.r)
     }
   }

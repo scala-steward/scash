@@ -61,7 +61,7 @@ sealed abstract class CryptoGenerators {
   def digitalSignature: Gen[ECDigitalSignature] = for {
     privKey <- privateKey
     hash <- CryptoGenerators.doubleSha256Digest
-  } yield privKey.sign(hash)
+  } yield privKey.signECDSA(hash)
 
   def sha256Digest: Gen[Sha256Digest] = StringGenerators.hexString.map(CryptoUtil.sha256)
 

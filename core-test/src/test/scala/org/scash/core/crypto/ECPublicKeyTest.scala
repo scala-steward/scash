@@ -15,7 +15,7 @@ class ECPublicKeyTest extends FlatSpec with MustMatchers {
     val key: ECPrivateKey = ECPrivateKey(privateKeyHex)
 
     val hash = DoubleSha256Digest(ByteVector(Sha256Hash.ZERO_HASH.getBytes))
-    val signature: ECDigitalSignature = key.sign(hash)
+    val signature: ECDigitalSignature = key.signECDSA(hash)
 
     val isValid: Boolean = key.publicKey.verifyECDSA(ByteVector(Sha256Hash.ZERO_HASH.getBytes), signature)
     isValid must be(true)
@@ -25,7 +25,7 @@ class ECPublicKeyTest extends FlatSpec with MustMatchers {
     val privateKeyHex = "180cb41c7c600be951b5d3d0a7334acc7506173875834f7a6c4c786a28fcbb19"
     val key: ECPrivateKey = ECPrivateKey(privateKeyHex)
     val hash = DoubleSha256Digest(ByteVector(Sha256Hash.ZERO_HASH.getBytes))
-    val signature: ECDigitalSignature = key.sign(hash)
+    val signature: ECDigitalSignature = key.signECDSA(hash)
 
     val wrongPublicKey = ECPublicKey.freshPublicKey
     val isValid: Boolean = wrongPublicKey.verifyECDSA(hash, signature)
@@ -44,7 +44,7 @@ class ECPublicKeyTest extends FlatSpec with MustMatchers {
   it must "verify a piece of data was signed with a scash private key inside of bitcoinj" in {
     val bitcoinsPrivKey = ECPrivateKey.freshPrivateKey
     val hash = DoubleSha256Digest(ByteVector(Sha256Hash.ZERO_HASH.getBytes))
-    val bitcoinsSignature = bitcoinsPrivKey.sign(hash)
+    val bitcoinsSignature = bitcoinsPrivKey.signECDSA(hash)
     val bitcoinjPublicKey = org.bitcoinj.core.ECKey.fromPublicOnly(bitcoinsPrivKey.publicKey.bytes.toArray)
     bitcoinjPublicKey.verify(
       Sha256Hash.ZERO_HASH.getBytes,

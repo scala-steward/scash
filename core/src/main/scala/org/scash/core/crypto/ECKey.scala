@@ -37,19 +37,15 @@ sealed abstract class BaseECKey extends NetworkElement with Sign {
    * @param signingKey the key to sign the bytes with
    * @return the digital signature
    */
-  private def sign(dataToSign: ByteVector, signingKey: BaseECKey): ECDigitalSignature = {
-    require(dataToSign.length == 32 && signingKey.bytes.length <= 32)
-    val signature = NativeSecp256k1.sign(dataToSign.toArray, signingKey.bytes.toArray)
-    ECDigitalSignature(ByteVector(signature))
+  override def signECDSA(dataToSign: ByteVector): ECDigitalSignature = {
+      require(dataToSign.length == 32 && bytes.length <= 32)
+      val signature = NativeSecp256k1.sign(dataToSign.toArray, bytes.toArray)
+      ECDigitalSignature(ByteVector(signature))
   }
 
-  override def signECDSA(dataToSign: ByteVector): ECDigitalSignature = sign(dataToSign, this)
+  def signECDSA(hash: HashDigest): ECDigitalSignature = signECDSA(hash.bytes)
 
-  def sign(hash: HashDigest, signingKey: BaseECKey): ECDigitalSignature = sign(hash.bytes, signingKey)
-
-  def sign(hash: HashDigest): ECDigitalSignature = sign(hash, this)
-
-  def signFuture(hash: HashDigest)(implicit ec: ExecutionContext): Future[ECDigitalSignature] = Future(sign(hash))
+  def signFuture(hash: HashDigest)(implicit ec: ExecutionContext): Future[ECDigitalSignature] = Future(signECDSA(hash))
 
 }
 
