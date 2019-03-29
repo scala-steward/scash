@@ -317,7 +317,7 @@ object ECPublicKey extends Factory[ECPublicKey] {
    * Mimics this function in bitcoin core
    * [[https://github.com/bitcoin/bitcoin/blob/27765b6403cece54320374b37afb01a0cfe571c3/src/pubkey.cpp#L207-L212]]
    */
-  def isFullyValid(bytes: ByteVector): Boolean = Try(NativeSecp256k1.isValidPubKey(bytes.toArray)).isSuccess && isValid(bytes)
+  def isFullyValid(bytes: ByteVector): Boolean = Try(NativeSecp256k1.isValidPubKey(bytes.toArray)).getOrElse(false) && isValid(bytes)
 
   /**
    * Mimics the CPubKey::IsValid function in Bitcoin core, this is a consensus rule
