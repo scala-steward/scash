@@ -16,11 +16,12 @@ class SignTest extends FlatSpec with MustMatchers with PropertyChecks {
     private val key = ECPrivateKey.freshPrivateKey
     def signECDSAFunction: ByteVector => Future[ECDigitalSignature] = key.signECDSAFunction
     def signECDSA(bytes: ByteVector): ECDigitalSignature = key.signECDSA(bytes)
+    def signSchnorrFunction: ByteVector => Future[SchnorrSignature] = key.signSchnorrFunction
+    def signSchnorr(bytes: ByteVector): SchnorrSignature = key.signSchnorr(bytes)
     def publicKey: ECPublicKey = key.publicKey
   }
 
-  behavior of "Sign"
-  it must "sign arbitrary pieces of data correctly" in {
+  it must "ECDSA sign arbitrary pieces of data correctly" in {
     forAll(CryptoGenerators.sha256Digest) {
       case hash: Sha256Digest =>
         val pubKey = signTestImpl.publicKey

@@ -31,22 +31,39 @@ sealed abstract class BaseECKey extends NetworkElement with Sign {
     import scala.concurrent.ExecutionContext.Implicits.global
     Future(signECDSA(bytes))
   }
+
+  override def signSchnorrFunction: ByteVector => Future[SchnorrSignature] = { bytes =>
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Future(signSchnorr(bytes))
+  }
+
   /**
-   * Signs a given sequence of bytes with the signingKey
+   * Signs using ECDSA a given sequence of bytes with the signingKey
    * @param dataToSign the bytes to be signed
    * @param signingKey the key to sign the bytes with
    * @return the digital signature
    */
-  override def signECDSA(dataToSign: ByteVector): ECDigitalSignature = {
-      require(dataToSign.length == 32 && bytes.length <= 32)
-      val signature = NativeSecp256k1.sign(dataToSign.toArray, bytes.toArray)
+  override def signECDSA(data: ByteVector): ECDigitalSignature = {
+      require(data.length == 32 && bytes.length <= 32)
+      val signature = NativeSecp256k1.sign(data.toArray, bytes.toArray)
       ECDigitalSignature(ByteVector(signature))
   }
 
   def signECDSA(hash: HashDigest): ECDigitalSignature = signECDSA(hash.bytes)
 
-  def signFuture(hash: HashDigest)(implicit ec: ExecutionContext): Future[ECDigitalSignature] = Future(signECDSA(hash))
+  /**
+    * Signs using Schnorr Algorithm given sequence of bytes with the signingKey
+    * @param dataToSign the bytes to be signed
+    * @param signingKey the key to sign the bytes with
+    * @return the schnorr signature
+    */
+  override def signSchnorr(data: ByteVector): SchnorrSignature = {
+    require(data.length == 32 && bytes.length <= 32)
+    val signature = NativeSecp256k1.schnorrSign(data.toArray, bytes.toArray)
+    SchnorrSignature(ByteVector(signature))
+  }
 
+  def signSchnorr(hash: HashDigest): SchnorrSignature = signSchnorr(hash.bytes)
 }
 
 /**

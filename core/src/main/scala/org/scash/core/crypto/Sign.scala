@@ -22,6 +22,10 @@ trait Sign {
 
   def signECDSA(bytes: ByteVector): ECDigitalSignature
 
+  def signSchnorrFunction: ByteVector => Future[SchnorrSignature]
+
+  def signSchnorr(bytes: ByteVector): SchnorrSignature
+
   def publicKey: ECPublicKey
 }
 
