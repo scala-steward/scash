@@ -60,7 +60,7 @@ trait TxSigCheck extends BitcoinSLogger {
     sighash: HashDigest,
     flags: Seq[ScriptFlag]
   ) =
-    if (flags.contains(ScriptEnableSchnorr) && sig.length == 64) pubKey.verifySchnorr(sighash, sig)
+    if (flags.contains(ScriptEnableSchnorr) && sig.length == 64) pubKey.verifySchnorr(sighash, SchnorrSignature(sig))
     else pubKey.verifyECDSA(sighash, ECDigitalSignature(sig))
 
   /**

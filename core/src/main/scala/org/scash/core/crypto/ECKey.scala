@@ -247,9 +247,9 @@ sealed abstract class ECPublicKey extends BaseECKey {
     }
   }
 
-  def verifySchnorr(hash: HashDigest, signature: ByteVector): Boolean = {
-    if (!isFullyValid || signature.size != 64) false
-    else NativeSecp256k1.schnorrVerify(hash.bytes.toArray, signature.toArray, bytes.toArray)
+  def verifySchnorr(hash: HashDigest, signature: SchnorrSignature): Boolean = {
+    if (!isFullyValid || signature.bytes.size != 64) false
+    else NativeSecp256k1.schnorrVerify(hash.bytes.toArray, signature.bytes.toArray, bytes.toArray)
   }
 
   override def toString = "ECPublicKey(" + hex + ")"

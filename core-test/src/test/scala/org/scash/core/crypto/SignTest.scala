@@ -32,4 +32,14 @@ class SignTest extends FlatSpec with MustMatchers with PropertyChecks {
     }
   }
 
+  it must "schnorr sign arbitrary pieces of data correctly" in {
+    forAll(CryptoGenerators.sha256Digest) {
+      case hash: Sha256Digest =>
+        val pubKey = signTestImpl.publicKey
+        val sigF = signTestImpl.signSchnorrFunction(hash.bytes)
+
+        sigF.map(sig => assert(pubKey.verifySchnorr(hash, sig)))
+    }
+  }
+
 }
