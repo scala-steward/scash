@@ -90,7 +90,10 @@ trait TxSigCheck extends BitcoinSLogger {
         val err = nullFailCheck(ss, flags, false)
         if (err.isRight) -\/(ScriptErrorInvalidStackOperation) else err
       case (sig :: sigsT, pubKey :: pubKeysT) =>
-        (for {
+        if (flags.contains(ScriptEnableSchnorr) && sig.bytes.size == 64) {
+          logger.info("Schnorr signatures are not allowed in multisig at the moment")
+          \/-(false)
+        } else (for {
           _ <- SigEncoding.checkTxSigEncoding(sig.bytes, flags)
           _ <- SigEncoding.checkPubKeyEncoding(pubKey, flags)
           b <- checkSig(txSig, nonSepScript, pubKey, sig.bytes, flags)
