@@ -123,7 +123,7 @@ sealed abstract class CryptoInterpreter {
       p <- multiCheckSig(ScriptProgram(program, OP_CHECKMULTISIG :: program.script.tail, ScriptProgram.Script))
       r <- p.stackTopIsTrue match {
         case true => \/-(ScriptProgram(p, p.stack.tail, p.script))
-        case false => -\/(ScriptErrorCheckSigVerify)
+        case false => -\/(ScriptErrorCheckMultiSigVerify)
       }
     } yield r)
       .leftMap(ScriptProgram(program, _))
@@ -181,7 +181,7 @@ sealed abstract class CryptoInterpreter {
       for {
         s <- script.getTwo(p.stack)
         pubKey = ECPublicKey(s._1.bytes)
-        sig = ECDigitalSignature(s._2.bytes)
+        sig = s._2.bytes
         _ <- SigEncoding.checkTxSigEncoding(sig, p.flags)
         _ <- SigEncoding.checkPubKeyEncoding(pubKey, p.flags)
         nonSepScript = BitcoinScriptUtil.removeOpCodeSeparator(p)
@@ -200,14 +200,14 @@ sealed abstract class CryptoInterpreter {
         s <- getThree(p.stack)
         pubKey = ECPublicKey(s._1.bytes)
         msg = s._2
-        sig = ECDigitalSignature(s._3.bytes)
+        sig = s._3.bytes
         _ <- SigEncoding.checkDataSigEncoding(sig, p.flags)
         _ <- SigEncoding.checkPubKeyEncoding(pubKey, p.flags)
         success <-
           if (sig.isEmpty) \/-(OP_FALSE)
           else for {
             hash <- CryptoUtil.sha256Opt(msg.bytes).toRightDisjunction(ScriptErrorUnknownError)
-            success <- \/-(pubKey.verify(hash, sig))
+            success <- \/-(TxSigCheck.verifySig(sig, pubKey, hash, p.flags))
             _ <- checkFlag(p.flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !success)
           } yield if (success) OP_TRUE else OP_FALSE
       } yield ScriptProgram(p, success :: p.stack.drop(3), p.script.tail)

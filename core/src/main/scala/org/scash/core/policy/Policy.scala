@@ -45,7 +45,8 @@ sealed abstract class Policy {
     ScriptVerifyCheckLocktimeVerify,
     ScriptVerifyCheckSequenceVerify,
     ScriptVerifyNullFail,
-    ScriptEnableCheckDataSig
+    ScriptEnableCheckDataSig,
+    ScriptEnableSchnorr
   )
 
   /**

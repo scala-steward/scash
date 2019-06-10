@@ -27,30 +27,43 @@ import scala.util.{ Failure, Success, Try }
  */
 sealed abstract class BaseECKey extends NetworkElement with Sign {
 
-  override def signFunction: ByteVector => Future[ECDigitalSignature] = { bytes =>
+  override def signECDSAFunction: ByteVector => Future[ECDigitalSignature] = { bytes =>
     import scala.concurrent.ExecutionContext.Implicits.global
-    Future(sign(bytes))
+    Future(signECDSA(bytes))
   }
+
+  override def signSchnorrFunction: ByteVector => Future[SchnorrSignature] = { bytes =>
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Future(signSchnorr(bytes))
+  }
+
   /**
-   * Signs a given sequence of bytes with the signingKey
+   * Signs using ECDSA a given sequence of bytes with the signingKey
    * @param dataToSign the bytes to be signed
    * @param signingKey the key to sign the bytes with
    * @return the digital signature
    */
-  private def sign(dataToSign: ByteVector, signingKey: BaseECKey): ECDigitalSignature = {
-    require(dataToSign.length == 32 && signingKey.bytes.length <= 32)
-    val signature = NativeSecp256k1.sign(dataToSign.toArray, signingKey.bytes.toArray)
-    ECDigitalSignature(ByteVector(signature))
+  override def signECDSA(data: ByteVector): ECDigitalSignature = {
+      require(data.length == 32 && bytes.length <= 32)
+      val signature = NativeSecp256k1.sign(data.toArray, bytes.toArray)
+      ECDigitalSignature(ByteVector(signature))
   }
 
-  override def sign(dataToSign: ByteVector): ECDigitalSignature = sign(dataToSign, this)
+  def signECDSA(hash: HashDigest): ECDigitalSignature = signECDSA(hash.bytes)
 
-  def sign(hash: HashDigest, signingKey: BaseECKey): ECDigitalSignature = sign(hash.bytes, signingKey)
+  /**
+    * Signs using Schnorr Algorithm given sequence of bytes with the signingKey
+    * @param dataToSign the bytes to be signed
+    * @param signingKey the key to sign the bytes with
+    * @return the schnorr signature
+    */
+  override def signSchnorr(data: ByteVector): SchnorrSignature = {
+    require(data.length == 32 && bytes.length <= 32)
+    val signature = NativeSecp256k1.schnorrSign(data.toArray, bytes.toArray)
+    SchnorrSignature(ByteVector(signature))
+  }
 
-  def sign(hash: HashDigest): ECDigitalSignature = sign(hash, this)
-
-  def signFuture(hash: HashDigest)(implicit ec: ExecutionContext): Future[ECDigitalSignature] = Future(sign(hash))
-
+  def signSchnorr(hash: HashDigest): SchnorrSignature = signSchnorr(hash.bytes)
 }
 
 /**
@@ -215,23 +228,29 @@ object ECPrivateKey extends Factory[ECPrivateKey] {
  * Created by chris on 2/16/16.
  */
 sealed abstract class ECPublicKey extends BaseECKey {
-  def verify(hash: HashDigest, signature: ECDigitalSignature): Boolean = verify(hash.bytes, signature)
+  def verifyECDSA(hash: HashDigest, signature: ECDigitalSignature): Boolean = verifyECDSA(hash.bytes, signature)
 
   /** Verifies if a given piece of data is signed by the [[ECPrivateKey]]'s corresponding [[ECPublicKey]]. */
-  def verify(data: ByteVector, signature: ECDigitalSignature): Boolean = {
-    val result = NativeSecp256k1.verify(data.toArray, signature.bytes.toArray, bytes.toArray)
-    if (!result) {
-      //if signature verification fails with libsecp256k1 we need to use our old
-      //verification function from spongy castle, this is needed because early blockchain
-      //transactions can have weird non strict der encoded digital signatures
-      //bitcoin core implements this functionality here:
-      //https://github.com/bitcoin/bitcoin/blob/master/src/pubkey.cpp#L16-L165
-      //TODO: Implement functionality in Bitcoin Core linked above
-      oldVerify(data, signature)
-    } else result
+  def verifyECDSA(data: ByteVector, signature: ECDigitalSignature): Boolean = {
+    if (!isFullyValid) false
+    else {
+      val result = NativeSecp256k1.verify(data.toArray, signature.bytes.toArray, bytes.toArray)
+      if (!result) {
+        //if signature verification fails with libsecp256k1 we need to use our old
+        //verification function from spongy castle, this is needed because early blockchain
+        //transactions can have weird non strict der encoded digital signatures
+        //bitcoin core implements this functionality here:
+        //https://github.com/bitcoin/bitcoin/blob/master/src/pubkey.cpp#L16-L165
+        //TODO: Implement functionality in Bitcoin Core linked above
+        oldVerify(data, signature)
+      } else result
+    }
   }
 
-  def verify(hex: String, signature: ECDigitalSignature): Boolean = verify(BitcoinSUtil.decodeHex(hex), signature)
+  def verifySchnorr(hash: HashDigest, signature: SchnorrSignature): Boolean = {
+    if (!isFullyValid || signature.bytes.size != 64) false
+    else NativeSecp256k1.schnorrVerify(hash.bytes.toArray, signature.bytes.toArray, bytes.toArray)
+  }
 
   override def toString = "ECPublicKey(" + hex + ")"
 
@@ -298,7 +317,7 @@ object ECPublicKey extends Factory[ECPublicKey] {
    * Mimics this function in bitcoin core
    * [[https://github.com/bitcoin/bitcoin/blob/27765b6403cece54320374b37afb01a0cfe571c3/src/pubkey.cpp#L207-L212]]
    */
-  def isFullyValid(bytes: ByteVector): Boolean = Try(NativeSecp256k1.isValidPubKey(bytes.toArray)).isSuccess && isValid(bytes)
+  def isFullyValid(bytes: ByteVector): Boolean = Try(NativeSecp256k1.isValidPubKey(bytes.toArray)).getOrElse(false) && isValid(bytes)
 
   /**
    * Mimics the CPubKey::IsValid function in Bitcoin core, this is a consensus rule

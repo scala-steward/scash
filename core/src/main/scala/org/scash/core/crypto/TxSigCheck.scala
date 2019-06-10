@@ -6,15 +6,14 @@ package org.scash.core.crypto
  */
 import org.scash.core.script.constant.ScriptToken
 import org.scash.core.script.crypto._
-import org.scash.core.script.flag.{ ScriptFlag, ScriptVerifyNullFail }
-import org.scash.core.util.{ BitcoinSLogger, BitcoinScriptUtil }
+import org.scash.core.script.flag.{ScriptEnableSchnorr, ScriptFlag, ScriptVerifyNullFail}
+import org.scash.core.util.{BitcoinSLogger, BitcoinScriptUtil}
 import org.scash.core.script
 import org.scash.core.protocol.script.ScriptPubKey
 import org.scash.core.protocol.transaction.TransactionOutput
-import org.scash.core.script.result.{ ScriptError, ScriptErrorInvalidStackOperation, ScriptErrorSigNullFail }
-import scalaz.{ -\/, \/, \/- }
-import scalaz.std.list._
-import scalaz.syntax.applicative._
+import org.scash.core.script.result.{ScriptError, ScriptErrorInvalidStackOperation, ScriptErrorSigNullFail}
+import scalaz.{-\/, \/, \/-}
+import scodec.bits.ByteVector
 
 import scala.annotation.tailrec
 
@@ -40,19 +39,29 @@ trait TxSigCheck extends BitcoinSLogger {
     txSig: TxSigComponent,
     nonSepScript: Seq[ScriptToken],
     pubKey: ECPublicKey,
-    sig: ECDigitalSignature,
+    sig: ByteVector,
     flags: Seq[ScriptFlag]): ScriptError \/ Boolean = {
     val sigsRemovedScript = BitcoinScriptUtil.calculateScriptForChecking(txSig, sig, nonSepScript)
-    val hashTypeByte = sig.bytes.lastOption.getOrElse(0x00.toByte)
+    val hashTypeByte = sig.lastOption.getOrElse(0x00.toByte)
     val hashType = SigHashType.fromByte(hashTypeByte)
     val spk = ScriptPubKey.fromAsm(sigsRemovedScript)
     val txSComp = TxSigComponent(txSig.transaction, txSig.inputIndex, TransactionOutput(txSig.output.value, spk), txSig.flags)
     val hashForSignature = TransactionSignatureSerializer.hashForSignature(txSComp, hashType)
-    val stripHashByte = ECDigitalSignature(sig.bytes.init)
-    val success = pubKey.verify(hashForSignature, stripHashByte)
+    val sigSansHashType = sig.init
+    val success = verifySig(sigSansHashType, pubKey, hashForSignature, flags)
 
-    nullFailCheck(sig.point[List], flags, success)
+    script.checkFlag(flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !success && sig.nonEmpty)
+      .map(_ => success)
   }
+
+  def verifySig(
+    sig: ByteVector,
+    pubKey: ECPublicKey,
+    sighash: HashDigest,
+    flags: Seq[ScriptFlag]
+  ) =
+    if (flags.contains(ScriptEnableSchnorr) && sig.length == 64) pubKey.verifySchnorr(sighash, SchnorrSignature(sig))
+    else pubKey.verifyECDSA(sighash, ECDigitalSignature(sig))
 
   /**
    * This is a helper function to check digital signatures against public keys
@@ -82,9 +91,9 @@ trait TxSigCheck extends BitcoinSLogger {
         if (err.isRight) -\/(ScriptErrorInvalidStackOperation) else err
       case (sig :: sigsT, pubKey :: pubKeysT) =>
         (for {
-          _ <- SigEncoding.checkTxSigEncoding(sig, flags)
+          _ <- SigEncoding.checkTxSigEncoding(sig.bytes, flags)
           _ <- SigEncoding.checkPubKeyEncoding(pubKey, flags)
-          b <- checkSig(txSig, nonSepScript, pubKey, sig, flags)
+          b <- checkSig(txSig, nonSepScript, pubKey, sig.bytes, flags)
         } yield b) match {
           case \/-(true) => go(sigsT, pubKeysT, reqSigs - 1)
           //checkSig may return a negative result, but we need to continue evaluating the signatures

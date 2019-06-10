@@ -295,7 +295,8 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
    */
   def calculateScriptForChecking(
     txSignatureComponent: TxSigComponent,
-    signature: ECDigitalSignature, script: Seq[ScriptToken]): Seq[ScriptToken] = {
+    signature: ByteVector,
+    script: Seq[ScriptToken]): Seq[ScriptToken] = {
     val scriptForChecking = calculateScriptForSigning(txSignatureComponent, script)
     logger.debug("sig for removal: " + signature)
     logger.debug("script: " + script)
@@ -313,11 +314,11 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
   }
 
   /** Removes the given [[ECDigitalSignature]] from the list of [[ScriptToken]] if it exists. */
-  def removeSignatureFromScript(signature: ECDigitalSignature, script: Seq[ScriptToken]): Seq[ScriptToken] = {
-    if (script.contains(ScriptConstant(signature.hex))) {
+  def removeSignatureFromScript(signature: ByteVector, script: Seq[ScriptToken]): Seq[ScriptToken] = {
+    if (script.contains(ScriptConstant(signature.toHex))) {
       //replicates this line in bitcoin core
       //https://github.com/bitcoin/bitcoin/blob/master/src/script/interpreter.cpp#L872
-      val sigIndex = script.indexOf(ScriptConstant(signature.hex))
+      val sigIndex = script.indexOf(ScriptConstant(signature.toHex))
       logger.debug("SigIndex: " + sigIndex)
       //remove sig and it's corresponding BytesToPushOntoStack
       val sigRemoved = script.slice(0, sigIndex - 1) ++ script.slice(sigIndex + 1, script.size)
@@ -333,7 +334,7 @@ trait BitcoinScriptUtil extends BitcoinSLogger {
       remainingSigs match {
         case Nil => scriptTokens
         case h :: t =>
-          val newScriptTokens = removeSignatureFromScript(h, scriptTokens)
+          val newScriptTokens = removeSignatureFromScript(h.bytes, scriptTokens)
           loop(t, newScriptTokens)
       }
     }

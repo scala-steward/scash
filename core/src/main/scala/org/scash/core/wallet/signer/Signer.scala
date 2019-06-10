@@ -50,7 +50,7 @@ sealed abstract class P2PKSigner extends BitcoinSigner {
     if (signers.size != 1) {
       Future.fromTry(TxBuilderError.TooManySigners)
     } else {
-      val sign: ByteVector => Future[ECDigitalSignature] = signers.head.signFunction
+      val sign: ByteVector => Future[ECDigitalSignature] = signers.head.signECDSAFunction
       val unsignedInput = unsignedTx.inputs(inputIndex.toInt)
       val flags = Policy.standardFlags
       val signed: Future[TxSigComponent] = spk match {
@@ -111,7 +111,7 @@ sealed abstract class P2PKHSigner extends BitcoinSigner {
     if (signers.size != 1) {
       Future.fromTry(TxBuilderError.TooManySigners)
     } else {
-      val sign = signers.head.signFunction
+      val sign = signers.head.signECDSAFunction
       val pubKey = signers.head.publicKey
       val unsignedInput = unsignedTx.inputs(inputIndex.toInt)
       val flags = Policy.standardFlags
@@ -177,7 +177,7 @@ sealed abstract class MultiSigSigner extends BitcoinSigner {
   override def sign(signersWithPubKeys: Seq[Sign], output: TransactionOutput, unsignedTx: Transaction,
     inputIndex: UInt32, hashType: SigHashType, isDummySignature: Boolean)(implicit ec: ExecutionContext): Future[TxSigComponent] = {
     val spk = output.scriptPubKey
-    val signers = signersWithPubKeys.map(_.signFunction)
+    val signers = signersWithPubKeys.map(_.signECDSAFunction)
     val unsignedInput = unsignedTx.inputs(inputIndex.toInt)
     val flags = Policy.standardFlags
     val signed: Future[TxSigComponent] = spk match {

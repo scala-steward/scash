@@ -251,7 +251,7 @@ class CryptoInterpreterTest extends FlatSpec with MustMatchers with TestHelpers 
     val pubKey = privKey.publicKey
     val msg = ScriptConstant(ByteVector.empty)
     val pubKeyH = ScriptConstant((0x06 | (pubKey.bytes.last & 1)).toByte +: pubKey.bytes.tail)
-    val sig = ScriptConstant(privKey.sign(CryptoUtil.sha256(msg.bytes)).bytes)
+    val sig = ScriptConstant(privKey.signECDSA(CryptoUtil.sha256(msg.bytes)).bytes)
 
     val dataSig = List(ScriptEnableCheckDataSig)
     val strictEnc = List(ScriptEnableCheckDataSig, ScriptVerifyStrictEnc)
@@ -267,7 +267,7 @@ class CryptoInterpreterTest extends FlatSpec with MustMatchers with TestHelpers 
     val privKey = ECPrivateKey.fromBytes(ByteVector.fill(31)(0x00) :+ 0x01, false)
     val pubKey = ScriptConstant(privKey.publicKey.bytes)
     val msg = ScriptConstant(ByteVector.empty)
-    val sig = ScriptConstant(privKey.sign(CryptoUtil.sha256(msg.bytes)).bytes)
+    val sig = ScriptConstant(privKey.signECDSA(CryptoUtil.sha256(msg.bytes)).bytes)
     val minimalSig = ScriptConstant(ByteVector(0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01))
     val dataSig = List(ScriptEnableCheckDataSig)
     val nullFail = List(ScriptEnableCheckDataSig, ScriptVerifyNullFail)
@@ -335,6 +335,6 @@ class CryptoInterpreterTest extends FlatSpec with MustMatchers with TestHelpers 
     privKey: ECPrivateKey = ECPrivateKey()
   ) = {
     val pubKey = privKey.publicKey
-    List(ScriptConstant(pubKey.bytes), msg, ScriptConstant(privKey.sign(CryptoUtil.sha256(msg.bytes)).bytes))
+    List(ScriptConstant(pubKey.bytes), msg, ScriptConstant(privKey.signECDSA(CryptoUtil.sha256(msg.bytes)).bytes))
   }
 }

@@ -149,3 +149,9 @@ case object ScriptEnableCheckDataSig extends ScriptFlag {
   override def flag = 1 << 18
   override def name = "CHECKDATASIG"
 }
+
+/** Schnorr signatures enabled for OP_CHECK(DATA)SIG/VERIFY */
+case object ScriptEnableSchnorr extends ScriptFlag {
+  override def flag = 1 << 19
+  override def name: String = "SCHNORR"
+}

@@ -32,7 +32,7 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
   def p2pkhScriptSignature: Gen[P2PKHScriptSignature] = for {
     privKey <- CryptoGenerators.privateKey
     hash <- CryptoGenerators.doubleSha256Digest
-    signature = privKey.sign(hash)
+    signature = privKey.signECDSA(hash)
   } yield P2PKHScriptSignature(signature, privKey.publicKey)
 
   def multiSignatureScriptSignature: Gen[MultiSignatureScriptSignature] = {
@@ -42,7 +42,7 @@ sealed abstract class ScriptGenerators extends BitcoinSLogger {
     } yield for {
       _ <- 0 until numKeys
       privKey = ECPrivateKey()
-    } yield privKey.sign(hash)
+    } yield privKey.signECDSA(hash)
     signatures.map(sigs => MultiSignatureScriptSignature(sigs))
   }
 

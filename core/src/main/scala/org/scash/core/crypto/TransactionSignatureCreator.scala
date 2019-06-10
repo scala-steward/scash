@@ -19,7 +19,7 @@ sealed abstract class TransactionSignatureCreator {
    * @return
    */
   def createSig(txSignatureComponent: TxSigComponent, privateKey: ECPrivateKey, hashType: SigHashType): ECDigitalSignature = {
-    val sign: ByteVector => ECDigitalSignature = privateKey.sign(_: ByteVector)
+    val sign: ByteVector => ECDigitalSignature = privateKey.signECDSA(_: ByteVector)
     createSig(txSignatureComponent, sign, hashType)
   }
 

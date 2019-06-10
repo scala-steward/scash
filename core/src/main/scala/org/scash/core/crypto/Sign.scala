@@ -1,9 +1,7 @@
 package org.scash.core.crypto
 
 import scodec.bits.ByteVector
-
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.Future
 
 /**
  * This is meant to be an abstraction for a [[ECPrivateKey]], sometimes we will not
@@ -20,33 +18,14 @@ import scala.concurrent.{ Await, Future }
  *
  */
 trait Sign {
-  def signFunction: ByteVector => Future[ECDigitalSignature]
+  def signECDSAFunction: ByteVector => Future[ECDigitalSignature]
 
-  def signFuture(bytes: ByteVector): Future[ECDigitalSignature] = signFunction(bytes)
+  def signECDSA(bytes: ByteVector): ECDigitalSignature
 
-  def sign(bytes: ByteVector): ECDigitalSignature = {
-    Await.result(signFuture(bytes), 30.seconds)
-  }
+  def signSchnorrFunction: ByteVector => Future[SchnorrSignature]
+
+  def signSchnorr(bytes: ByteVector): SchnorrSignature
 
   def publicKey: ECPublicKey
 }
 
-object Sign {
-  private case class SignImpl(signFunction: ByteVector => Future[ECDigitalSignature], publicKey: ECPublicKey) extends Sign
-
-  def apply(signFunction: ByteVector => Future[ECDigitalSignature], pubKey: ECPublicKey): Sign = {
-    SignImpl(signFunction, pubKey)
-  }
-
-  /**
-   * This dummySign function is useful for the case where we do not have the
-   * signFunction available on the same jvm as the place where we are creating the
-   * sign. I can't think of a good way to serialize the signFunction, so it needs to be
-   * optional for now. Maybe we rethink the idea of the signFunction in the future.
-   * the public key is still useful here though because it can be used to match against
-   * a specific private key on another server
-   */
-  def dummySign(publicKey: ECPublicKey): Sign = {
-    SignImpl({ _: ByteVector => Future.successful(EmptyDigitalSignature) }, publicKey)
-  }
-}
