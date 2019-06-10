@@ -125,38 +125,27 @@ object SigEncoding {
   }
 
   /**
-   * Test whether the tx element is a valid signature based
-   * on the encoding, S value, and sighash type. Requires
-   * [[ScriptVerifyDerSig]] | [[ScriptVerifyLowS]] | [[ScriptVerifyStrictEnc]],
-   * [[ScriptVerifyLowS]] &&  [[ScriptVerifyStrictEnc]]
-   * to be enabled respectively. Note that this will allow zero-length signatures.
-   */
-  def checkRawSigECDSAEncoding(
-    sig: => ByteVector,
-    flags: Seq[ScriptFlag]): ScriptError \/ ByteVector =
-    for {
-      // In an ECDSA-only context, 64-byte signatures are banned when
-      // Schnorr flag set.
-      _ <- script.checkFlag(flags)(ScriptEnableSchnorr, ScriptErrorSigBadLength, sig.size == 64)
-      _ <- script.checkFlags(flags)(
-        List(ScriptVerifyDerSig, ScriptVerifyLowS, ScriptVerifyStrictEnc),
-        ScriptErrorSigDer,
-        !isValidSignatureEncoding(sig))
-      _ <- script.checkFlag(flags)(ScriptVerifyLowS, ScriptErrorSigHighS, !DERSignatureUtil.isLowS(sig))
-    } yield sig
-
-  /**
-    * Test whether the tx element is a valid signature based
-    * on the encoding, S value, and sighash type. Requires
-    * [[ScriptEnableSchnorr]]
+    * Test whether the tx element is a valid signature schnorr signature
+    * Requires [[ScriptEnableSchnorr]]
+    * or ECDSA signature basedon the encoding, S value, and sighash type.
+    * Requires
+    * [[ScriptVerifyDerSig]] | [[ScriptVerifyLowS]] | [[ScriptVerifyStrictEnc]],
+    * [[ScriptVerifyLowS &&  [[ScriptVerifyStrictEnc]]
     * to be enabled respectively. Note that this will allow zero-length signatures.
+    *
     */
   def checkRawSigEncoding(
     sig: => ByteVector,
     flags: Seq[ScriptFlag]
   ): ScriptError \/ ByteVector =
     if (flags.contains(ScriptEnableSchnorr) && sig.size == 64) \/-(sig)
-    else checkRawSigECDSAEncoding(sig, flags)
+    else for {
+      _ <- script.checkFlags(flags)(
+        List(ScriptVerifyDerSig, ScriptVerifyLowS, ScriptVerifyStrictEnc),
+        ScriptErrorSigDer,
+        !isValidSignatureEncoding(sig))
+      _ <- script.checkFlag(flags)(ScriptVerifyLowS, ScriptErrorSigHighS, !DERSignatureUtil.isLowS(sig))
+    } yield sig
 
   def checkSigHashEncoding(
     sig: ByteVector,
@@ -182,17 +171,6 @@ object SigEncoding {
     else for {
       _ <- checkRawSigEncoding(sig.init, flags)
       _ <- checkSigHashEncoding(sig, flags)
-    } yield sig
-
-  def checkTxECDSASigEncoding(
-    sig: => ECDigitalSignature,
-    flags: Seq[ScriptFlag]
-  ): ScriptError \/ ECDigitalSignature =
-    //allow empty sigs
-    if (sig.isEmpty) \/-(sig)
-    else for {
-      _ <- checkRawSigECDSAEncoding(sig.bytes.init, flags)
-      _ <- checkSigHashEncoding(sig.bytes, flags)
     } yield sig
 
   def checkDataSigEncoding(

@@ -91,7 +91,7 @@ trait TxSigCheck extends BitcoinSLogger {
         if (err.isRight) -\/(ScriptErrorInvalidStackOperation) else err
       case (sig :: sigsT, pubKey :: pubKeysT) =>
         (for {
-          _ <- SigEncoding.checkTxECDSASigEncoding(sig, flags)
+          _ <- SigEncoding.checkTxSigEncoding(sig.bytes, flags)
           _ <- SigEncoding.checkPubKeyEncoding(pubKey, flags)
           b <- checkSig(txSig, nonSepScript, pubKey, sig.bytes, flags)
         } yield b) match {
