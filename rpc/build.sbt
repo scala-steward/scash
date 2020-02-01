@@ -20,18 +20,15 @@ TaskKeys.downloadBitcoind := {
     Files.createDirectories(binaryDir)
   }
 
-  val experimentalVersion = "0.18.99" // TODO: change this when new version compiled on suredbits server
-
-  val versions =
-    List("0.19.0.1", "0.18.1", "0.17.0.1", "0.16.3", experimentalVersion)
+  val versions = List("0.20.7", "0.20.8", "0.20.9")
 
   logger.debug(
     s"(Maybe) downloading Bitcoin Core binaries for versions: ${versions.mkString(",")}")
 
-  val (platform, suffix) =
-    if (Properties.isLinux) ("x86_64-linux-gnu", "tar.gz")
-    else if (Properties.isMac) ("osx64", "tar.gz")
-    else if (Properties.isWin) ("win64", "zip")
+  val (os, platform, suffix) =
+    if (Properties.isLinux) ("linux", "x86_64-linux-gnu", "tar.gz")
+    else if (Properties.isMac) ("osx", "osx64", "tar.gz")
+    else if (Properties.isWin) ("win", "win64", "zip")
     else sys.error(s"Unsupported OS: ${Properties.osName}")
 
   implicit val ec = scala.concurrent.ExecutionContext.global
@@ -39,10 +36,7 @@ TaskKeys.downloadBitcoind := {
     val versionDir = binaryDir resolve version
     val archiveLocation = binaryDir resolve s"$version.$suffix"
     val location =
-      if (version == experimentalVersion)
-        s"https://s3-us-west-1.amazonaws.com/suredbits.com/bitcoin-core-$version/bitcoin-$version-$platform.$suffix"
-      else
-        s"https://bitcoincore.org/bin/bitcoin-core-$version/bitcoin-$version-$platform.$suffix"
+      s"https://download.bitcoinabc.org/$version/$os/bitcoin-abc-$version-$platform.$suffix"
 
     val expectedEndLocation = binaryDir resolve s"bitcoin-$version"
 
