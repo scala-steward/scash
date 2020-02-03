@@ -1,64 +1,31 @@
 cancelable in Global := true
 
-lazy val commonCompilerOpts = {
-  List(
-    "-Xmax-classfile-name",
-    "128"
-  )
-}
-//https://docs.scala-lang.org/overviews/compiler-options/index.html
-lazy val compilerOpts = Seq(
-  "-target:jvm-1.8",
-  "-encoding",
-  "UTF-8",
-  "-unchecked",
-  "-feature",
-  "-deprecation",
-  "-Xfuture",
-  "-Ywarn-dead-code",
-  "-Ywarn-unused-import",
-  "-Ywarn-value-discard",
-  "-Ywarn-unused",
-  "-unchecked",
-  "-deprecation",
-  "-feature"
-) ++ commonCompilerOpts
+lazy val core = project in file("core")
+lazy val rpc = project in file("rpc")
 
-lazy val testCompilerOpts = commonCompilerOpts
-
-lazy val commonSettings = List(
-  scalacOptions in Compile := compilerOpts,
-  scalacOptions in Test := testCompilerOpts,
-  assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
-)
-
-lazy val root = project
+lazy val scash = project
   .in(file("."))
   .aggregate(
     secp256k1jni,
     core,
     coreGen,
-    coreTest
+    coreTest,
+    rpc,
+    rpcTest,
   )
-  .settings(commonSettings: _*)
+  .settings(CommonSettings.settings: _*)
+  .settings(crossScalaVersions := Nil)
 
 lazy val secp256k1jni = project
   .in(file("secp256k1jni"))
-  .settings(commonSettings: _*)
+  .settings(CommonSettings.prodSettings: _*)
+  .settings(coverageEnabled := false)
   .enablePlugins()
-
-lazy val core = project
-  .in(file("core"))
-  .enablePlugins()
-  .settings(commonSettings: _*)
-  .dependsOn(
-    secp256k1jni
-  )
 
 lazy val coreGen = project
   .in(file("core-gen"))
   .enablePlugins()
-  .settings(commonSettings: _*)
+  .settings(CommonSettings.settings: _*)
   .dependsOn(
     core
   )
@@ -66,21 +33,15 @@ lazy val coreGen = project
 lazy val coreTest = project
   .in(file("core-test"))
   .enablePlugins()
-  .settings(commonSettings: _*)
+  .settings(CommonSettings.testSettings: _*)
+  .settings(name := "scash-test")
   .dependsOn(
     core,
     coreGen % "test->test"
   )
 
-lazy val rpc = project
-  .in(file("rpc"))
-  .enablePlugins()
-  .settings(commonSettings: _*)
-  .dependsOn(
-    core,
-    coreGen % "test->test"
-  ).settings(
-  testOptions in Test += Tests.Argument("-oF")
-)
+lazy val rpcTest = project
+  .in(file("rpc-test"))
+  .settings(CommonSettings.testSettings: _*)
+  .dependsOn(core % "compile->compile;test->test", coreGen)
 
-publishArtifact in root := false

@@ -12,3 +12,4 @@ coverageMinimum := 80
 
 coverageFailOnMinimum := true
 
+dependsOn(Projects.secp256k1jni)

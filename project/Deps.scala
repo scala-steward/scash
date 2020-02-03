@@ -16,6 +16,13 @@ object Deps {
     val scodecbitsv = "1.1.9"
     val junitv = "0.11"
     val zio = "1.0.0-RC17"
+    val typesafeConfigV = "1.4.0"
+    val nativeLoaderV = "2.3.4"
+
+    // async dropped Scala 2.11 in 0.10.0
+    val asyncOldScalaV = "0.9.7"
+    val asyncNewScalaV = "0.10.0"
+
   }
 
   object Compile {
@@ -28,9 +35,15 @@ object Deps {
     val playJson = "com.typesafe.play" %% "play-json" % V.playv
     val scalaz = "org.scalaz" %% "scalaz-core" % V.scalazv withSources() withJavadoc()
     val zio = "dev.zio" %% "zio" % V.zio withSources() withJavadoc()
+    val typesafeConfig = "com.typesafe" % "config" % V.typesafeConfigV withSources () withJavadoc ()
+    //for loading secp256k1 natively
+    val nativeLoader = "org.scijava" % "native-lib-loader" % V.nativeLoaderV withSources () withJavadoc ()
+
   }
 
   object Test {
+    val oldAsync = "org.scala-lang.modules" %% "scala-async" % V.asyncOldScalaV % "test" withSources () withJavadoc ()
+    val newAsync = "org.scala-lang.modules" %% "scala-async" % V.asyncNewScalaV % "test" withSources () withJavadoc ()
     val bitcoinj = ("org.bitcoinj" % "bitcoinj-core" % "0.14.4" % "test").exclude("org.slf4j", "slf4j-api")
     val junitInterface = "com.novocode" % "junit-interface" % V.junitv % "test"
     val logback = "ch.qos.logback" % "logback-classic" % V.logback % "test"
@@ -48,6 +61,11 @@ object Deps {
     Compile.scalaz
   )
 
+  val secp256k1jni = List(
+    Compile.nativeLoader,
+    Test.junitInterface
+    )
+
   val coreGen = List(
     Compile.slf4j,
     Test.scalacheck
@@ -60,17 +78,22 @@ object Deps {
     Test.scalaTest,
     Test.spray
   )
-  
+
   val rpc = List(
     Compile.akkaHttp,
     Compile.akkaStream,
     Compile.playJson,
     Compile.slf4j,
-    Compile.zio,
+    Compile.typesafeConfig
+    )
+
+  def rpcTest(scalaVersion: String) = List(
     Test.akkaHttp,
     Test.akkaStream,
     Test.logback,
     Test.scalaTest,
-    Test.scalacheck
-  )
+    Test.scalacheck,
+    if (scalaVersion.startsWith("2.11")) Test.oldAsync else Test.newAsync
+    )
+
 }
