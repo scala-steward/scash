@@ -1,10 +1,10 @@
 package org.scash.core.protocol.transaction
 
-import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.number.{ Int32, UInt32 }
+import org.scash.core.crypto.{DoubleSha256Digest, DoubleSha256DigestBE}
+import org.scash.core.number.{Int32, UInt32}
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.transaction.RawBaseTransactionParser
-import org.scash.core.util.{ CryptoUtil, Factory }
+import org.scash.core.util.{CryptoUtil, Factory}
 import scodec.bits.ByteVector
 
 /**
@@ -26,7 +26,7 @@ sealed abstract class Transaction extends NetworkElement {
    * [[https://bitcoin.stackexchange.com/questions/2063/why-does-the-bitcoin-protocol-use-the-little-endian-notation]]
    * @return
    */
-  def txIdBE: DoubleSha256Digest = txId.flip
+  def txIdBE: DoubleSha256DigestBE = txId.flip
 
   /** The version number for this transaction */
   def version: Int32

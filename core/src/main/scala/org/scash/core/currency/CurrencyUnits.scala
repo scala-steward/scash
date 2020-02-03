@@ -1,7 +1,7 @@
 package org.scash.core.currency
 
 import org.scash.core.consensus.Consensus
-import org.scash.core.number.{ BaseNumbers, Int64 }
+import org.scash.core.number.{BaseNumbers, Int64}
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.RawSatoshisSerializer
 import org.scash.core.util.Factory
@@ -81,6 +81,8 @@ object Satoshis extends Factory[Satoshis] with BaseNumbers[Satoshis] {
   override def fromBytes(bytes: ByteVector): Satoshis = RawSatoshisSerializer.read(bytes)
 
   def apply(int64: Int64): Satoshis = SatoshisImpl(int64)
+  def apply(satoshis: Long): Satoshis = SatoshisImpl(Int64(satoshis))
+  def apply(satoshis: BigInt): Satoshis = SatoshisImpl(Int64(satoshis))
 
   private case class SatoshisImpl(underlying: Int64) extends Satoshis
 }

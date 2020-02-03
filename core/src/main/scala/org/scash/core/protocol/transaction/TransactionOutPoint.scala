@@ -1,10 +1,10 @@
 package org.scash.core.protocol.transaction
 
-import org.scash.core.crypto.DoubleSha256Digest
+import org.scash.core.crypto.{DoubleSha256Digest, DoubleSha256DigestBE}
 import org.scash.core.number.UInt32
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.transaction.RawTransactionOutPointParser
-import org.scash.core.util.{ BitcoinSUtil, Factory }
+import org.scash.core.util.{BitcoinSUtil, Factory}
 import scodec.bits.ByteVector
 
 /**
@@ -14,6 +14,8 @@ import scodec.bits.ByteVector
 sealed abstract class TransactionOutPoint extends NetworkElement {
   /** The transaction id for the crediting transaction for this input */
   def txId: DoubleSha256Digest
+
+  def txIdBE: DoubleSha256DigestBE = txId.flip
 
   /** The output index in the parent transaction for the output we are spending */
   def vout: UInt32

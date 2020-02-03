@@ -89,6 +89,14 @@ object Networks {
   val p2pkhNetworkBytes = knownNetworks.map(_.p2pkhNetworkByte)
   val p2shNetworkBytes = knownNetworks.map(_.p2shNetworkByte)
 
+  /** Uses the notation used in `bitcoin.conf` */
+  def fromString(string: String): Option[NetworkParameters] = string match {
+    case "mainnet" => Some(MainNet)
+    case "testnet" => Some(TestNet3)
+    case "regtest" => Some(RegTest)
+    case _: String => None
+  }
+
   def bytesToNetwork: Map[ByteVector, NetworkParameters] = Map(
     MainNet.p2shNetworkByte -> MainNet,
     MainNet.p2pkhNetworkByte -> MainNet,
@@ -100,4 +108,11 @@ object Networks {
 
   //ommitting regtest as it has the same network bytes as testnet3
   )
+
+  /** Map of magic network bytes to the corresponding network */
+  def magicToNetwork: Map[ByteVector, NetworkParameters] = Map(
+    MainNet.magicBytes -> MainNet,
+    TestNet3.magicBytes -> TestNet3,
+    RegTest.magicBytes -> RegTest
+    )
 }

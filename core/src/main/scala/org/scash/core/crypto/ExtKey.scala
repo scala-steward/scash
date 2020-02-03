@@ -3,12 +3,12 @@ package org.scash.core.crypto
 import java.math.BigInteger
 
 import org.bitcoin.NativeSecp256k1
-import org.scash.core.number.{ UInt32, UInt8 }
+import org.scash.core.number.{UInt32, UInt8}
 import org.scash.core.protocol.NetworkElement
-import org.scash.core.util.{ Factory, _ }
+import org.scash.core.util.{Factory, _}
 import scodec.bits.ByteVector
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 /**
  * Represents an extended key as defined by BIP32
@@ -153,6 +153,21 @@ object ExtPrivateKey extends Factory[ExtPrivateKey] {
       case f: Failure[_] => throw f.exception
     }
   }
+
+  /** Takes in a base58 string and tries to convert it to an extended private key */
+  def fromString(base58: String): Try[ExtPrivateKey] =
+    ExtKey.fromString(base58) match {
+      case Success(priv: ExtPrivateKey) => Success(priv)
+      case Success(_: ExtPublicKey) =>
+        Failure(
+          new IllegalArgumentException(
+            "Got extended public key, expected private"))
+      // we get warnings about unchecked generics
+      // if we do fail: Failure[ExtPrivateKey] and
+      // compile error if we do fail: Failure[_]
+      case Failure(exc) => Failure(exc)
+    }
+
   def apply(version: ExtKeyVersion, depth: UInt8,
     fingerprint: ByteVector, child: UInt32,
     chainCode: ChainCode, privateKey: ECPrivateKey): ExtPrivateKey = {
@@ -225,5 +240,18 @@ object ExtPublicKey extends Factory[ExtPublicKey] {
       case f: Failure[_] => throw f.exception
     }
   }
+
+  def fromString(base58: String): Try[ExtPublicKey] =
+    ExtKey.fromString(base58) match {
+      case Success(pub: ExtPublicKey) => Success(pub)
+      case Success(_: ExtPrivateKey) =>
+        Failure(
+          new IllegalArgumentException(
+            "Got extended private key, expected public"))
+      // we get warnings about unchecked generics
+      // if we do fail: Failure[ExtPublicKey] and
+      // compile error if we do fail: Failure[_]
+      case Failure(fail) => Failure(fail)
+    }
 }
 

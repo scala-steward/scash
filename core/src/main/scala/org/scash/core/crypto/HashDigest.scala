@@ -2,6 +2,7 @@ package org.scash.core.crypto
 
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.util.Factory
+import org.slf4j.{Logger, LoggerFactory}
 import scodec.bits.ByteVector
 /**
  * Created by chris on 5/24/16.
@@ -51,7 +52,7 @@ object Sha256Digest extends Factory[Sha256Digest] {
  * Represents the result of SHA256(SHA256())
  */
 sealed abstract class DoubleSha256Digest extends HashDigest {
-  def flip: DoubleSha256Digest = DoubleSha256Digest(bytes.reverse)
+  def flip: DoubleSha256DigestBE = DoubleSha256DigestBE(bytes.reverse)
 }
 
 object DoubleSha256Digest extends Factory[DoubleSha256Digest] {
@@ -61,13 +62,34 @@ object DoubleSha256Digest extends Factory[DoubleSha256Digest] {
   }
   override def fromBytes(bytes: ByteVector): DoubleSha256Digest = DoubleSha256DigestImpl(bytes)
 
+  val empty: DoubleSha256Digest = DoubleSha256Digest(
+    ByteVector.low(32)
+    )
+}
+
+case class DoubleSha256DigestBE(bytes: ByteVector) extends HashDigest {
+  require(bytes.length == 32,
+          "DoubleSha256Digest must always be 32 bytes, got: " + bytes.length)
+
+  def flip: DoubleSha256Digest =
+    DoubleSha256Digest.fromBytes(bytes.reverse)
+
+  override def toString = s"DoubleSha256BDigestBE($hex)"
+}
+
+object DoubleSha256DigestBE extends Factory[DoubleSha256DigestBE] {
+  override def fromBytes(bytes: ByteVector): DoubleSha256DigestBE =
+  // have to use new to avoid infinite loop
+    new DoubleSha256DigestBE(bytes)
+
+  val empty: DoubleSha256DigestBE = DoubleSha256DigestBE(ByteVector.low(32))
 }
 
 /**
  * Represents the result of RIPEMD160()
  */
 sealed abstract class RipeMd160Digest extends HashDigest {
-  override def flip: RipeMd160Digest = RipeMd160Digest(bytes.reverse)
+  override def flip: RipeMd160DigestBE = RipeMd160DigestBE(bytes.reverse)
 }
 
 object RipeMd160Digest extends Factory[RipeMd160Digest] {
@@ -76,6 +98,24 @@ object RipeMd160Digest extends Factory[RipeMd160Digest] {
     override def toString = s"RipeMd160DigestImpl($hex)"
   }
   override def fromBytes(bytes: ByteVector): RipeMd160Digest = RipeMd160DigestImpl(bytes)
+}
+
+sealed trait RipeMd160DigestBE extends HashDigest {
+  override def flip: RipeMd160Digest = RipeMd160Digest(bytes.reverse)
+}
+
+object RipeMd160DigestBE extends Factory[RipeMd160DigestBE] {
+  private case class RipeMd160DigestBEImpl(bytes: ByteVector)
+    extends RipeMd160DigestBE {
+    override def toString = s"RipeMd160DigestBEImpl($hex)"
+    // $COVERAGE-ON$
+  }
+  override def fromBytes(bytes: ByteVector): RipeMd160DigestBE = {
+    require(bytes.length == 20,
+            // $COVERAGE-OFF$
+            "RIPEMD160Digest must always be 20 bytes, got: " + bytes.length)
+    RipeMd160DigestBEImpl(bytes)
+  }
 }
 
 /**

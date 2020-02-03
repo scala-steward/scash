@@ -1,10 +1,10 @@
 package org.scash.core.protocol.blockchain
 
-import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.number.{ Int32, UInt32 }
+import org.scash.core.crypto.{DoubleSha256Digest, DoubleSha256DigestBE}
+import org.scash.core.number.{Int32, UInt32}
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.blockchain.RawBlockHeaderSerializer
-import org.scash.core.util.{ CryptoUtil, Factory }
+import org.scash.core.util.{CryptoUtil, Factory}
 import scodec.bits.ByteVector
 
 /**
@@ -48,7 +48,7 @@ sealed trait BlockHeader extends NetworkElement {
    * [[https://bitcoin.stackexchange.com/questions/2063/why-does-the-bitcoin-protocol-use-the-little-endian-notation]]
    * @return
    */
-  def previousBlockHashBE: DoubleSha256Digest = previousBlockHash.flip
+  def previousBlockHashBE: DoubleSha256DigestBE = previousBlockHash.flip
 
   /**
    * A SHA256(SHA256()) hash in internal byte order.
@@ -68,7 +68,7 @@ sealed trait BlockHeader extends NetworkElement {
    * [[https://bitcoin.stackexchange.com/questions/2063/why-does-the-bitcoin-protocol-use-the-little-endian-notation]]
    * @return
    */
-  def merkleRootHashBE: DoubleSha256Digest = merkleRootHash.flip
+  def merkleRootHashBE: DoubleSha256DigestBE = merkleRootHash.flip
 
   /**
    * The block time is a Unix epoch time when the miner started hashing the header (according to the miner).
@@ -107,7 +107,7 @@ sealed trait BlockHeader extends NetworkElement {
    * [[https://bitcoin.stackexchange.com/questions/2063/why-does-the-bitcoin-protocol-use-the-little-endian-notation]]
    * @return
    */
-  def hashBE: DoubleSha256Digest = hash.flip
+  def hashBE: DoubleSha256DigestBE = hash.flip
 
   override def bytes: ByteVector = RawBlockHeaderSerializer.write(this)
 

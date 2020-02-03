@@ -1,8 +1,7 @@
 package org.scash.core.serializers
 
 import org.scash.core.number.UInt64
-import org.scash.core.protocol.{ CompactSizeUInt, NetworkElement }
-
+import org.scash.core.protocol.{CompactSizeUInt, NetworkElement}
 import scodec.bits.ByteVector
 
 /**
@@ -38,5 +37,20 @@ object RawSerializerHelper {
     val serialized = serializedSeq.foldLeft(ByteVector.empty)(_ ++ _)
     val cmpct = CompactSizeUInt(UInt64(ts.size))
     cmpct.bytes ++ serialized
+  }
+
+  /** Serializes a [[scala.Seq Seq]] of [[org.scash.core.protocol.NetworkElement]] to a [[scodec.bits.ByteVector]] */
+  def writeNetworkElements[T <: NetworkElement](ts: Seq[T]): ByteVector = {
+    val f = { t: T =>
+      t.bytes
+    }
+    write(ts, f)
+  }
+
+  def write[T](ts: Seq[T], serializer: T => ByteVector): ByteVector = {
+    ts.foldLeft(ByteVector.empty) {
+      case (accum, t) =>
+        accum ++ serializer(t)
+    }
   }
 }
