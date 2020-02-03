@@ -1,8 +1,8 @@
 package org.scash.core.number
 
-import org.scash.core.gen.NumberGenerator
 import org.scash.core.util.BitcoinSLogger
-import org.scalacheck.{ Gen, Prop, Properties }
+import org.scalacheck.{Gen, Prop, Properties}
+import org.scash.testkit.gen.NumberGenerator
 
 import scala.util.Try
 

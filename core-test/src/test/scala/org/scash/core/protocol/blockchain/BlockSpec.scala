@@ -1,8 +1,8 @@
 package org.scash.core.protocol.blockchain
 
-import org.scash.core.gen.BlockchainElementsGenerator
 import org.scash.core.util.BitcoinSLogger
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.BlockchainElementsGenerator
 
 /**
  * Created by tom on 7/6/16.

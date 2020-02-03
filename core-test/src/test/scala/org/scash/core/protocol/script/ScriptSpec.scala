@@ -1,7 +1,7 @@
 package org.scash.core.protocol.script
 
-import org.scash.core.gen.ScriptGenerators
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.ScriptGenerators
 
 class ScriptSpec extends Properties("ScriptSpec") {
 

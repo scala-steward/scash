@@ -18,11 +18,11 @@ object Deps {
     val zio = "1.0.0-RC17"
     val typesafeConfigV = "1.4.0"
     val nativeLoaderV = "2.3.4"
-
+    val scalaTestPlus = "3.1.0.1"
     // async dropped Scala 2.11 in 0.10.0
     val asyncOldScalaV = "0.9.7"
     val asyncNewScalaV = "0.10.0"
-
+    val akkaActorV = akkaStreamv
   }
 
   object Compile {
@@ -49,9 +49,11 @@ object Deps {
     val logback = "ch.qos.logback" % "logback-classic" % V.logback % "test"
     val scalacheck = "org.scalacheck" %% "scalacheck" % V.scalacheck % "test" withSources() withJavadoc()
     val scalaTest = "org.scalatest" %% "scalatest" % V.scalaTest % "test"
+    val scalaTestPlus = "org.scalatestplus" %% "scalacheck-1-14" % V.scalaTestPlus
     val spray = "io.spray" %% "spray-json" % V.spray  % "test"
     val akkaHttp = "com.typesafe.akka" %% "akka-http-testkit" % V.akkav % "test"
     val akkaStream = "com.typesafe.akka" %% "akka-stream-testkit" % V.akkaStreamv % "test"
+    val akkaTestkit = "com.typesafe.akka" %% "akka-testkit" % V.akkaActorV withSources () withJavadoc ()
   }
 
   val core = List(
@@ -66,9 +68,12 @@ object Deps {
     Test.junitInterface
     )
 
-  val coreGen = List(
+  val testkit = List(
     Compile.slf4j,
-    Test.scalacheck
+    Test.scalacheck,
+    Test.scalaTest,
+    Test.scalaTestPlus,
+    Test.akkaTestkit
   )
 
   val coreTest = List(

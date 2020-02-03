@@ -1,8 +1,8 @@
 package org.scash.core.util
 
-import org.scash.core.gen.NumberGenerator
-import org.scash.core.number.{ UInt32, UInt8 }
-import org.scalacheck.{ Gen, Prop, Properties }
+import org.scash.core.number.{UInt32, UInt8}
+import org.scalacheck.{Gen, Prop, Properties}
+import org.scash.testkit.gen.NumberGenerator
 
 /**
  * Created by chris on 6/20/16.

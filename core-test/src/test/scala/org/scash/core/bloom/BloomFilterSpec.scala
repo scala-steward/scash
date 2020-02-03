@@ -1,7 +1,7 @@
 package org.scash.core.bloom
 
-import org.scash.core.gen.BloomFilterGenerator
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.BloomFilterGenerator
 import scodec.bits.ByteVector
 
 /**

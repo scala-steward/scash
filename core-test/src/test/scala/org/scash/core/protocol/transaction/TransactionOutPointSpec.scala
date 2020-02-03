@@ -1,7 +1,7 @@
 package org.scash.core.protocol.transaction
 
-import org.scash.core.gen.TransactionGenerators
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.TransactionGenerators
 
 /**
  * Created by chris on 6/21/16.

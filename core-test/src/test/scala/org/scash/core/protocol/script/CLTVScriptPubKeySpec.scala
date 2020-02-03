@@ -1,7 +1,7 @@
 package org.scash.core.protocol.script
 
-import org.scash.core.gen.ScriptGenerators
-import org.scalacheck.{ Properties, Prop }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.ScriptGenerators
 
 /**
  * Created by tom on 8/23/16.

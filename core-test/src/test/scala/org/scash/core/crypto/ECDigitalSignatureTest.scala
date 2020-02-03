@@ -2,7 +2,7 @@ package org.scash.core.crypto
 
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, MustMatchers}
-import org.scash.core.gen.CryptoGenerators
+import org.scash.testkit.gen.CryptoGenerators
 import scodec.bits.ByteVector
 
 /**

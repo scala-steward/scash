@@ -1,8 +1,8 @@
 package org.scash.core.currency
 
-import org.scash.core.gen.CurrencyUnitGenerator
 import org.scash.core.number.Int64
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.CurrencyUnitGenerator
 
 import scala.util.Try
 

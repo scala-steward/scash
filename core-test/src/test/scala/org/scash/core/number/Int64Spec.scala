@@ -1,7 +1,7 @@
 package org.scash.core.number
 
-import org.scash.core.gen.NumberGenerator
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.NumberGenerator
 
 import scala.util.Try
 

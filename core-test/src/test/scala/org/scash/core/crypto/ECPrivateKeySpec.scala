@@ -1,8 +1,9 @@
 package org.scash.core.crypto
 
-import org.scash.core.config.{ MainNet, RegTest, TestNet3 }
-import org.scash.core.gen.{ ChainParamsGenerator, CryptoGenerators }
-import org.scalacheck.{ Prop, Properties }
+import org.scash.core.config.{MainNet, RegTest, TestNet3}
+import org.scash.core.gen.CryptoGenerators
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.{ChainParamsGenerator, CryptoGenerators}
 
 /**
  * Created by chris on 7/25/16.

@@ -1,7 +1,7 @@
 package org.scash.core.crypto
 
-import org.scash.core.gen.CryptoGenerators
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.CryptoGenerators
 
 /**
  * Created by chris on 8/16/16.

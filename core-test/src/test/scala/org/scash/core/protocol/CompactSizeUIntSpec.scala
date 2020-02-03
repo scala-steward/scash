@@ -1,7 +1,7 @@
 package org.scash.core.protocol
 
-import org.scash.core.gen.NumberGenerator
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.NumberGenerator
 
 /**
  * Created by chris on 6/29/16.

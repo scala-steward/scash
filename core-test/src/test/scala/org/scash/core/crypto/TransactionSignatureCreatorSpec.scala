@@ -1,11 +1,11 @@
 package org.scash.core.crypto
 
-import org.scash.core.gen.TransactionGenerators
 import org.scash.core.script.PreExecutionScriptProgram
 import org.scash.core.script.interpreter.ScriptInterpreter
 import org.scash.core.script.result._
 import org.scash.core.util.BitcoinSLogger
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.TransactionGenerators
 
 /**
  * Created by chris on 7/25/16.

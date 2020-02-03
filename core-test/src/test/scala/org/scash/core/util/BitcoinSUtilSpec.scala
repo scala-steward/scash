@@ -1,7 +1,8 @@
 package org.scash.core.util
 
-import org.scash.core.gen.{ CryptoGenerators, NumberGenerator, StringGenerators }
-import org.scalacheck.{ Gen, Prop, Properties }
+import org.scash.core.gen.NumberGenerator
+import org.scalacheck.{Gen, Prop, Properties}
+import org.scash.testkit.gen.StringGenerators
 /**
  * Created by chris on 6/20/16.
  */

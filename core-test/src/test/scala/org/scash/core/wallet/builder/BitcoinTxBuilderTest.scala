@@ -1,16 +1,16 @@
 package org.scash.core.wallet.builder
 
 import org.scash.core.config.TestNet3
-import org.scash.core.currency.{ CurrencyUnits, Satoshis }
-import org.scash.core.gen.ScriptGenerators
-import org.scash.core.number.{ Int64, UInt32 }
+import org.scash.core.currency.{CurrencyUnits, Satoshis}
+import org.scash.core.number.{Int64, UInt32}
 import org.scash.core.protocol.script._
 import org.scash.core.protocol.transaction._
 import org.scash.core.util.BitcoinSLogger
 import org.scash.core.wallet.fee.SatoshisPerByte
 import org.scash.core.wallet.utxo.BitcoinUTXOSpendingInfo
-import org.scalatest.{ AsyncFlatSpec, MustMatchers }
+import org.scalatest.{AsyncFlatSpec, MustMatchers}
 import org.scash.core.script.crypto.SigHashType
+import org.scash.testkit.gen.ScriptGenerators
 
 class BitcoinTxBuilderTest extends AsyncFlatSpec with MustMatchers {
   private val logger = BitcoinSLogger.logger

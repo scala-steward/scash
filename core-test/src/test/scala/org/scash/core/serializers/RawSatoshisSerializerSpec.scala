@@ -1,8 +1,8 @@
 package org.scash.core.serializers
 
 import org.scash.core.currency.Satoshis
-import org.scash.core.gen.CurrencyUnitGenerator
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.CurrencyUnitGenerator
 
 /**
  * Created by chris on 6/23/16.

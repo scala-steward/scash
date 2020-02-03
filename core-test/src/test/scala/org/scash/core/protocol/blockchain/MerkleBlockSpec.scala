@@ -1,8 +1,8 @@
 package org.scash.core.protocol.blockchain
 
 import org.scash.core.crypto.DoubleSha256Digest
-import org.scash.core.gen.MerkleGenerator
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.MerkleGenerator
 
 /**
  * Created by chris on 8/12/16.

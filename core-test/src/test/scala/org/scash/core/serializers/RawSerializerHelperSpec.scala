@@ -1,8 +1,8 @@
 package org.scash.core.serializers
 
-import org.scash.core.gen.TransactionGenerators
-import org.scash.core.protocol.transaction.{ Transaction, TransactionInput, TransactionOutput }
-import org.scalacheck.{ Prop, Properties }
+import org.scash.core.protocol.transaction.{Transaction, TransactionInput, TransactionOutput}
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.TransactionGenerators
 import scodec.bits.ByteVector
 
 class RawSerializerHelperSpec extends Properties("RawSerializerHelperSpec") {

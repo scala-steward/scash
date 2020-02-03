@@ -1,8 +1,8 @@
 package org.scash.core.protocol
 
-import org.scash.core.config.{ RegTest, TestNet3 }
-import org.scash.core.gen.AddressGenerator
-import org.scalacheck.{ Prop, Properties }
+import org.scash.core.config.{RegTest, TestNet3}
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.AddressGenerator
 
 class AddressSpec extends Properties("AddressSpec") {
 

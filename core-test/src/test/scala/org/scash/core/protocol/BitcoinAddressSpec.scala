@@ -1,10 +1,11 @@
 package org.scash.core.protocol
 
 import org.scash.core.config.TestNet3
-import org.scash.core.gen.{ AddressGenerator, CryptoGenerators, ScriptGenerators }
+import org.scash.core.gen.{AddressGenerator, CryptoGenerators}
 import org.scash.core.protocol.script.P2SHScriptPubKey
 import org.scash.core.util.CryptoUtil
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.{AddressGenerator, CryptoGenerators, ScriptGenerators}
 
 /**
  * Created by chris on 7/21/16.

@@ -1,7 +1,7 @@
 package org.scash.core.script.crypto
 
-import org.scash.core.gen.NumberGenerator
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.NumberGenerator
 
 class SigHashTypeSpec extends Properties("SigHashTypeSpec") {
 

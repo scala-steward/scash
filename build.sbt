@@ -8,7 +8,7 @@ lazy val scash = project
   .aggregate(
     secp256k1jni,
     core,
-    coreGen,
+    testkit,
     coreTest,
     rpc,
     rpcTest,
@@ -22,12 +22,13 @@ lazy val secp256k1jni = project
   .settings(coverageEnabled := false)
   .enablePlugins()
 
-lazy val coreGen = project
-  .in(file("core-gen"))
+lazy val testkit = project
+  .in(file("testkit"))
   .enablePlugins()
-  .settings(CommonSettings.settings: _*)
+  .settings(CommonSettings.prodSettings: _*)
   .dependsOn(
-    core
+    core  % "compile->compile;test->test",
+    rpc
   )
 
 lazy val coreTest = project
@@ -37,11 +38,14 @@ lazy val coreTest = project
   .settings(name := "scash-test")
   .dependsOn(
     core,
-    coreGen % "test->test"
+    testkit % "test->test"
   )
 
 lazy val rpcTest = project
   .in(file("rpc-test"))
   .settings(CommonSettings.testSettings: _*)
-  .dependsOn(core % "compile->compile;test->test", coreGen)
+  .dependsOn(
+    core % "compile->compile;test->test",
+    testkit
+  )
 

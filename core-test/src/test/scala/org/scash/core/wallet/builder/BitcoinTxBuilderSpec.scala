@@ -1,9 +1,9 @@
 package org.scash.core.wallet.builder
 
 import org.scash.core.crypto.TxSigComponent
-import org.scash.core.currency.{ CurrencyUnits, Satoshis }
-import org.scash.core.gen.{ ChainParamsGenerator, CreditingTxGen, ScriptGenerators, TransactionGenerators }
-import org.scash.core.number.{ Int64, UInt32 }
+import org.scash.core.currency.{CurrencyUnits, Satoshis}
+import org.scash.core.gen.{ChainParamsGenerator, CreditingTxGen, TransactionGenerators}
+import org.scash.core.number.{Int64, UInt32}
 import org.scash.core.policy.Policy
 import org.scash.core.protocol.script._
 import org.scash.core.protocol.transaction._
@@ -11,8 +11,9 @@ import org.scash.core.script.PreExecutionScriptProgram
 import org.scash.core.script.interpreter.ScriptInterpreter
 import org.scash.core.util.BitcoinSLogger
 import org.scash.core.wallet.fee.SatoshisPerByte
-import org.scash.core.wallet.utxo.{ BitcoinUTXOSpendingInfo, UTXOSpendingInfo }
-import org.scalacheck.{ Prop, Properties }
+import org.scash.core.wallet.utxo.{BitcoinUTXOSpendingInfo, UTXOSpendingInfo}
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.{ChainParamsGenerator, CreditingTxGen, ScriptGenerators, TransactionGenerators}
 
 import scala.annotation.tailrec
 import scala.concurrent.Await

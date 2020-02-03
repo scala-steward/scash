@@ -1,9 +1,9 @@
 package org.scash.core.crypto
 
-import org.scash.core.gen.CryptoGenerators
 import org.scash.core.number.UInt32
 import org.scash.core.util.BitcoinSLogger
-import org.scalacheck.{ Gen, Prop, Properties }
+import org.scalacheck.{Gen, Prop, Properties}
+import org.scash.testkit.gen.CryptoGenerators
 
 import scala.util.Success
 

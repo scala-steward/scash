@@ -1,8 +1,8 @@
 package org.scash.core.protocol.script
 
-import org.scash.core.gen.ScriptGenerators
 import org.scash.core.util.BitcoinSLogger
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.ScriptGenerators
 
 /**
  * Created by chris on 6/22/16.

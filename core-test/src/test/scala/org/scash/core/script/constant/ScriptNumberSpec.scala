@@ -1,8 +1,8 @@
 package org.scash.core.script.constant
 
-import org.scash.core.gen.NumberGenerator
 import org.scash.core.util.BitcoinSLogger
-import org.scalacheck.{ Prop, Properties }
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.NumberGenerator
 
 /**
  * Created by tom on 7/5/16.

@@ -1,8 +1,8 @@
 package org.scash.core.protocol.transaction
 
-import org.scash.core.gen.TransactionGenerators
-import org.scash.core.util.{ BitcoinSLogger, CryptoUtil }
-import org.scalacheck.{ Prop, Properties }
+import org.scash.core.util.{BitcoinSLogger, CryptoUtil}
+import org.scalacheck.{Prop, Properties}
+import org.scash.testkit.gen.TransactionGenerators
 
 /**
  * Created by chris on 6/24/16.

@@ -1,7 +1,7 @@
 package org.scash.core.protocol.script
 
-import org.scash.core.gen.CryptoGenerators
-import org.scalatest.{ FlatSpec, MustMatchers }
+import org.scalatest.{FlatSpec, MustMatchers}
+import org.scash.testkit.gen.CryptoGenerators
 
 /**
  * Created by chris on 9/22/16.
