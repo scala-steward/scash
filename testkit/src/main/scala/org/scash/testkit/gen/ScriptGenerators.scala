@@ -1,4 +1,4 @@
-package org.scash.core.gen
+package org.scash.testkit.gen
 
 import org.scalacheck.Gen
 import org.scash.core.consensus.Consensus

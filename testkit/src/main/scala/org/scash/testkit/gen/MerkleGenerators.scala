@@ -1,12 +1,10 @@
-package org.scash.core.gen
+package org.scash.testkit.gen
 
 import org.scalacheck.Gen
-import org.scash.core.bloom
 import org.scash.core.bloom.BloomFilter
 import org.scash.core.crypto.DoubleSha256Digest
 import org.scash.core.protocol.blockchain.{ Block, MerkleBlock, PartialMerkleTree }
 import org.scash.core.protocol.transaction.Transaction
-import org.scash.core.util.BitcoinSLogger
 
 /**
  * Created by chris on 8/12/16.
@@ -29,7 +27,7 @@ abstract class MerkleGenerator {
   } yield result
 
   /**
-   * Returns a [[MerkleBlock]] created with a [[bloom.BloomFilter]], with the block it was created from
+   * Returns a [[MerkleBlock]] created with a [[BloomFilter]], with the block it was created from
    * and the transactions that were matched inside of that block
    * NOTE: Since bloom filters can produce false positives, it is possible that there will be
    * matches in the parital merkle tree that SHOULD NOT be matched. Bloom filters do not guaratnee no

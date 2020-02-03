@@ -1,4 +1,4 @@
-package org.scash.core.gen
+package org.scash.testkit.gen
 
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
