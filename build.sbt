@@ -11,7 +11,7 @@ lazy val scash = project
     testkit,
     coreTest,
     rpc,
-    rpcTest,
+    //rpcTest,
   )
   .settings(CommonSettings.settings: _*)
   .settings(crossScalaVersions := Nil)

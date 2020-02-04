@@ -46,5 +46,13 @@ object TransactionOutPoint extends Factory[TransactionOutPoint] {
       EmptyTransactionOutPoint
     } else TransactionOutPointImpl(txId, index)
   }
+
+  /**
+   * @param The transaction id for the crediting transaction for this input
+   * @param vout The output index in the parent transaction for the output we are spending
+   */
+  def apply(txId: DoubleSha256DigestBE, vout: UInt32): TransactionOutPoint = {
+    TransactionOutPoint(txId.flip, vout)
+  }
 }
 

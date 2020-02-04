@@ -1,6 +1,5 @@
 package org.scash.rpc.v19
 
-import org.scash.core.gcs.{BlockFilter, FilterType}
 import org.scash.rpc.client.common.BitcoindVersion
 import org.scash.rpc.client.common.RpcOpts.WalletFlag
 import org.scash.rpc.client.v19.BitcoindV19RpcClient
@@ -28,32 +27,6 @@ class BitcoindV19RpcClientTest extends BitcoindRpcTest {
       assert(client.version == BitcoindVersion.V19)
     }
 
-  }
-
-  it should "get a block filter given a block hash" in {
-    for {
-      (client, _) <- clientPairF
-      blocks <- client.getNewAddress.flatMap(client.generateToAddress(1, _))
-      blockFilter <- client.getBlockFilter(blocks.head, FilterType.Basic)
-
-      block <- client.getBlockRaw(blocks.head)
-      txs <- Future.sequence(
-        block.transactions
-          .filterNot(_.isCoinbase)
-          .map(tx => client.getTransaction(tx.txIdBE)))
-
-      prevFilter <- client.getBlockFilter(block.blockHeader.previousBlockHashBE,
-                                          FilterType.Basic)
-    } yield {
-      val pubKeys = txs.flatMap(_.hex.outputs.map(_.scriptPubKey)).toVector
-      val filter = BlockFilter(block, pubKeys)
-      assert(filter.hash == blockFilter.filter.hash)
-      assert(
-        blockFilter.header == filter
-          .getHeader(prevFilter.header.flip)
-          .hash
-          .flip)
-    }
   }
 
   it should "be able to get the balances" in {

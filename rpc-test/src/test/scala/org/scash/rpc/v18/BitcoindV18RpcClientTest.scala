@@ -1,11 +1,9 @@
 package org.scash.rpc.v18
 
-import org.scash.chain.models.BlockHeaderDbHelper
 import org.scash.core.protocol.blockchain.RegTestNetChainParams
 import org.scash.rpc.client.common.BitcoindVersion
 import org.scash.rpc.client.common.RpcOpts.AddNodeArgument
 import org.scash.rpc.client.v18.BitcoindV18RpcClient
-import org.scash.testkit.chain.BlockHeaderHelper
 import org.scash.testkit.rpc.BitcoindRpcTestUtil
 import org.scash.testkit.util.BitcoindRpcTest
 
@@ -97,14 +95,4 @@ class BitcoindV18RpcClientTest extends BitcoindRpcTest {
     }
 
   }
-
-  it should "successfully submit a header" in {
-    val genesisHeader = RegTestNetChainParams.genesisBlock.blockHeader
-    val genesisHeaderDb =
-      BlockHeaderDbHelper.fromBlockHeader(height = 1, genesisHeader)
-    val nextHeader = BlockHeaderHelper.buildNextHeader(genesisHeaderDb)
-    clientF.flatMap(client =>
-      client.submitHeader(nextHeader.blockHeader).map(_ => succeed))
-  }
-
 }

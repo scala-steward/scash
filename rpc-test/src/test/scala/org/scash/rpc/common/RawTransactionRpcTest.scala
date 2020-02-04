@@ -62,7 +62,6 @@ class RawTransactionRpcTest extends BitcoindRpcTest {
       assert(rpcTransaction.locktime == transaction.lockTime)
       assert(rpcTransaction.size == transaction.size)
       assert(rpcTransaction.version == transaction.version.toInt)
-      assert(rpcTransaction.vsize == transaction.vsize)
     }
   }
 
