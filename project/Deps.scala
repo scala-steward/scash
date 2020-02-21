@@ -19,8 +19,6 @@ object Deps {
     val typesafeConfigV = "1.4.0"
     val nativeLoaderV = "2.3.4"
     val scalaTestPlus = "3.1.0.1"
-    // async dropped Scala 2.11 in 0.10.0
-    val asyncOldScalaV = "0.9.7"
     val asyncNewScalaV = "0.10.0"
     val akkaActorV = akkaStreamv
   }
@@ -42,7 +40,6 @@ object Deps {
   }
 
   object Test {
-    val oldAsync = "org.scala-lang.modules" %% "scala-async" % V.asyncOldScalaV % "test" withSources () withJavadoc ()
     val newAsync = "org.scala-lang.modules" %% "scala-async" % V.asyncNewScalaV % "test" withSources () withJavadoc ()
     val bitcoinj = ("org.bitcoinj" % "bitcoinj-core" % "0.14.4" % "test").exclude("org.slf4j", "slf4j-api")
     val junitInterface = "com.novocode" % "junit-interface" % V.junitv % "test"
@@ -98,7 +95,7 @@ object Deps {
     Test.logback,
     Test.scalaTest,
     Test.scalacheck,
-    if (scalaVersion.startsWith("2.11")) Test.oldAsync else Test.newAsync
+    Test.newAsync
     )
 
 }
