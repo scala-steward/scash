@@ -10,12 +10,16 @@ import org.scash.core.crypto.Sign
  * on a blockchain.
  */
 sealed abstract class UTXOSpendingInfo {
+
   /** The funding transaction's txid and the index of the output in the transaction we are spending */
   def outPoint: TransactionOutPoint
+
   /** the actual output itself we are spending */
   def output: TransactionOutput
+
   /** the signers needed to spend from the output above */
   def signers: Seq[Sign]
+
   /** a redeemScript, if required, to spend the output above */
   def redeemScriptOpt: Option[ScriptPubKey]
 
@@ -27,5 +31,5 @@ case class BitcoinUTXOSpendingInfo(
   output: TransactionOutput,
   signers: Seq[Sign],
   redeemScriptOpt: Option[ScriptPubKey],
-  hashType: SigHashType) extends UTXOSpendingInfo
-
+  hashType: SigHashType
+) extends UTXOSpendingInfo

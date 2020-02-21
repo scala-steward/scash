@@ -12,22 +12,25 @@ import scodec.bits.ByteVector
 trait ScriptFactory[T] extends Factory[T] {
 
   /** Builds a script from the given asm with the given constructor if the invariant holds true, else throws an error */
-  def buildScript(asm: Seq[ScriptToken], constructor: ByteVector => T,
-    invariant: Seq[ScriptToken] => Boolean, errorMsg: String): T = {
+  def buildScript(
+    asm: Seq[ScriptToken],
+    constructor: ByteVector => T,
+    invariant: Seq[ScriptToken] => Boolean,
+    errorMsg: String
+  ): T =
     if (invariant(asm)) {
-      val asmBytes = BitcoinSUtil.toByteVector(asm)
+      val asmBytes        = BitcoinSUtil.toByteVector(asm)
       val compactSizeUInt = CompactSizeUInt.calc(asmBytes)
       constructor(compactSizeUInt.bytes ++ asmBytes)
     } else throw new IllegalArgumentException(errorMsg)
-  }
 
   /** Creates a T from the given [[ScriptToken]]s */
   def fromAsm(asm: Seq[ScriptToken]): T
 
   def fromBytes(bytes: ByteVector): T = {
-    val cpmct = CompactSizeUInt.parseCompactSizeUInt(bytes)
+    val cpmct            = CompactSizeUInt.parseCompactSizeUInt(bytes)
     val (_, noCmpctUInt) = bytes.splitAt(cpmct.bytes.size)
-    val asm = ScriptParser.fromBytes(noCmpctUInt)
+    val asm              = ScriptParser.fromBytes(noCmpctUInt)
     fromAsm(asm)
   }
 
@@ -39,7 +42,7 @@ trait ScriptFactory[T] extends Factory[T] {
    * @return
    */
   def fromAsmBytes(bytes: ByteVector): T = {
-    val cmpct = CompactSizeUInt.calc(bytes)
+    val cmpct     = CompactSizeUInt.calc(bytes)
     val fullBytes = cmpct.bytes ++ bytes
     fromBytes(fullBytes)
   }
@@ -51,7 +54,6 @@ trait ScriptFactory[T] extends Factory[T] {
    * @param hex
    * @return
    */
-  def fromAsmHex(hex: String): T = {
+  def fromAsmHex(hex: String): T =
     fromAsmBytes(BitcoinSUtil.decodeHex(hex))
-  }
 }

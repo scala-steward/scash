@@ -18,20 +18,20 @@ sealed abstract class RawBlockHeaderSerializer extends RawBitcoinSerializer[Bloc
     //version first 4 bytes
     val version = Int32(bytes.take(4).reverse)
     //previous header hash next 32 bytes
-    val prevBlockHashBytes = bytes.slice(4, 36)
+    val prevBlockHashBytes                = bytes.slice(4, 36)
     val prevBlockHash: DoubleSha256Digest = DoubleSha256Digest(prevBlockHashBytes)
     //merkle hash next 32 bytes
-    val merkleRootBytes = bytes.slice(36, 68)
+    val merkleRootBytes                = bytes.slice(36, 68)
     val merkleRoot: DoubleSha256Digest = DoubleSha256Digest(merkleRootBytes)
     //time 4 bytes
     val timeBytes = bytes.slice(68, 72)
-    val time = UInt32(timeBytes.reverse)
+    val time      = UInt32(timeBytes.reverse)
     //nbits 4 bytes
     val nBitsBytes = bytes.slice(72, 76)
-    val nBits = UInt32(nBitsBytes.reverse)
+    val nBits      = UInt32(nBitsBytes.reverse)
     //nonce 4 bytes
     val nonceBytes = bytes.slice(76, 80)
-    val nonce = UInt32(nonceBytes.reverse)
+    val nonce      = UInt32(nonceBytes.reverse)
     BlockHeader(version, prevBlockHash, merkleRoot, time, nBits, nonce)
   }
 
@@ -39,10 +39,10 @@ sealed abstract class RawBlockHeaderSerializer extends RawBitcoinSerializer[Bloc
   def write(blockHeader: BlockHeader): ByteVector = {
     val version = blockHeader.version.bytes.reverse
 
-    val prevHash = blockHeader.previousBlockHash.bytes
+    val prevHash   = blockHeader.previousBlockHash.bytes
     val merkleRoot = blockHeader.merkleRootHash.bytes
 
-    val time = blockHeader.time.bytes.reverse
+    val time  = blockHeader.time.bytes.reverse
     val nBits = blockHeader.nBits.bytes.reverse
     val nonce = blockHeader.nonce.bytes.reverse
 

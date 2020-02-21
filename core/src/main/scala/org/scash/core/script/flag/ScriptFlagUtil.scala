@@ -12,9 +12,8 @@ trait ScriptFlagUtil {
    * @param flags
    * @return
    */
-  def requiresStrictDerEncoding(flags: Seq[ScriptFlag]): Boolean = {
+  def requiresStrictDerEncoding(flags: Seq[ScriptFlag]): Boolean =
     flags.contains(ScriptVerifyDerSig) || flags.contains(ScriptVerifyStrictEnc)
-  }
 
   /**
    * Checks if we are required to check for strict encoding
@@ -28,9 +27,8 @@ trait ScriptFlagUtil {
    * @param flags
    * @return
    */
-  def checkLockTimeVerifyEnabled(flags: Seq[ScriptFlag]): Boolean = {
+  def checkLockTimeVerifyEnabled(flags: Seq[ScriptFlag]): Boolean =
     flags.contains(ScriptVerifyCheckLocktimeVerify)
-  }
 
   /**
    * Checks if the p2sh flag is enabled
@@ -44,9 +42,8 @@ trait ScriptFlagUtil {
    * @param flags
    * @return
    */
-  def checkSequenceVerifyEnabled(flags: Seq[ScriptFlag]): Boolean = {
+  def checkSequenceVerifyEnabled(flags: Seq[ScriptFlag]): Boolean =
     flags.contains(ScriptVerifyCheckSequenceVerify)
-  }
 
   /**
    * Checks to see if the script flag is set to discourage NOPs that are not in use
@@ -55,9 +52,8 @@ trait ScriptFlagUtil {
    * @param flags
    * @return
    */
-  def discourageUpgradableNOPs(flags: Seq[ScriptFlag]): Boolean = {
+  def discourageUpgradableNOPs(flags: Seq[ScriptFlag]): Boolean =
     flags.contains(ScriptVerifyDiscourageUpgradableNOPs)
-  }
 
   /**
    * Checks to see if the script flag is set to require minimal push operations

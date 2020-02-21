@@ -1,4 +1,5 @@
 package org.scash.core.script.bitwise
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
@@ -13,13 +14,14 @@ import scodec.bits.ByteVector
 
 sealed abstract class BitwiseInterpreter {
   private def logger = BitcoinSLogger.logger
+
   /** Returns 1 if the inputs are exactly equal, 0 otherwise. */
   def opEqual(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_EQUAL), "Script operation must be OP_EQUAL")
     if (program.stack.size < 2) {
       ScriptProgram(program, ScriptErrorInvalidStackOperation)
     } else {
-      val h = program.stack.head
+      val h  = program.stack.head
       val h1 = program.stack.tail.head
       val result = (h, h1) match {
         case (OP_0, ScriptNumber.zero) | (ScriptNumber.zero, OP_0) =>
@@ -42,7 +44,7 @@ sealed abstract class BitwiseInterpreter {
     require(program.script.headOption.contains(OP_EQUALVERIFY), "Script operation must be OP_EQUALVERIFY")
     if (program.stack.size > 1) {
       //first replace OP_EQUALVERIFY with OP_EQUAL and OP_VERIFY
-      val simpleScript = OP_EQUAL :: OP_VERIFY :: program.script.tail
+      val simpleScript              = OP_EQUAL :: OP_VERIFY :: program.script.tail
       val newProgram: ScriptProgram = opEqual(ScriptProgram(program, program.stack, simpleScript))
       ControlOperationsInterpreter.opVerify(newProgram) match {
         case p: PreExecutionScriptProgram => p
@@ -62,17 +64,20 @@ sealed abstract class BitwiseInterpreter {
    * [[https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/may-2018-reenabled-opcodes.md#bitwise-logic]]
    */
   private def opBitWise(program: => ScriptProgram)(f: (ByteVector, ByteVector) => ByteVector) =
-    script.checkBinary(program).map { p =>
-      val v1 = p.stack(0).bytes
-      val v2 = p.stack(1).bytes
-      if (v1.size != v2.size) {
-        logger.error("Inputs must be the same size")
-        ScriptProgram(p, ScriptErrorInvalidOperandSize)
-      } else {
-        val r = ScriptConstant(f(v1, v2))
-        ScriptProgram(p, r +: p.stack.drop(2), p.script.tail)
+    script
+      .checkBinary(program)
+      .map { p =>
+        val v1 = p.stack(0).bytes
+        val v2 = p.stack(1).bytes
+        if (v1.size != v2.size) {
+          logger.error("Inputs must be the same size")
+          ScriptProgram(p, ScriptErrorInvalidOperandSize)
+        } else {
+          val r = ScriptConstant(f(v1, v2))
+          ScriptProgram(p, r +: p.stack.drop(2), p.script.tail)
+        }
       }
-    }.merge
+      .merge
 
   /** [[OP_AND]] Boolean and between each bit in the operands**/
   def opAnd(program: ScriptProgram): ScriptProgram = opBitWise(program)(_ & _)

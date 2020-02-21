@@ -44,19 +44,19 @@ sealed abstract class BaseECKey extends NetworkElement with Sign {
    * @return the digital signature
    */
   override def signECDSA(data: ByteVector): ECDigitalSignature = {
-      require(data.length == 32 && bytes.length <= 32)
-      val signature = NativeSecp256k1.sign(data.toArray, bytes.toArray)
-      ECDigitalSignature(ByteVector(signature))
+    require(data.length == 32 && bytes.length <= 32)
+    val signature = NativeSecp256k1.sign(data.toArray, bytes.toArray)
+    ECDigitalSignature(ByteVector(signature))
   }
 
   def signECDSA(hash: HashDigest): ECDigitalSignature = signECDSA(hash.bytes)
 
   /**
-    * Signs using Schnorr Algorithm given sequence of bytes with the signingKey
-    * @param dataToSign the bytes to be signed
-    * @param signingKey the key to sign the bytes with
-    * @return the schnorr signature
-    */
+   * Signs using Schnorr Algorithm given sequence of bytes with the signingKey
+   * @param dataToSign the bytes to be signed
+   * @param signingKey the key to sign the bytes with
+   * @return the schnorr signature
+   */
   override def signSchnorr(data: ByteVector): SchnorrSignature = {
     require(data.length == 32 && bytes.length <= 32)
     val signature = NativeSecp256k1.schnorrSign(data.toArray, bytes.toArray)
@@ -70,6 +70,7 @@ sealed abstract class BaseECKey extends NetworkElement with Sign {
  * Created by chris on 2/16/16.
  */
 sealed abstract class ECPrivateKey extends BaseECKey {
+
   /** Signifies if the this private key corresponds to a compressed public key */
   def isCompressed: Boolean
 
@@ -78,7 +79,8 @@ sealed abstract class ECPrivateKey extends BaseECKey {
     val pubKeyBytes: Array[Byte] = NativeSecp256k1.computePubkey(bytes.toArray, isCompressed)
     require(
       NativeSecp256k1.isValidPubKey(pubKeyBytes),
-      s"secp256k1 failed to generate a valid public key, got: ${BitcoinSUtil.encodeHex(ByteVector(pubKeyBytes))}")
+      s"secp256k1 failed to generate a valid public key, got: ${BitcoinSUtil.encodeHex(ByteVector(pubKeyBytes))}"
+    )
     ECPublicKey(ByteVector(pubKeyBytes))
   }
 
@@ -90,9 +92,9 @@ sealed abstract class ECPrivateKey extends BaseECKey {
   def toWIF(network: NetworkParameters): String = {
     val networkByte = network.privateKey
     //append 1 byte to the end of the priv key byte representation if we need a compressed pub key
-    val fullBytes = if (isCompressed) networkByte ++ (bytes ++ ByteVector(1)) else networkByte ++ bytes
-    val hash = CryptoUtil.doubleSHA256(fullBytes)
-    val checksum = hash.bytes.take(4)
+    val fullBytes      = if (isCompressed) networkByte ++ (bytes ++ ByteVector(1)) else networkByte ++ bytes
+    val hash           = CryptoUtil.doubleSHA256(fullBytes)
+    val checksum       = hash.bytes.take(4)
     val encodedPrivKey = fullBytes ++ checksum
     encodedPrivKey.toBase58
   }
@@ -102,28 +104,32 @@ sealed abstract class ECPrivateKey extends BaseECKey {
 
 object ECPrivateKey extends Factory[ECPrivateKey] {
 
-  private case class ECPrivateKeyImpl(override val bytes: ByteVector, isCompressed: Boolean, ec: ExecutionContext) extends ECPrivateKey {
-    require(NativeSecp256k1.secKeyVerify(bytes.toArray), "Invalid key according to secp256k1, hex: " + BitcoinSUtil.encodeHex(bytes))
+  private case class ECPrivateKeyImpl(override val bytes: ByteVector, isCompressed: Boolean, ec: ExecutionContext)
+      extends ECPrivateKey {
+    require(
+      NativeSecp256k1.secKeyVerify(bytes.toArray),
+      "Invalid key according to secp256k1, hex: " + BitcoinSUtil.encodeHex(bytes)
+    )
   }
 
-  def apply(bytes: ByteVector, isCompressed: Boolean)(implicit ec: ExecutionContext): ECPrivateKey = {
+  def apply(bytes: ByteVector, isCompressed: Boolean)(implicit ec: ExecutionContext): ECPrivateKey =
     ECPrivateKeyImpl(bytes, isCompressed, ec)
-  }
 
   override def fromBytes(bytes: ByteVector): ECPrivateKey = fromBytes(bytes, true)
 
   @tailrec
-  def fromBytes(bytes: ByteVector, isCompressed: Boolean): ECPrivateKey = {
-
+  def fromBytes(bytes: ByteVector, isCompressed: Boolean): ECPrivateKey =
     if (bytes.size == 32) ECPrivateKeyImpl(bytes, isCompressed, Implicits.global)
     else if (bytes.size < 32) {
       //means we need to pad the private key with 0 bytes so we have 32 bytes
       ECPrivateKey.fromBytes(bytes.padLeft(32), isCompressed)
     } //this is for the case when java serialies a BigInteger to 33 bytes to hold the signed num representation
     else if (bytes.size == 33) ECPrivateKey.fromBytes(bytes.slice(1, 33), isCompressed)
-    else throw new IllegalArgumentException("Private keys cannot be greater than 33 bytes in size, got: " +
-      BitcoinSUtil.encodeHex(bytes) + " which is of size: " + bytes.size)
-  }
+    else
+      throw new IllegalArgumentException(
+        "Private keys cannot be greater than 33 bytes in size, got: " +
+          BitcoinSUtil.encodeHex(bytes) + " which is of size: " + bytes.size
+      )
 
   def fromHex(hex: String, isCompressed: Boolean): ECPrivateKey = fromBytes(BitcoinSUtil.decodeHex(hex), isCompressed)
 
@@ -136,16 +142,17 @@ object ECPrivateKey extends Factory[ECPrivateKey] {
   def freshPrivateKey: ECPrivateKey = freshPrivateKey(true)
 
   def freshPrivateKey(isCompressed: Boolean): ECPrivateKey = {
-    val secureRandom = new SecureRandom
-    val generator: ECKeyPairGenerator = new ECKeyPairGenerator
+    val secureRandom                            = new SecureRandom
+    val generator: ECKeyPairGenerator           = new ECKeyPairGenerator
     val keyGenParams: ECKeyGenerationParameters = new ECKeyGenerationParameters(CryptoParams.curve, secureRandom)
     generator.init(keyGenParams)
-    val keypair: AsymmetricCipherKeyPair = generator.generateKeyPair
+    val keypair: AsymmetricCipherKeyPair   = generator.generateKeyPair
     val privParams: ECPrivateKeyParameters = keypair.getPrivate.asInstanceOf[ECPrivateKeyParameters]
-    val priv: BigInteger = privParams.getD
-    val bytes = ByteVector(priv.toByteArray)
+    val priv: BigInteger                   = privParams.getD
+    val bytes                              = ByteVector(priv.toByteArray)
     ECPrivateKey.fromBytes(bytes, isCompressed)
   }
+
   /**
    * Takes in a base58 string and converts it into a private key.
    * Private keys starting with 'K', 'L', or 'c' correspond to compressed public keys.
@@ -155,7 +162,7 @@ object ECPrivateKey extends Factory[ECPrivateKey] {
    * @return
    */
   def fromWIFToPrivateKey(WIF: String): ECPrivateKey = {
-    val isCompressed = ECPrivateKey.isCompressed(WIF)
+    val isCompressed    = ECPrivateKey.isCompressed(WIF)
     val privateKeyBytes = trimFunction(WIF)
     ECPrivateKey.fromBytes(privateKeyBytes, isCompressed)
   }
@@ -169,9 +176,9 @@ object ECPrivateKey extends Factory[ECPrivateKey] {
    * @return
    */
   def isCompressed(bytes: ByteVector): Boolean = {
-    val validCompressedBytes: Seq[ByteVector] = Networks.secretKeyBytes
+    val validCompressedBytes: Seq[ByteVector]  = Networks.secretKeyBytes
     val validCompressedBytesInHex: Seq[String] = validCompressedBytes.map(b => BitcoinSUtil.encodeHex(b))
-    val firstByteHex = BitcoinSUtil.encodeHex(bytes.head)
+    val firstByteHex                           = BitcoinSUtil.encodeHex(bytes.head)
     if (validCompressedBytesInHex.contains(firstByteHex)) bytes(bytes.length - 5) == 0x01.toByte
     else false
   }
@@ -195,9 +202,9 @@ object ECPrivateKey extends Factory[ECPrivateKey] {
     //for where '5' and '9' come from
     bytesChecked match {
       case Success(bytes) if uncompressedKeyPrefixes.contains(WIF.headOption) => bytes.tail
-      case Success(bytes) if isCompressed(WIF) => bytes.tail.dropRight(1)
-      case Success(bytes) => bytes.tail
-      case Failure(exception) => throw exception
+      case Success(bytes) if isCompressed(WIF)                                => bytes.tail.dropRight(1)
+      case Success(bytes)                                                     => bytes.tail
+      case Failure(exception)                                                 => throw exception
     }
   }
 
@@ -231,7 +238,7 @@ sealed abstract class ECPublicKey extends BaseECKey {
   def verifyECDSA(hash: HashDigest, signature: ECDigitalSignature): Boolean = verifyECDSA(hash.bytes, signature)
 
   /** Verifies if a given piece of data is signed by the [[ECPrivateKey]]'s corresponding [[ECPublicKey]]. */
-  def verifyECDSA(data: ByteVector, signature: ECDigitalSignature): Boolean = {
+  def verifyECDSA(data: ByteVector, signature: ECDigitalSignature): Boolean =
     if (!isFullyValid) false
     else {
       val result = NativeSecp256k1.verify(data.toArray, signature.bytes.toArray, bytes.toArray)
@@ -245,19 +252,19 @@ sealed abstract class ECPublicKey extends BaseECKey {
         oldVerify(data, signature)
       } else result
     }
-  }
 
-  def verifySchnorr(hash: HashDigest, signature: SchnorrSignature): Boolean = {
+  def verifySchnorr(hash: HashDigest, signature: SchnorrSignature): Boolean =
     if (!isFullyValid || signature.bytes.size != 64) false
     else NativeSecp256k1.schnorrVerify(hash.bytes.toArray, signature.bytes.toArray, bytes.toArray)
-  }
 
   override def toString = "ECPublicKey(" + hex + ")"
 
   @deprecated("Deprecated in favor of using verify functionality inside of secp256k1", "2/20/2017")
   private def oldVerify(data: ByteVector, signature: ECDigitalSignature): Boolean = {
+
     /** The elliptic curve used by bitcoin. */
     def curve = CryptoParams.curve
+
     /** This represents this public key in the bouncy castle library */
     def publicKeyParams = new ECPublicKeyParameters(curve.getCurve.decodePoint(bytes.toArray), curve)
 
@@ -265,7 +272,8 @@ sealed abstract class ECPublicKey extends BaseECKey {
       val signer = new ECDSASigner
       signer.init(false, publicKeyParams)
       signature match {
-        case EmptyDigitalSignature => signer.verifySignature(data.toArray, java.math.BigInteger.valueOf(0), java.math.BigInteger.valueOf(0))
+        case EmptyDigitalSignature =>
+          signer.verifySignature(data.toArray, java.math.BigInteger.valueOf(0), java.math.BigInteger.valueOf(0))
         case _: ECDigitalSignature =>
           logger.debug("Public key bytes: " + BitcoinSUtil.encodeHex(bytes))
           val rBigInteger = new BigInteger(signature.r.toString)
@@ -284,12 +292,11 @@ sealed abstract class ECPublicKey extends BaseECKey {
   def isFullyValid = ECPublicKey.isFullyValid(bytes)
 
   /** Returns the decompressed version of this [[ECPublicKey]] */
-  def decompressed: ECPublicKey = {
+  def decompressed: ECPublicKey =
     if (isCompressed) {
       val decompressed = NativeSecp256k1.decompress(bytes.toArray)
       ECPublicKey.fromBytes(ByteVector(decompressed))
     } else this
-  }
 }
 
 object ECPublicKey extends Factory[ECPublicKey] {
@@ -303,9 +310,8 @@ object ECPublicKey extends Factory[ECPublicKey] {
     //Eventually we would like this to be CPubKey::IsFullyValid() but since we are remaining backwards compatible
     //we cannot do this. If there ever is a hard fork this would be a good thing to add.
   }
-  override def fromBytes(bytes: ByteVector): ECPublicKey = {
+  override def fromBytes(bytes: ByteVector): ECPublicKey =
     ECPublicKeyImpl(bytes, Implicits.global)
-  }
 
   def apply() = freshPublicKey
 
@@ -317,7 +323,8 @@ object ECPublicKey extends Factory[ECPublicKey] {
    * Mimics this function in bitcoin core
    * [[https://github.com/bitcoin/bitcoin/blob/27765b6403cece54320374b37afb01a0cfe571c3/src/pubkey.cpp#L207-L212]]
    */
-  def isFullyValid(bytes: ByteVector): Boolean = Try(NativeSecp256k1.isValidPubKey(bytes.toArray)).getOrElse(false) && isValid(bytes)
+  def isFullyValid(bytes: ByteVector): Boolean =
+    Try(NativeSecp256k1.isValidPubKey(bytes.toArray)).getOrElse(false) && isValid(bytes)
 
   /**
    * Mimics the CPubKey::IsValid function in Bitcoin core, this is a consensus rule

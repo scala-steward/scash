@@ -3,49 +3,46 @@ package org.scash.rpc.client.common
 import org.scash.core.crypto.DoubleSha256DigestBE
 import org.scash.core.currency.Bitcoins
 import org.scash.core.protocol.BitcoinAddress
-import org.scash.core.protocol.transaction.{Transaction, TransactionInput}
+import org.scash.core.protocol.transaction.{ Transaction, TransactionInput }
 import org.scash.rpc.client.common.BitcoindVersion._
-import org.scash.rpc.jsonmodels.{FundRawTransactionResult, GetRawTransactionResult, RpcTransaction}
+import org.scash.rpc.jsonmodels.{ FundRawTransactionResult, GetRawTransactionResult, RpcTransaction }
 import org.scash.rpc.serializers.JsonSerializers._
 import org.scash.rpc.serializers.JsonWriters._
-import org.scash.rpc.jsonmodels.{FundRawTransactionResult, GetRawTransactionResult, RpcTransaction}
+import org.scash.rpc.jsonmodels.{ FundRawTransactionResult, GetRawTransactionResult, RpcTransaction }
 import play.api.libs.json._
 
 import scala.concurrent.Future
 
 /**
-  * This trait defines RPC calls relating to interacting
-  * with raw transactions. This includes creation, decoding
-  * funding and sending.
-  */
+ * This trait defines RPC calls relating to interacting
+ * with raw transactions. This includes creation, decoding
+ * funding and sending.
+ */
 trait RawTransactionRpc { self: Client =>
 
-  def combineRawTransaction(txs: Vector[Transaction]): Future[Transaction] = {
+  def combineRawTransaction(txs: Vector[Transaction]): Future[Transaction] =
     bitcoindCall[Transaction]("combinerawtransaction", List(Json.toJson(txs)))
-  }
 
   def createRawTransaction(
-      inputs: Vector[TransactionInput],
-      outputs: Map[BitcoinAddress, Bitcoins],
-      locktime: Int = 0): Future[Transaction] = {
+    inputs: Vector[TransactionInput],
+    outputs: Map[BitcoinAddress, Bitcoins],
+    locktime: Int = 0
+  ): Future[Transaction] =
     bitcoindCall[Transaction](
       "createrawtransaction",
-      List(Json.toJson(inputs), Json.toJson(outputs), JsNumber(locktime)))
-  }
+      List(Json.toJson(inputs), Json.toJson(outputs), JsNumber(locktime))
+    )
 
-  def decodeRawTransaction(transaction: Transaction): Future[RpcTransaction] = {
-    bitcoindCall[RpcTransaction]("decoderawtransaction",
-                                 List(JsString(transaction.hex)))
-  }
+  def decodeRawTransaction(transaction: Transaction): Future[RpcTransaction] =
+    bitcoindCall[RpcTransaction]("decoderawtransaction", List(JsString(transaction.hex)))
 
-  def fundRawTransaction(
-      transaction: Transaction): Future[FundRawTransactionResult] =
+  def fundRawTransaction(transaction: Transaction): Future[FundRawTransactionResult] =
     fundRawTransaction(transaction, None)
 
   private def fundRawTransaction(
-      transaction: Transaction,
-      options: Option[RpcOpts.FundRawTransactionOptions]): Future[
-    FundRawTransactionResult] = {
+    transaction: Transaction,
+    options: Option[RpcOpts.FundRawTransactionOptions]
+  ): Future[FundRawTransactionResult] = {
     val params =
       if (options.isEmpty) {
         List(JsString(transaction.hex))
@@ -57,14 +54,14 @@ trait RawTransactionRpc { self: Client =>
   }
 
   def fundRawTransaction(
-      transaction: Transaction,
-      options: RpcOpts.FundRawTransactionOptions): Future[
-    FundRawTransactionResult] = fundRawTransaction(transaction, Some(options))
+    transaction: Transaction,
+    options: RpcOpts.FundRawTransactionOptions
+  ): Future[FundRawTransactionResult] = fundRawTransaction(transaction, Some(options))
 
   def getRawTransaction(
-      txid: DoubleSha256DigestBE,
-      blockhash: Option[DoubleSha256DigestBE] = None): Future[
-    GetRawTransactionResult] = {
+    txid: DoubleSha256DigestBE,
+    blockhash: Option[DoubleSha256DigestBE] = None
+  ): Future[GetRawTransactionResult] = {
     val lastParam: List[JsString] = blockhash match {
       case Some(hash) => JsString(hash.hex) :: Nil
       case None       => Nil
@@ -75,8 +72,9 @@ trait RawTransactionRpc { self: Client =>
   }
 
   def getRawTransactionRaw(
-      txid: DoubleSha256DigestBE,
-      blockhash: Option[DoubleSha256DigestBE] = None): Future[Transaction] = {
+    txid: DoubleSha256DigestBE,
+    blockhash: Option[DoubleSha256DigestBE] = None
+  ): Future[Transaction] = {
     val lastParam: List[JsString] = blockhash match {
       case Some(hash) => JsString(hash.hex) :: Nil
       case None       => Nil
@@ -87,11 +85,9 @@ trait RawTransactionRpc { self: Client =>
   }
 
   /**
-    * @param maxfeerate Set to 0 if you want to enable allowhighfees
-    */
-  def sendRawTransaction(
-      transaction: Transaction,
-      maxfeerate: Double = 0.10): Future[DoubleSha256DigestBE] = {
+   * @param maxfeerate Set to 0 if you want to enable allowhighfees
+   */
+  def sendRawTransaction(transaction: Transaction, maxfeerate: Double = 0.10): Future[DoubleSha256DigestBE] = {
 
     val feeParameter = self.version match {
       case V21 | Experimental | Unknown =>
@@ -100,9 +96,7 @@ trait RawTransactionRpc { self: Client =>
         JsBoolean(maxfeerate == 0)
     }
 
-    bitcoindCall[DoubleSha256DigestBE](
-      "sendrawtransaction",
-      List(JsString(transaction.hex), feeParameter))
+    bitcoindCall[DoubleSha256DigestBE]("sendrawtransaction", List(JsString(transaction.hex), feeParameter))
   }
 
 }

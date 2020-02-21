@@ -1,4 +1,5 @@
 package org.scash.core.script.crypto
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
@@ -98,9 +99,19 @@ case object OP_CHECKDATASIGVERIFY extends CryptoSignatureEvaluation {
 }
 
 object CryptoOperation extends ScriptOperationFactory[CryptoOperation] {
-  override def operations = Seq(
-    OP_CHECKMULTISIG, OP_CHECKMULTISIGVERIFY,
-    OP_CHECKSIG, OP_CHECKSIGVERIFY,
-    OP_CHECKDATASIG, OP_CHECKDATASIGVERIFY,
-    OP_CODESEPARATOR, OP_HASH160, OP_HASH256, OP_RIPEMD160, OP_SHA1, OP_SHA256)
+  override def operations =
+    Seq(
+      OP_CHECKMULTISIG,
+      OP_CHECKMULTISIGVERIFY,
+      OP_CHECKSIG,
+      OP_CHECKSIGVERIFY,
+      OP_CHECKDATASIG,
+      OP_CHECKDATASIGVERIFY,
+      OP_CODESEPARATOR,
+      OP_HASH160,
+      OP_HASH256,
+      OP_RIPEMD160,
+      OP_SHA1,
+      OP_SHA256
+    )
 }

@@ -2,14 +2,17 @@ package org.scash.core.crypto
 
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.util.Factory
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import scodec.bits.ByteVector
+
 /**
  * Created by chris on 5/24/16.
  */
 sealed abstract class HashDigest extends NetworkElement {
+
   /** The message digest represented in bytes */
   def bytes: ByteVector
+
   /**
    * Flips the endianness of the byte sequence.
    * Since bitcoin unfortunately has inconsistent endianness between the protocol
@@ -64,12 +67,11 @@ object DoubleSha256Digest extends Factory[DoubleSha256Digest] {
 
   val empty: DoubleSha256Digest = DoubleSha256Digest(
     ByteVector.low(32)
-    )
+  )
 }
 
 case class DoubleSha256DigestBE(bytes: ByteVector) extends HashDigest {
-  require(bytes.length == 32,
-          "DoubleSha256Digest must always be 32 bytes, got: " + bytes.length)
+  require(bytes.length == 32, "DoubleSha256Digest must always be 32 bytes, got: " + bytes.length)
 
   def flip: DoubleSha256Digest =
     DoubleSha256Digest.fromBytes(bytes.reverse)
@@ -79,7 +81,7 @@ case class DoubleSha256DigestBE(bytes: ByteVector) extends HashDigest {
 
 object DoubleSha256DigestBE extends Factory[DoubleSha256DigestBE] {
   override def fromBytes(bytes: ByteVector): DoubleSha256DigestBE =
-  // have to use new to avoid infinite loop
+    // have to use new to avoid infinite loop
     new DoubleSha256DigestBE(bytes)
 
   val empty: DoubleSha256DigestBE = DoubleSha256DigestBE(ByteVector.low(32))
@@ -105,15 +107,16 @@ sealed trait RipeMd160DigestBE extends HashDigest {
 }
 
 object RipeMd160DigestBE extends Factory[RipeMd160DigestBE] {
-  private case class RipeMd160DigestBEImpl(bytes: ByteVector)
-    extends RipeMd160DigestBE {
+  private case class RipeMd160DigestBEImpl(bytes: ByteVector) extends RipeMd160DigestBE {
     override def toString = s"RipeMd160DigestBEImpl($hex)"
     // $COVERAGE-ON$
   }
   override def fromBytes(bytes: ByteVector): RipeMd160DigestBE = {
-    require(bytes.length == 20,
-            // $COVERAGE-OFF$
-            "RIPEMD160Digest must always be 20 bytes, got: " + bytes.length)
+    require(
+      bytes.length == 20,
+      // $COVERAGE-OFF$
+      "RIPEMD160Digest must always be 20 bytes, got: " + bytes.length
+    )
     RipeMd160DigestBEImpl(bytes)
   }
 }

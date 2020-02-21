@@ -17,6 +17,7 @@ import scala.annotation.tailrec
 trait Merkle extends BitcoinSLogger {
 
   type MerkleTree = BinaryTree[DoubleSha256Digest]
+
   /**
    * Computes the merkle root for the given block
    * @param block the given block that needs the merkle root computed
@@ -30,10 +31,13 @@ trait Merkle extends BitcoinSLogger {
    * @return the merkle root for the sequence of transactions
    */
   def computeMerkleRoot(transactions: Seq[Transaction]): DoubleSha256Digest = transactions match {
-    case Nil => throw new IllegalArgumentException("We cannot have zero transactions in the block. There always should be ATLEAST one - the coinbase tx")
+    case Nil =>
+      throw new IllegalArgumentException(
+        "We cannot have zero transactions in the block. There always should be ATLEAST one - the coinbase tx"
+      )
     case h :: Nil => h.txId
     case _ :: _ =>
-      val leafs = transactions.map(tx => Leaf(tx.txId))
+      val leafs      = transactions.map(tx => Leaf(tx.txId))
       val merkleTree = build(leafs, Nil)
       merkleTree.value.get
   }
@@ -49,7 +53,10 @@ trait Merkle extends BitcoinSLogger {
   final def build(subTrees: Seq[MerkleTree], accum: Seq[MerkleTree]): MerkleTree = subTrees match {
     case Nil =>
       if (accum.size == 1) accum.head
-      else if (accum.isEmpty) throw new IllegalArgumentException("Should never have sub tree size of zero, this implies there was zero hashes given")
+      else if (accum.isEmpty)
+        throw new IllegalArgumentException(
+          "Should never have sub tree size of zero, this implies there was zero hashes given"
+        )
       else build(accum.reverse, Nil)
     case h :: h1 :: t =>
       val newTree = computeTree(h, h1)
@@ -69,7 +76,7 @@ trait Merkle extends BitcoinSLogger {
   /** Computes the merkle tree of two sub merkle trees */
   def computeTree(tree1: MerkleTree, tree2: MerkleTree): MerkleTree = {
     val bytes = tree1.value.get.bytes ++ tree2.value.get.bytes
-    val hash = CryptoUtil.doubleSHA256(bytes)
+    val hash  = CryptoUtil.doubleSHA256(bytes)
     Node(hash, tree1, tree2)
   }
 
@@ -81,7 +88,7 @@ trait Merkle extends BitcoinSLogger {
    */
   def computeBlockWitnessMerkleTree(block: Block): MerkleTree = {
     val coinbaseWTxId = CryptoUtil.emptyDoubleSha256Hash
-    val hashes = block.transactions.tail.map(_.txId)
+    val hashes        = block.transactions.tail.map(_.txId)
     build(coinbaseWTxId +: hashes)
   }
 
@@ -90,10 +97,8 @@ trait Merkle extends BitcoinSLogger {
    * See BIP141
    * [[https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#commitment-structure]]
    */
-  def computeBlockWitnessMerkleRoot(block: Block): DoubleSha256Digest = {
+  def computeBlockWitnessMerkleRoot(block: Block): DoubleSha256Digest =
     computeBlockWitnessMerkleTree(block).value.get
-  }
 }
 
 object Merkle extends Merkle
-

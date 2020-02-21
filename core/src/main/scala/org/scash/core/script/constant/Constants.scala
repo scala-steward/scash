@@ -14,12 +14,12 @@ import scala.util.{ Failure, Success, Try }
 /**
  * Created by chris on 1/6/16.
  */
-
 /**
  * This is the root class of Script. Every element in the Script language is a
  * ScriptToken - think of this the same way you think about Object in Java.
  */
 sealed trait ScriptToken extends NetworkElement {
+
   /** The byte representation of this [[ScriptToken]]. */
   def bytes: ByteVector
 
@@ -39,6 +39,7 @@ trait ScriptOperation extends ScriptToken {
 
 /** A constant in the Script language for instance as String or a number. */
 sealed abstract class ScriptConstant extends ScriptToken {
+
   /** Returns if the [[ScriptConstant]] is encoded in the shortest possible way. */
   def isShortestEncoding: Boolean = BitcoinScriptUtil.isMinimalEncoding(this)
 
@@ -109,29 +110,31 @@ sealed abstract class ScriptNumber extends ScriptConstant {
 }
 
 object ScriptNumber extends Factory[ScriptNumber] {
+
   /** Represents the maximum size in bytes for a script element */
   lazy val maximumElementSize = 4
+
   /** Represents the number zero inside of bitcoin's script language. */
   lazy val zero: ScriptNumber = ScriptNumberImpl(0, ByteVector.empty)
+
   /** Represents the number one inside of bitcoin's script language. */
   lazy val one: ScriptNumber = ScriptNumberImpl(1)
+
   /** Represents the number negative one inside of bitcoin's script language. */
   lazy val negativeOne: ScriptNumber = ScriptNumberImpl(-1)
+
   /** Bitcoin has a numbering system which has a negative zero. */
   lazy val negativeZero: ScriptNumber = fromHex("80")
 
   //DANGEROUS FUNCTION TO CALL. avoid calling apply(b: ByteVector) as well
-  def fromBytes(bytes: ByteVector) = {
+  def fromBytes(bytes: ByteVector) =
     if (bytes.isEmpty) zero
     else ScriptNumberImpl(ScriptNumberUtil.toLong(bytes), bytes)
-  }
 
   def apply(underlying: Long): ScriptNumber =
     if (underlying == 0) zero else apply(ScriptNumberUtil.longToHex(underlying))
 
-  def apply(
-    requireMinimal: Boolean)(
-    bytes: ByteVector): ScriptError \/ ScriptNumber =
+  def apply(requireMinimal: Boolean)(bytes: ByteVector): ScriptError \/ ScriptNumber =
     if (bytes.size > maximumElementSize) {
       logger.error(s"Script number overflow limit: $maximumElementSize size: ${bytes.size}")
       -\/(ScriptErrorUnknownError)
@@ -139,23 +142,18 @@ object ScriptNumber extends Factory[ScriptNumber] {
       logger.error("The given bytes was not the shortest encoding for the script number: " + bytes)
       -\/(ScriptErrorUnknownError)
     } else
-      \/.fromTryCatchNonFatal(fromBytes(bytes))
-        .leftMap { err =>
-          logger.error(err.getLocalizedMessage)
-          ScriptErrorUnknownError
-        }
+      \/.fromTryCatchNonFatal(fromBytes(bytes)).leftMap { err =>
+        logger.error(err.getLocalizedMessage)
+        ScriptErrorUnknownError
+      }
 
-  def apply(
-    p: ScriptProgram,
-    token: ScriptToken): ScriptError \/ ScriptNumber = token match {
-    case s: ScriptNumber => \/-(s)
+  def apply(p: ScriptProgram, token: ScriptToken): ScriptError \/ ScriptNumber = token match {
+    case s: ScriptNumber   => \/-(s)
     case s: ScriptConstant => apply(ScriptFlagUtil.requireMinimalData(p.flags))(s.bytes)
-    case _ => -\/(ScriptErrorUnknownError)
+    case _                 => -\/(ScriptErrorUnknownError)
   }
 
-  def apply(
-    p: ScriptProgram,
-    bytes: ByteVector): ScriptProgram \/ ScriptNumber =
+  def apply(p: ScriptProgram, bytes: ByteVector): ScriptProgram \/ ScriptNumber =
     apply(BitcoinSUtil.encodeHex(bytes), ScriptFlagUtil.requireMinimalData(p.flags)) match {
       case Success(v) => \/-(v)
       case Failure(e) =>
@@ -163,10 +161,11 @@ object ScriptNumber extends Factory[ScriptNumber] {
         -\/(ScriptProgram(p, ScriptErrorUnknownError))
     }
 
-  def apply(bytes: ByteVector, requireMinimal: Boolean): Try[ScriptNumber] = apply(BitcoinSUtil.encodeHex(bytes), requireMinimal)
+  def apply(bytes: ByteVector, requireMinimal: Boolean): Try[ScriptNumber] =
+    apply(BitcoinSUtil.encodeHex(bytes), requireMinimal)
 
   //TODO: remove this function
-  def apply(hex: String, requireMinimal: Boolean): Try[ScriptNumber] = {
+  def apply(hex: String, requireMinimal: Boolean): Try[ScriptNumber] =
     if (hex.size > maximumElementSize) {
       Failure(new IllegalArgumentException(s"Script number overflow. limit: $maximumElementSize size: ${hex.size}"))
     } else if (requireMinimal && !BitcoinScriptUtil.isMinimalEncoding(hex)) {
@@ -174,7 +173,6 @@ object ScriptNumber extends Factory[ScriptNumber] {
     } else {
       Try(apply(hex))
     }
-  }
 
   private case class ScriptNumberImpl(underlying: Long, bytes: ByteVector) extends ScriptNumber
 
@@ -187,11 +185,8 @@ object ScriptNumber extends Factory[ScriptNumber] {
 
     def apply(bytes: ByteVector): ScriptNumber = ScriptNumberImpl(ScriptNumberUtil.toLong(bytes))
 
-    def apply(underlying: Long): ScriptNumber = {
-      ScriptNumberImpl(
-        underlying,
-        BitcoinSUtil.decodeHex(ScriptNumberUtil.longToHex(underlying)))
-    }
+    def apply(underlying: Long): ScriptNumber =
+      ScriptNumberImpl(underlying, BitcoinSUtil.decodeHex(ScriptNumberUtil.longToHex(underlying)))
 
     def apply(int64: Int64): ScriptNumber = ScriptNumberImpl(int64.toLong)
   }
@@ -381,17 +376,38 @@ object ScriptNumberOperation extends ScriptOperationFactory[ScriptNumberOperatio
   /** Finds the [[ScriptNumberOperation]] based on the given integer. */
   def fromNumber(underlying: Long): Option[ScriptNumberOperation] = operations.find(_.underlying == underlying)
 
-  def operations = Seq(OP_0, OP_1, OP_1NEGATE, OP_2, OP_3, OP_4, OP_5, OP_6, OP_7, OP_8, OP_9, OP_10, OP_11, OP_12, OP_13, OP_14, OP_15, OP_16)
+  def operations =
+    Seq(
+      OP_0,
+      OP_1,
+      OP_1NEGATE,
+      OP_2,
+      OP_3,
+      OP_4,
+      OP_5,
+      OP_6,
+      OP_7,
+      OP_8,
+      OP_9,
+      OP_10,
+      OP_11,
+      OP_12,
+      OP_13,
+      OP_14,
+      OP_15,
+      OP_16
+    )
 
 }
 
 object ScriptConstant extends Factory[ScriptConstant] {
 
-  lazy val zero = ScriptConstant("00")
+  lazy val zero         = ScriptConstant("00")
   lazy val negativeZero = ScriptConstant("80")
-  lazy val negativeOne = ScriptConstant("81")
+  lazy val negativeOne  = ScriptConstant("81")
 
   val empty = ScriptConstant(ByteVector.empty)
+
   /** Creates a [[ScriptConstant]] from a sequence of bytes. */
   def fromBytes(bytes: ByteVector): ScriptConstant = ScriptConstantImpl(bytes)
 

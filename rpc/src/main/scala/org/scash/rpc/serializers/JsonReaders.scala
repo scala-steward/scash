@@ -1,48 +1,55 @@
 package org.scash.rpc.serializers
 
 import java.io.File
-import java.net.{InetAddress, URI}
+import java.net.{ InetAddress, URI }
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 import org.scash.core.crypto._
-import org.scash.core.currency.{Bitcoins, Satoshis}
-import org.scash.core.number.{Int32, UInt32, UInt64}
-import org.scash.core.protocol.blockchain.{Block, BlockHeader, MerkleBlock}
-import org.scash.core.protocol.script.{ScriptPubKey, ScriptSignature}
+import org.scash.core.currency.{ Bitcoins, Satoshis }
+import org.scash.core.number.{ Int32, UInt32, UInt64 }
+import org.scash.core.protocol.blockchain.{ Block, BlockHeader, MerkleBlock }
+import org.scash.core.protocol.script.{ ScriptPubKey, ScriptSignature }
 import org.scash.core.protocol.transaction._
-import org.scash.core.protocol.{Address, BitcoinAddress, P2PKHAddress, P2SHAddress}
+import org.scash.core.protocol.{ Address, BitcoinAddress, P2PKHAddress, P2SHAddress }
 import org.scash.core.script.ScriptType
 import org.scash.core.script.crypto.SigHashType
-import org.scash.core.wallet.fee.{BitcoinFeeUnit, SatoshisPerByte}
+import org.scash.core.wallet.fee.{ BitcoinFeeUnit, SatoshisPerByte }
 import org.scash.rpc.client.common.RpcOpts.LabelPurpose
 import org.scash.rpc.jsonmodels._
 import org.scash.rpc.serializers.JsonSerializers._
 import play.api.libs.json._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 import org.scash.core.config._
 import org.scash.core.p2p.ServiceIdentifier
-import org.scash.rpc.jsonmodels.{FinalizePsbtResult, FinalizedPsbt, NonFinalizedPsbt, PsbtBIP32Deriv, PsbtWitnessUtxoInput, RpcPsbtInput, RpcPsbtOutput, RpcPsbtScript, RpcTransaction, TestMempoolAcceptResult}
+import org.scash.rpc.jsonmodels.{
+  FinalizePsbtResult,
+  FinalizedPsbt,
+  NonFinalizedPsbt,
+  PsbtBIP32Deriv,
+  PsbtWitnessUtxoInput,
+  RpcPsbtInput,
+  RpcPsbtOutput,
+  RpcPsbtScript,
+  RpcTransaction,
+  TestMempoolAcceptResult
+}
 
 object JsonReaders {
 
   /**
-    * Tries to prase the provided JSON into a map with keys of
-    * type `K` and values of type `V`
-    */
-  def mapReads[K, V](js: JsValue)(
-      implicit readsK: Reads[K],
-      readsV: Reads[V]): JsResult[Map[K, V]] = {
+   * Tries to prase the provided JSON into a map with keys of
+   * type `K` and values of type `V`
+   */
+  def mapReads[K, V](js: JsValue)(implicit readsK: Reads[K], readsV: Reads[V]): JsResult[Map[K, V]] =
     js.validate[JsObject].flatMap { jsObj =>
       val jsResults: scala.collection.Seq[(JsResult[K], JsResult[V])] =
         jsObj.fields.map {
           case (key, value) => JsString(key).validate[K] -> value.validate[V]
         }
 
-      val allErrors: scala.collection.Seq[(
-          JsPath,
-          scala.collection.Seq[JsonValidationError])] =
+      val allErrors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])] =
         jsResults.collect {
           case (JsError(keyErrors), _)   => keyErrors
           case (_, JsError(valueErrors)) => valueErrors
@@ -57,11 +64,11 @@ object JsonReaders {
         }.toMap)
       }
     }
-  }
   implicit object LocalDateTimeReads extends Reads[LocalDateTime] {
     override def reads(json: JsValue): JsResult[LocalDateTime] =
       SerializerUtil.processJsNumberBigInt[LocalDateTime](bigInt =>
-        LocalDateTime.ofEpochSecond(bigInt.toLong, 0, ZoneOffset.UTC))(json)
+        LocalDateTime.ofEpochSecond(bigInt.toLong, 0, ZoneOffset.UTC)
+      )(json)
   }
 
   implicit object BigIntReads extends Reads[BigInt] {
@@ -76,27 +83,22 @@ object JsonReaders {
 
   implicit object RipeMd160DigestReads extends Reads[RipeMd160Digest] {
     override def reads(json: JsValue): JsResult[RipeMd160Digest] =
-      SerializerUtil.processJsString[RipeMd160Digest](RipeMd160Digest.fromHex)(
-        json)
+      SerializerUtil.processJsString[RipeMd160Digest](RipeMd160Digest.fromHex)(json)
   }
 
   implicit object RipeMd160DigestBEReads extends Reads[RipeMd160DigestBE] {
     override def reads(json: JsValue): JsResult[RipeMd160DigestBE] =
-      SerializerUtil.processJsString[RipeMd160DigestBE](
-        RipeMd160DigestBE.fromHex)(json)
+      SerializerUtil.processJsString[RipeMd160DigestBE](RipeMd160DigestBE.fromHex)(json)
   }
 
   implicit object DoubleSha256DigestReads extends Reads[DoubleSha256Digest] {
     override def reads(json: JsValue): JsResult[DoubleSha256Digest] =
-      SerializerUtil.processJsString[DoubleSha256Digest](
-        DoubleSha256Digest.fromHex)(json)
+      SerializerUtil.processJsString[DoubleSha256Digest](DoubleSha256Digest.fromHex)(json)
   }
 
-  implicit object DoubleSha256DigestBEReads
-      extends Reads[DoubleSha256DigestBE] {
+  implicit object DoubleSha256DigestBEReads extends Reads[DoubleSha256DigestBE] {
     override def reads(json: JsValue): JsResult[DoubleSha256DigestBE] =
-      SerializerUtil.processJsString[DoubleSha256DigestBE](
-        DoubleSha256DigestBE.fromHex)(json)
+      SerializerUtil.processJsString[DoubleSha256DigestBE](DoubleSha256DigestBE.fromHex)(json)
   }
 
   implicit object BitcoinsReads extends Reads[Bitcoins] {
@@ -106,8 +108,7 @@ object JsonReaders {
 
   implicit object SatoshisReads extends Reads[Satoshis] {
     override def reads(json: JsValue): JsResult[Satoshis] =
-      SerializerUtil.processJsNumber[Satoshis](num => Satoshis(num.toBigInt))(
-        json)
+      SerializerUtil.processJsNumber[Satoshis](num => Satoshis(num.toBigInt))(json)
   }
 
   implicit object BlockHeaderReads extends Reads[BlockHeader] {
@@ -183,8 +184,7 @@ object JsonReaders {
           case Failure(err) =>
             SerializerUtil.buildErrorMsg("address", err)
         }
-      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-          _: JsObject) =>
+      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
         SerializerUtil.buildJsErrorMsg("jsstring", err)
     }
   }
@@ -200,15 +200,13 @@ object JsonReaders {
   }
 
   implicit object ECDigitalSignatureReads extends Reads[ECDigitalSignature] {
-    override def reads(json: JsValue): JsResult[ECDigitalSignature] = {
+    override def reads(json: JsValue): JsResult[ECDigitalSignature] =
       SerializerUtil.processJsString(ECDigitalSignature.fromHex)(json)
-    }
   }
 
   implicit object ScriptPubKeyReads extends Reads[ScriptPubKey] {
     override def reads(json: JsValue): JsResult[ScriptPubKey] =
-      SerializerUtil.processJsString[ScriptPubKey](ScriptPubKey.fromAsmHex)(
-        json)
+      SerializerUtil.processJsString[ScriptPubKey](ScriptPubKey.fromAsmHex)(json)
   }
 
   implicit object BlockReads extends Reads[Block] {
@@ -218,8 +216,7 @@ object JsonReaders {
 
   implicit object Sha256Hash160DigestReads extends Reads[Sha256Hash160Digest] {
     override def reads(json: JsValue): JsResult[Sha256Hash160Digest] =
-      SerializerUtil.processJsString[Sha256Hash160Digest](
-        Sha256Hash160Digest.fromHex)(json)
+      SerializerUtil.processJsString[Sha256Hash160Digest](Sha256Hash160Digest.fromHex)(json)
   }
 
   implicit object ECPublicKeyReads extends Reads[ECPublicKey] {
@@ -235,8 +232,7 @@ object JsonReaders {
           case Failure(err) =>
             SerializerUtil.buildErrorMsg("p2pkhaddress", err)
         }
-      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-          _: JsObject) =>
+      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
         SerializerUtil.buildJsErrorMsg("jsstring", err)
     }
   }
@@ -249,41 +245,34 @@ object JsonReaders {
           case Failure(err) =>
             SerializerUtil.buildErrorMsg("p2shaddress", err)
         }
-      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-          _: JsObject) =>
+      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
         SerializerUtil.buildJsErrorMsg("jsstring", err)
     }
   }
 
   implicit object ScriptSignatureReads extends Reads[ScriptSignature] {
     override def reads(json: JsValue): JsResult[ScriptSignature] =
-      SerializerUtil.processJsString[ScriptSignature](
-        ScriptSignature.fromAsmHex)(json)
+      SerializerUtil.processJsString[ScriptSignature](ScriptSignature.fromAsmHex)(json)
   }
 
   implicit object TransactionInputReads extends Reads[TransactionInput] {
-    override def reads(json: JsValue): JsResult[TransactionInput] = {
+    override def reads(json: JsValue): JsResult[TransactionInput] =
       (json \ "sequence").validate[UInt32].flatMap { sequence =>
         (json \ "coinbase").validate[String] match {
           case s: JsSuccess[String] =>
-            JsSuccess(
-              CoinbaseInput(ScriptSignature.fromAsmHex(s.value), sequence))
+            JsSuccess(CoinbaseInput(ScriptSignature.fromAsmHex(s.value), sequence))
           case _ =>
             (json \ "txid").validate[DoubleSha256DigestBE].flatMap { txid =>
               (json \ "vout").validate[UInt32].flatMap { vout =>
                 (json \ "scriptSig" \ "hex")
                   .validate[ScriptSignature]
                   .flatMap { scriptSig =>
-                    JsSuccess(
-                      TransactionInput(TransactionOutPoint(txid.flip, vout),
-                                       scriptSig,
-                                       sequence))
+                    JsSuccess(TransactionInput(TransactionOutPoint(txid.flip, vout), scriptSig, sequence))
                   }
               }
             }
         }
       }
-    }
   }
 
   implicit object BitcoinAddressReads extends Reads[BitcoinAddress] {
@@ -295,8 +284,7 @@ object JsonReaders {
           case Failure(err) =>
             SerializerUtil.buildErrorMsg("address", err)
         }
-      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-          _: JsObject) =>
+      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
         SerializerUtil.buildJsErrorMsg("jsstring", err)
     }
   }
@@ -330,9 +318,7 @@ object JsonReaders {
       case array: JsArray =>
         val bitcoinResult = array.value.find(_.isInstanceOf[JsNumber]) match {
           case Some(JsNumber(n)) => JsSuccess(Bitcoins(n))
-          case Some(
-              err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray |
-              _: JsObject)) =>
+          case Some(err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray | _: JsObject)) =>
             SerializerUtil.buildJsErrorMsg("jsnumber", err)
           case None => JsError("error.expected.balance")
         }
@@ -355,8 +341,7 @@ object JsonReaders {
             JsSuccess(RpcAddress(address, bitcoins, account))
           }
         }
-      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsString |
-          _: JsObject) =>
+      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsString | _: JsObject) =>
         SerializerUtil.buildJsErrorMsg("jsarray", err)
     }
   }
@@ -407,62 +392,54 @@ object JsonReaders {
   implicit object RpcPsbtOutputReads extends Reads[RpcPsbtOutput] {
     override def reads(json: JsValue): JsResult[RpcPsbtOutput] =
       for {
-        redeemScript <- (json \ "redeem_script").validateOpt[RpcPsbtScript]
+        redeemScript  <- (json \ "redeem_script").validateOpt[RpcPsbtScript]
         witnessScript <- (json \ "witness_script").validateOpt[RpcPsbtScript]
-        unknown <- (json \ "unknown").validateOpt[Map[String, String]]
+        unknown       <- (json \ "unknown").validateOpt[Map[String, String]]
         bip32Derivs <- (json \ "bip32_derivs")
-          .validateOpt[Vector[PsbtBIP32Deriv]]
+                        .validateOpt[Vector[PsbtBIP32Deriv]]
       } yield RpcPsbtOutput(redeemScript, witnessScript, bip32Derivs, unknown)
   }
 
   implicit object PsbtBIP32DerivsReads extends Reads[PsbtBIP32Deriv] {
     override def reads(json: JsValue): JsResult[PsbtBIP32Deriv] =
       for {
-        pubkey <- (json \ "pubkey").validate[ECPublicKey]
+        pubkey            <- (json \ "pubkey").validate[ECPublicKey]
         masterFingerprint <- (json \ "master_fingerprint").validate[String]
-        path <- (json \ "path").validate[String]
-      } yield PsbtBIP32Deriv(pubkey = pubkey,
-                             masterFingerprint = masterFingerprint,
-                             path = path)
+        path              <- (json \ "path").validate[String]
+      } yield PsbtBIP32Deriv(pubkey = pubkey, masterFingerprint = masterFingerprint, path = path)
   }
 
   implicit object RpcPsbtScriptReads extends Reads[RpcPsbtScript] {
     override def reads(json: JsValue): JsResult[RpcPsbtScript] =
       for {
-        asm <- (json \ "asm").validate[String]
-        hex <- (json \ "hex").validate[ScriptPubKey]
+        asm        <- (json \ "asm").validate[String]
+        hex        <- (json \ "hex").validate[ScriptPubKey]
         scriptType <- (json \ "type").validateOpt[ScriptType]
-        address <- (json \ "address").validateOpt[BitcoinAddress]
-      } yield RpcPsbtScript(asm = asm,
-                            hex = hex,
-                            scriptType = scriptType,
-                            address = address)
+        address    <- (json \ "address").validateOpt[BitcoinAddress]
+      } yield RpcPsbtScript(asm = asm, hex = hex, scriptType = scriptType, address = address)
   }
 
-  implicit object MapPubKeySignatureReads
-      extends Reads[Map[ECPublicKey, ECDigitalSignature]] {
-    override def reads(
-        json: JsValue): JsResult[Map[ECPublicKey, ECDigitalSignature]] =
-      JsonReaders.mapReads(json)(implicitly[Reads[ECPublicKey]],
-                                 implicitly[Reads[ECDigitalSignature]])
+  implicit object MapPubKeySignatureReads extends Reads[Map[ECPublicKey, ECDigitalSignature]] {
+    override def reads(json: JsValue): JsResult[Map[ECPublicKey, ECDigitalSignature]] =
+      JsonReaders.mapReads(json)(implicitly[Reads[ECPublicKey]], implicitly[Reads[ECDigitalSignature]])
   }
 
   implicit object RpcPsbtInputReads extends Reads[RpcPsbtInput] {
     override def reads(json: JsValue): JsResult[RpcPsbtInput] =
       for {
         nonWitnessUtxo <- (json \ "non_witness_utxo")
-          .validateOpt[RpcTransaction]
-        witnessUtxo <- (json \ "witness_utxo").validateOpt[PsbtWitnessUtxoInput]
+                           .validateOpt[RpcTransaction]
+        witnessUtxo    <- (json \ "witness_utxo").validateOpt[PsbtWitnessUtxoInput]
         finalScriptSig <- (json \ "final_scriptSig").validateOpt[RpcPsbtScript]
-        redeemScript <- (json \ "redeem_script").validateOpt[RpcPsbtScript]
-        sighash <- (json \ "sighash").validateOpt[SigHashType]
+        redeemScript   <- (json \ "redeem_script").validateOpt[RpcPsbtScript]
+        sighash        <- (json \ "sighash").validateOpt[SigHashType]
         partialSignatures <- (json \ "partial_signatures")
-          .validateOpt[Map[ECPublicKey, ECDigitalSignature]]
+                              .validateOpt[Map[ECPublicKey, ECDigitalSignature]]
         witnessScript <- (json \ "witness_script").validateOpt[RpcPsbtScript]
         bip32Derivs <- (json \ "bi32_derivs")
-          .validateOpt[Vector[PsbtBIP32Deriv]]
+                        .validateOpt[Vector[PsbtBIP32Deriv]]
         finalScriptWitness <- JsSuccess(None) // todo(torkelrogstad) find an example of this
-        unknown <- (json \ "unknown").validateOpt[Map[String, String]]
+        unknown            <- (json \ "unknown").validateOpt[Map[String, String]]
       } yield {
         RpcPsbtInput(
           nonWitnessUtxo = nonWitnessUtxo,
@@ -487,12 +464,11 @@ object JsonReaders {
         .map(ScriptType.fromStringExn)
   }
 
-  implicit object TestMempoolAcceptResultReads
-      extends Reads[TestMempoolAcceptResult] {
+  implicit object TestMempoolAcceptResultReads extends Reads[TestMempoolAcceptResult] {
     override def reads(json: JsValue): JsResult[TestMempoolAcceptResult] =
       for {
-        txid <- (json \ "txid").validate[DoubleSha256DigestBE]
-        allowed <- (json \ "allowed").validate[Boolean]
+        txid         <- (json \ "txid").validate[DoubleSha256DigestBE]
+        allowed      <- (json \ "allowed").validate[Boolean]
         rejectReason <- (json \ "reject-reason").validateOpt[String]
       } yield TestMempoolAcceptResult(txid, allowed, rejectReason)
   }
@@ -500,8 +476,7 @@ object JsonReaders {
   // Currently takes in BTC/kB
   implicit object BitcoinFeeUnitReads extends Reads[BitcoinFeeUnit] {
     override def reads(json: JsValue): JsResult[BitcoinFeeUnit] =
-      SerializerUtil.processJsNumber[BitcoinFeeUnit](num =>
-        SatoshisPerByte(Satoshis((num * 100000).toBigInt)))(json)
+      SerializerUtil.processJsNumber[BitcoinFeeUnit](num => SatoshisPerByte(Satoshis((num * 100000).toBigInt)))(json)
   }
 
   implicit object FileReads extends Reads[File] {
@@ -531,12 +506,9 @@ object JsonReaders {
           Try(ServiceIdentifier.fromString(s)) match {
             case Success(serviceIdentifier) => JsSuccess(serviceIdentifier)
             case Failure(err) =>
-              SerializerUtil.buildJsErrorMsg(
-                s"Unexpected Service Identifier: $err",
-                json)
+              SerializerUtil.buildJsErrorMsg(s"Unexpected Service Identifier: $err", json)
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsstring", err)
       }
   }

@@ -2,7 +2,7 @@ package org.scash.core.serializers.p2p.messages
 
 import java.net.InetAddress
 
-import org.scash.core.number.{Int32, Int64, UInt32, UInt64}
+import org.scash.core.number.{ Int32, Int64, UInt32, UInt64 }
 import org.scash.core.protocol.CompactSizeUInt
 import org.scash.core.serializers.RawBitcoinSerializer
 import org.scash.core.util.BitcoinSLogger
@@ -10,12 +10,10 @@ import org.scash.core.p2p._
 import scodec.bits.ByteVector
 
 /**
-  * Responsible for serialization and deserialization of VersionMessages on the p2p network
-  * @see https://bitcoin.org/en/developer-reference#version
-  */
-trait RawVersionMessageSerializer
-    extends RawBitcoinSerializer[VersionMessage]
-    with BitcoinSLogger {
+ * Responsible for serialization and deserialization of VersionMessages on the p2p network
+ * @see https://bitcoin.org/en/developer-reference#version
+ */
+trait RawVersionMessageSerializer extends RawBitcoinSerializer[VersionMessage] with BitcoinSLogger {
 
   def read(bytes: ByteVector): VersionMessage = {
     val version = ProtocolVersion(bytes.take(4))
@@ -45,16 +43,13 @@ trait RawVersionMessageSerializer
 
     val userAgentBytesStartIndex = 80 + userAgentSize.size.toInt
 
-    val userAgentBytes = bytes.slice(
-      userAgentBytesStartIndex,
-      userAgentBytesStartIndex + userAgentSize.num.toInt)
+    val userAgentBytes = bytes.slice(userAgentBytesStartIndex, userAgentBytesStartIndex + userAgentSize.num.toInt)
 
     val userAgent = userAgentBytes.toArray.map(_.toChar).mkString
 
     val startHeightStartIndex = (userAgentBytesStartIndex + userAgentSize.num.toInt)
 
-    val startHeight = Int32(
-      bytes.slice(startHeightStartIndex, startHeightStartIndex + 4).reverse)
+    val startHeight = Int32(bytes.slice(startHeightStartIndex, startHeightStartIndex + 4).reverse)
 
     val relay = bytes(startHeightStartIndex + 4) != 0
 
@@ -75,7 +70,7 @@ trait RawVersionMessageSerializer
     )
   }
 
-  def write(versionMessage: VersionMessage): ByteVector = {
+  def write(versionMessage: VersionMessage): ByteVector =
     versionMessage.version.bytes ++
       versionMessage.services.bytes ++
       versionMessage.timestamp.bytes.reverse ++
@@ -95,7 +90,6 @@ trait RawVersionMessageSerializer
       versionMessage.startHeight.bytes.reverse ++
       (if (versionMessage.relay) ByteVector.fromByte(1.toByte)
        else ByteVector.fromByte(0.toByte))
-  }
 
 }
 

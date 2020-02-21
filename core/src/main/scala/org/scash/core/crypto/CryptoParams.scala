@@ -13,8 +13,7 @@ sealed abstract class CryptoParams {
   def params = SECNamedCurves.getByName("secp256k1")
 
   /** The curve that bitcoin uses. */
-  def curve = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(),
-    params.getH())
+  def curve = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH())
 
   /**
    * This is used for canonicalising the S value of a digital signature.

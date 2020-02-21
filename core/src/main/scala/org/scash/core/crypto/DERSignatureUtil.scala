@@ -13,6 +13,7 @@ import scala.util.{ Failure, Success, Try }
 sealed abstract class DERSignatureUtil {
 
   private val logger = BitcoinSLogger.logger
+
   /**
    * Checks if this signature is encoded to DER correctly
    * https://crypto.stackexchange.com/questions/1795/how-can-i-convert-a-der-ecdsa-signature-to-asn-1
@@ -27,7 +28,7 @@ sealed abstract class DERSignatureUtil {
    * This will fail if this signature contains the hash type appended to the end of it
    * @return boolean representing if the signature is a valid
    */
-  def isDEREncoded(bytes: ByteVector): Boolean = {
+  def isDEREncoded(bytes: ByteVector): Boolean =
     //signature is trivially valid if the signature is empty
     if (bytes.nonEmpty && bytes.size < 9) false
     else if (bytes.nonEmpty) {
@@ -44,11 +45,10 @@ sealed abstract class DERSignatureUtil {
       val second0x02Exists = bytes(rSize + 4) == 0x02
 
       firstByteIs0x30 &&
-        signatureLengthIsCorrect &&
-        thirdByteIs0x02 &&
-        second0x02Exists
+      signatureLengthIsCorrect &&
+      thirdByteIs0x02 &&
+      second0x02Exists
     } else true
-  }
 
   /**
    * Decodes the given digital signature into it's r and s points
@@ -72,7 +72,7 @@ sealed abstract class DERSignatureUtil {
     //https://stackoverflow.com/questions/2409618/how-do-i-decode-a-der-encoded-string-in-java
     val seq: DLSequence = Try(asn1InputStream.readObject.asInstanceOf[DLSequence]) match {
       case Success(seq) => seq
-      case Failure(_) => new DLSequence()
+      case Failure(_)   => new DLSequence()
     }
     val default = new ASN1Integer(0)
     val r: ASN1Integer = Try(seq.getObjectAt(0).asInstanceOf[ASN1Integer]) match {
@@ -108,12 +108,11 @@ sealed abstract class DERSignatureUtil {
    * @param signature the signature to check if they are strictly der encoded
    * @return boolean indicating whether the signature was der encoded or not
    */
-  def isValidSignatureEncoding(signature: ECDigitalSignature): Boolean = {
+  def isValidSignatureEncoding(signature: ECDigitalSignature): Boolean =
     signature match {
-      case EmptyDigitalSignature => true
+      case EmptyDigitalSignature         => true
       case signature: ECDigitalSignature => isValidSignatureEncoding(signature.bytes)
     }
-  }
 
   /**
    * This functions implements the strict der encoding rules that were created in BIP66
@@ -225,8 +224,9 @@ sealed abstract class DERSignatureUtil {
 
   /** Checks if the given digital signature uses a low s value, if it does not it converts it to a low s value and returns it */
   def lowS(signature: ECDigitalSignature): ECDigitalSignature = {
-    val sigLowS = if (isLowS(signature)) signature
-    else ECDigitalSignature(signature.r, CryptoParams.curve.getN().subtract(signature.s.bigInteger))
+    val sigLowS =
+      if (isLowS(signature)) signature
+      else ECDigitalSignature(signature.r, CryptoParams.curve.getN().subtract(signature.s.bigInteger))
     require(DERSignatureUtil.isLowS(sigLowS))
     sigLowS
   }

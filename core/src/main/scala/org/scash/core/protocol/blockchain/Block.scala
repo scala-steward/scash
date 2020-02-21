@@ -40,11 +40,12 @@ object Block extends Factory[Block] {
 
   private sealed case class BlockImpl(
     blockHeader: BlockHeader,
-    txCount: CompactSizeUInt, transactions: Seq[Transaction]) extends Block
+    txCount: CompactSizeUInt,
+    transactions: Seq[Transaction]
+  ) extends Block
 
-  def apply(blockHeader: BlockHeader, txCount: CompactSizeUInt, transactions: Seq[Transaction]): Block = {
+  def apply(blockHeader: BlockHeader, txCount: CompactSizeUInt, transactions: Seq[Transaction]): Block =
     BlockImpl(blockHeader, txCount, transactions)
-  }
 
   def apply(blockHeader: BlockHeader, transactions: Seq[Transaction]): Block = {
     val txCount = CompactSizeUInt(UInt64(transactions.size))

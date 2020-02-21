@@ -1,8 +1,8 @@
 package org.scash.rpc.config
 
-import java.io.{File, FileNotFoundException}
+import java.io.{ File, FileNotFoundException }
 import java.net.URI
-import java.nio.file.{Files, Paths}
+import java.nio.file.{ Files, Paths }
 
 import org.scash.core.config.NetworkParameters
 import org.scash.core.util.BitcoinSLogger
@@ -18,16 +18,14 @@ import java.nio.file.Files
 import scala.util.Properties
 
 /**
-  * Created by chris on 4/29/17.
-  */
+ * Created by chris on 4/29/17.
+ */
 sealed trait BitcoindInstance extends BitcoinSLogger {
 
-  require(binary.exists,
-          s"bitcoind binary path (${binary.getAbsolutePath}) does not exist!")
+  require(binary.exists, s"bitcoind binary path (${binary.getAbsolutePath}) does not exist!")
 
   // would like to check .canExecute as well, but we've run into issues on some machines
-  require(binary.isFile,
-          s"bitcoind binary path (${binary.getAbsolutePath}) must be a file")
+  require(binary.isFile, s"bitcoind binary path (${binary.getAbsolutePath}) must be a file")
 
   /** The binary file that should get executed to start Bitcoin Core */
   def binary: File
@@ -50,8 +48,7 @@ sealed trait BitcoindInstance extends BitcoinSLogger {
         .last
 
     foundVersion match {
-      case _: String
-          if foundVersion.equals(BitcoindVersion.Experimental.toString) =>
+      case _: String if foundVersion.equals(BitcoindVersion.Experimental.toString) =>
         BitcoindVersion.Experimental
       case _: String if foundVersion.startsWith(BitcoindVersion.V16.toString) =>
         BitcoindVersion.V16
@@ -70,32 +67,33 @@ sealed trait BitcoindInstance extends BitcoinSLogger {
 
 object BitcoindInstance {
   private case class BitcoindInstanceImpl(
-      network: NetworkParameters,
-      uri: URI,
-      rpcUri: URI,
-      authCredentials: BitcoindAuthCredentials,
-      zmqConfig: ZmqConfig,
-      binary: File,
-      datadir: File
+    network: NetworkParameters,
+    uri: URI,
+    rpcUri: URI,
+    authCredentials: BitcoindAuthCredentials,
+    zmqConfig: ZmqConfig,
+    binary: File,
+    datadir: File
   ) extends BitcoindInstance
 
   def apply(
-      network: NetworkParameters,
-      uri: URI,
-      rpcUri: URI,
-      authCredentials: BitcoindAuthCredentials,
-      zmqConfig: ZmqConfig = ZmqConfig(),
-      binary: File = DEFAULT_BITCOIND_LOCATION,
-      datadir: File = BitcoindConfig.DEFAULT_DATADIR
-  ): BitcoindInstance = {
-    BitcoindInstanceImpl(network,
-                         uri,
-                         rpcUri,
-                         authCredentials,
-                         zmqConfig = zmqConfig,
-                         binary = binary,
-                         datadir = datadir)
-  }
+    network: NetworkParameters,
+    uri: URI,
+    rpcUri: URI,
+    authCredentials: BitcoindAuthCredentials,
+    zmqConfig: ZmqConfig = ZmqConfig(),
+    binary: File = DEFAULT_BITCOIND_LOCATION,
+    datadir: File = BitcoindConfig.DEFAULT_DATADIR
+  ): BitcoindInstance =
+    BitcoindInstanceImpl(
+      network,
+      uri,
+      rpcUri,
+      authCredentials,
+      zmqConfig = zmqConfig,
+      binary = binary,
+      datadir = datadir
+    )
 
   lazy val DEFAULT_BITCOIND_LOCATION: File = {
 
@@ -113,18 +111,17 @@ object BitcoindInstance {
         findExecutableOnPath("bitcoind")
       }
 
-    cmd.getOrElse(
-      throw new FileNotFoundException("Cannot find a path to bitcoind"))
+    cmd.getOrElse(throw new FileNotFoundException("Cannot find a path to bitcoind"))
   }
 
   /** Constructs a `bitcoind` instance from the given datadir, using the
-    * `bitcoin.conf` found within (if any)
-    *
-    * @throws IllegalArgumentException if the given datadir does not exist
-    */
+   * `bitcoin.conf` found within (if any)
+   *
+   * @throws IllegalArgumentException if the given datadir does not exist
+   */
   def fromDatadir(
-      datadir: File = BitcoindConfig.DEFAULT_DATADIR,
-      binary: File = DEFAULT_BITCOIND_LOCATION
+    datadir: File = BitcoindConfig.DEFAULT_DATADIR,
+    binary: File = DEFAULT_BITCOIND_LOCATION
   ): BitcoindInstance = {
     require(datadir.exists, s"${datadir.getPath} does not exist!")
     require(datadir.isDirectory, s"${datadir.getPath} is not a directory!")
@@ -140,14 +137,14 @@ object BitcoindInstance {
   }
 
   /**
-    * Construct a `bitcoind` from the given config file. If no `datadir` setting
-    * is found, the parent directory to the given file is used.
-    *
-    * @throws  IllegalArgumentException if the given config file does not exist
-    */
+   * Construct a `bitcoind` from the given config file. If no `datadir` setting
+   * is found, the parent directory to the given file is used.
+   *
+   * @throws  IllegalArgumentException if the given config file does not exist
+   */
   def fromConfigFile(
-      file: File = BitcoindConfig.DEFAULT_CONF_FILE,
-      binary: File = DEFAULT_BITCOIND_LOCATION
+    file: File = BitcoindConfig.DEFAULT_CONF_FILE,
+    binary: File = DEFAULT_BITCOIND_LOCATION
   ): BitcoindInstance = {
     require(file.exists, s"${file.getPath} does not exist!")
     require(file.isFile, s"${file.getPath} is not a file!")
@@ -159,17 +156,19 @@ object BitcoindInstance {
 
   /** Constructs a `bitcoind` instance from the given config */
   def fromConfig(
-      config: BitcoindConfig,
-      binary: File = DEFAULT_BITCOIND_LOCATION
+    config: BitcoindConfig,
+    binary: File = DEFAULT_BITCOIND_LOCATION
   ): BitcoindInstance = {
 
     val authCredentials = BitcoindAuthCredentials.fromConfig(config)
-    BitcoindInstance(config.network,
-                     config.uri,
-                     config.rpcUri,
-                     authCredentials,
-                     zmqConfig = ZmqConfig.fromConfig(config),
-                     binary = binary,
-                     datadir = config.datadir)
+    BitcoindInstance(
+      config.network,
+      config.uri,
+      config.rpcUri,
+      authCredentials,
+      zmqConfig = ZmqConfig.fromConfig(config),
+      binary = binary,
+      datadir = config.datadir
+    )
   }
 }

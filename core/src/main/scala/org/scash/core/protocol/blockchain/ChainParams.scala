@@ -57,7 +57,13 @@ sealed abstract class ChainParams {
    */
   def createGenesisBlock(time: UInt32, nonce: UInt32, nBits: UInt32, version: Int32, amount: CurrencyUnit): Block = {
     val timestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
-    val asm = Seq(BytesToPushOntoStack(65), ScriptConstant("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"), OP_CHECKSIG)
+    val asm = Seq(
+      BytesToPushOntoStack(65),
+      ScriptConstant(
+        "04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"
+      ),
+      OP_CHECKSIG
+    )
     val genesisOutputScript = ScriptPubKey.fromAsm(asm)
     createGenesisBlock(timestamp, genesisOutputScript, time, nonce, nBits, version, amount)
   }
@@ -72,26 +78,36 @@ sealed abstract class ChainParams {
    * @param amount the block reward for the genesis block (50 BTC in Bitcoin)
    * @return the newly minted genesis block
    */
-  def createGenesisBlock(timestamp: String, scriptPubKey: ScriptPubKey, time: UInt32, nonce: UInt32, nBits: UInt32,
-    version: Int32, amount: CurrencyUnit): Block = {
+  def createGenesisBlock(
+    timestamp: String,
+    scriptPubKey: ScriptPubKey,
+    time: UInt32,
+    nonce: UInt32,
+    nBits: UInt32,
+    version: Int32,
+    amount: CurrencyUnit
+  ): Block = {
     val timestampBytes = ByteVector(timestamp.getBytes(StandardCharsets.UTF_8))
     //see https://bitcoin.stackexchange.com/questions/13122/scriptsig-coinbase-structure-of-the-genesis-block
     //for a full breakdown of the genesis block & its script signature
     val const = ScriptConstant(timestampBytes)
-    val scriptSignature = ScriptSignature.fromAsm(Seq(BytesToPushOntoStack(4), ScriptNumber(486604799),
-      BytesToPushOntoStack(1), ScriptNumber(4)) ++ BitcoinScriptUtil.calculatePushOp(const) ++ Seq(const))
-    val input = CoinbaseInput(scriptSignature, TransactionConstants.sequence)
-    val output = TransactionOutput(amount, scriptPubKey)
-    val tx = BaseTransaction(TransactionConstants.version, Seq(input), Seq(output), TransactionConstants.lockTime)
-    val prevBlockHash = DoubleSha256Digest("0000000000000000000000000000000000000000000000000000000000000000")
-    val merkleRootHash = Merkle.computeMerkleRoot(Seq(tx))
+    val scriptSignature = ScriptSignature.fromAsm(
+      Seq(BytesToPushOntoStack(4), ScriptNumber(486604799), BytesToPushOntoStack(1), ScriptNumber(4)) ++ BitcoinScriptUtil
+        .calculatePushOp(const) ++ Seq(const)
+    )
+    val input              = CoinbaseInput(scriptSignature, TransactionConstants.sequence)
+    val output             = TransactionOutput(amount, scriptPubKey)
+    val tx                 = BaseTransaction(TransactionConstants.version, Seq(input), Seq(output), TransactionConstants.lockTime)
+    val prevBlockHash      = DoubleSha256Digest("0000000000000000000000000000000000000000000000000000000000000000")
+    val merkleRootHash     = Merkle.computeMerkleRoot(Seq(tx))
     val genesisBlockHeader = BlockHeader(version, prevBlockHash, merkleRootHash, time, nBits, nonce)
-    val genesisBlock = Block(genesisBlockHeader, Seq(tx))
+    val genesisBlock       = Block(genesisBlockHeader, Seq(tx))
     genesisBlock
   }
 }
 
 sealed abstract class BitcoinChainParams extends ChainParams
+
 /** The Main Network parameters. */
 object MainNetChainParams extends BitcoinChainParams {
 
@@ -103,38 +119,46 @@ object MainNetChainParams extends BitcoinChainParams {
       UInt32(2083236893),
       UInt32(0x1d00ffff),
       Int32.one,
-      Satoshis(Int64(5000000000L)))
+      Satoshis(Int64(5000000000L))
+    )
 
-  override def base58Prefixes: Map[Base58Type, ByteVector] = Map(
-    Base58Type.PubKeyAddress -> ByteVector(0),
-    Base58Type.ScriptAddress -> ByteVector(5),
-    Base58Type.SecretKey -> ByteVector(128),
-    Base58Type.ExtPublicKey -> ByteVector(0x04, 0x88, 0xB2, 0x1E),
-    Base58Type.ExtSecretKey -> ByteVector(0x04, 0x88, 0xAD, 0xE4))
+  override def base58Prefixes: Map[Base58Type, ByteVector] =
+    Map(
+      Base58Type.PubKeyAddress -> ByteVector(0),
+      Base58Type.ScriptAddress -> ByteVector(5),
+      Base58Type.SecretKey     -> ByteVector(128),
+      Base58Type.ExtPublicKey  -> ByteVector(0x04, 0x88, 0xB2, 0x1E),
+      Base58Type.ExtSecretKey  -> ByteVector(0x04, 0x88, 0xAD, 0xE4)
+    )
 }
 
 object TestNetChainParams extends BitcoinChainParams {
 
   override def networkId = "test"
 
-  override def genesisBlock: Block = createGenesisBlock(
-    UInt32(1296688602),
-    UInt32(414098458),
-    UInt32(0x1d00ffff),
-    Int32.one,
-    Satoshis(Int64(5000000000L)))
+  override def genesisBlock: Block =
+    createGenesisBlock(
+      UInt32(1296688602),
+      UInt32(414098458),
+      UInt32(0x1d00ffff),
+      Int32.one,
+      Satoshis(Int64(5000000000L))
+    )
 
-  override def base58Prefixes: Map[Base58Type, ByteVector] = Map(
-    Base58Type.PubKeyAddress -> ByteVector(111),
-    Base58Type.ScriptAddress -> ByteVector(196),
-    Base58Type.SecretKey -> ByteVector(239),
-    Base58Type.ExtPublicKey -> ByteVector(0x04, 0x35, 0x87, 0xCF),
-    Base58Type.ExtSecretKey -> ByteVector(0x04, 0x35, 0x83, 0x94))
+  override def base58Prefixes: Map[Base58Type, ByteVector] =
+    Map(
+      Base58Type.PubKeyAddress -> ByteVector(111),
+      Base58Type.ScriptAddress -> ByteVector(196),
+      Base58Type.SecretKey     -> ByteVector(239),
+      Base58Type.ExtPublicKey  -> ByteVector(0x04, 0x35, 0x87, 0xCF),
+      Base58Type.ExtSecretKey  -> ByteVector(0x04, 0x35, 0x83, 0x94)
+    )
 }
 
 object RegTestNetChainParams extends BitcoinChainParams {
   override def networkId = "regtest"
-  override def genesisBlock: Block = createGenesisBlock(UInt32(1296688602), UInt32(2), UInt32(0x207fffff), Int32.one, Satoshis(Int64(5000000000L)))
+  override def genesisBlock: Block =
+    createGenesisBlock(UInt32(1296688602), UInt32(2), UInt32(0x207fffff), Int32.one, Satoshis(Int64(5000000000L)))
   override def base58Prefixes: Map[Base58Type, ByteVector] = TestNetChainParams.base58Prefixes
 }
 
@@ -142,7 +166,7 @@ sealed abstract class Base58Type
 object Base58Type {
   case object PubKeyAddress extends Base58Type
   case object ScriptAddress extends Base58Type
-  case object SecretKey extends Base58Type
-  case object ExtPublicKey extends Base58Type
-  case object ExtSecretKey extends Base58Type
+  case object SecretKey     extends Base58Type
+  case object ExtPublicKey  extends Base58Type
+  case object ExtSecretKey  extends Base58Type
 }

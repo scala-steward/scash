@@ -3,7 +3,7 @@ language: scala
 
 env:
   matrix:
-    - TEST_COMMAND="rpcTest/test rpc/coverageReport rpc/coverageAggregate rpc/coveralls"
+    - TEST_COMMAND="downloadBitcoind rpcTest/test rpc/coverageReport rpc/coverageAggregate rpc/coveralls"
     - TEST_COMMAND="coreTest/test core/coverageReport core/coverageAggregate core/coveralls secp256k1jni/test"
 
 os: linux
@@ -38,4 +38,4 @@ install:
   - cd ../
 
 script:
-  - sbt downloadBitcoind coverage
+  - sbt scalafmtCheck coverage $TEST_COMMAND

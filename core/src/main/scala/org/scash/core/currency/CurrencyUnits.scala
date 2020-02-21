@@ -1,7 +1,7 @@
 package org.scash.core.currency
 
 import org.scash.core.consensus.Consensus
-import org.scash.core.number.{BaseNumbers, Int64}
+import org.scash.core.number.{ BaseNumbers, Int64 }
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.RawSatoshisSerializer
 import org.scash.core.util.Factory
@@ -12,41 +12,33 @@ sealed abstract class CurrencyUnit extends NetworkElement {
 
   def satoshis: Satoshis
 
-  def >=(c: CurrencyUnit): Boolean = {
+  def >=(c: CurrencyUnit): Boolean =
     satoshis.underlying >= c.satoshis.underlying
-  }
 
-  def >(c: CurrencyUnit): Boolean = {
+  def >(c: CurrencyUnit): Boolean =
     satoshis.underlying > c.satoshis.underlying
-  }
 
-  def <(c: CurrencyUnit): Boolean = {
+  def <(c: CurrencyUnit): Boolean =
     satoshis.underlying < c.satoshis.underlying
-  }
 
-  def <=(c: CurrencyUnit): Boolean = {
+  def <=(c: CurrencyUnit): Boolean =
     satoshis.underlying <= c.satoshis.underlying
-  }
 
   def !=(c: CurrencyUnit): Boolean = !(this == c)
 
   def ==(c: CurrencyUnit): Boolean = satoshis == c.satoshis
 
-  def +(c: CurrencyUnit): CurrencyUnit = {
+  def +(c: CurrencyUnit): CurrencyUnit =
     Satoshis(satoshis.underlying + c.satoshis.underlying)
-  }
 
-  def -(c: CurrencyUnit): CurrencyUnit = {
+  def -(c: CurrencyUnit): CurrencyUnit =
     Satoshis(satoshis.underlying - c.satoshis.underlying)
-  }
 
-  def *(c: CurrencyUnit): CurrencyUnit = {
+  def *(c: CurrencyUnit): CurrencyUnit =
     Satoshis(satoshis.underlying * c.satoshis.underlying)
-  }
 
-  def unary_- : CurrencyUnit = {
+  def unary_- : CurrencyUnit =
     Satoshis(-satoshis.underlying)
-  }
 
   override def bytes = satoshis.bytes
 
@@ -73,15 +65,15 @@ sealed abstract class Satoshis extends CurrencyUnit {
 
 object Satoshis extends Factory[Satoshis] with BaseNumbers[Satoshis] {
 
-  val min = Satoshis(Int64.min)
-  val max = Satoshis(Int64.max)
+  val min  = Satoshis(Int64.min)
+  val max  = Satoshis(Int64.max)
   val zero = Satoshis(Int64.zero)
-  val one = Satoshis(Int64.one)
+  val one  = Satoshis(Int64.one)
 
   override def fromBytes(bytes: ByteVector): Satoshis = RawSatoshisSerializer.read(bytes)
 
-  def apply(int64: Int64): Satoshis = SatoshisImpl(int64)
-  def apply(satoshis: Long): Satoshis = SatoshisImpl(Int64(satoshis))
+  def apply(int64: Int64): Satoshis     = SatoshisImpl(int64)
+  def apply(satoshis: Long): Satoshis   = SatoshisImpl(Int64(satoshis))
   def apply(satoshis: BigInt): Satoshis = SatoshisImpl(Int64(satoshis))
 
   private case class SatoshisImpl(underlying: Int64) extends Satoshis
@@ -101,10 +93,10 @@ sealed abstract class Bitcoins extends CurrencyUnit {
 }
 
 object Bitcoins extends BaseNumbers[Bitcoins] {
-  val min = Bitcoins((-Consensus.maxMoney).satoshis)
-  val max = Bitcoins(Consensus.maxMoney.satoshis)
+  val min  = Bitcoins((-Consensus.maxMoney).satoshis)
+  val max  = Bitcoins(Consensus.maxMoney.satoshis)
   val zero = Bitcoins(Satoshis.zero)
-  val one = Bitcoins(1)
+  val one  = Bitcoins(1)
 
   def apply(satoshis: Satoshis): Bitcoins = {
     val b: BigDecimal = satoshis.toLong * CurrencyUnits.satoshisToBTCScalar
@@ -119,12 +111,12 @@ object Bitcoins extends BaseNumbers[Bitcoins] {
 object CurrencyUnits {
 
   /** The number you need to multiply BTC by to get it's satoshis */
-  val btcToSatoshiScalar: Long = 100000000
+  val btcToSatoshiScalar: Long        = 100000000
   val satoshisToBTCScalar: BigDecimal = BigDecimal(1.0) / btcToSatoshiScalar
-  val oneBTC: CurrencyUnit = Satoshis(Int64(btcToSatoshiScalar))
-  val oneMBTC: CurrencyUnit = Satoshis(Int64(btcToSatoshiScalar / 1000))
-  val zero: CurrencyUnit = Satoshis.zero
-  val negativeSatoshi = Satoshis(Int64(-1))
+  val oneBTC: CurrencyUnit            = Satoshis(Int64(btcToSatoshiScalar))
+  val oneMBTC: CurrencyUnit           = Satoshis(Int64(btcToSatoshiScalar / 1000))
+  val zero: CurrencyUnit              = Satoshis.zero
+  val negativeSatoshi                 = Satoshis(Int64(-1))
 
   def toSatoshis(unit: CurrencyUnit): Satoshis = unit match {
     case b: Bitcoins => b.satoshis

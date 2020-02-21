@@ -4,7 +4,6 @@ package org.scash.core.script
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
  */
-
 import org.scash.core.util.BitcoinSUtil
 import org.scash.core.script.arithmetic.ArithmeticOperation
 import org.scash.core.script.bitwise.BitwiseOperation
@@ -47,9 +46,8 @@ trait ScriptOperationFactory[T <: ScriptOperation] extends BitcoinSLogger {
    * Removes the 'OP_' prefix from a given operation.
    * Example: OP_EQUALVERIFY would be transformed into EQUALVERIFY
    */
-  private def removeOP_Prefix(str: String): String = {
+  private def removeOP_Prefix(str: String): String =
     str.replace("OP_", "")
-  }
 
   /** Finds a [[ScriptOperation]] from a given [[Byte]]. */
   def fromByte(byte: Byte): Option[T] = {
@@ -64,7 +62,13 @@ trait ScriptOperationFactory[T <: ScriptOperation] extends BitcoinSLogger {
 
 object ScriptOperation extends ScriptOperationFactory[ScriptOperation] {
 
-  lazy val operations = ScriptNumberOperation.operations ++ Seq(OP_FALSE, OP_PUSHDATA1, OP_PUSHDATA2, OP_PUSHDATA4, OP_TRUE) ++ StackOperation.operations ++ LocktimeOperation.operations ++
+  lazy val operations = ScriptNumberOperation.operations ++ Seq(
+    OP_FALSE,
+    OP_PUSHDATA1,
+    OP_PUSHDATA2,
+    OP_PUSHDATA4,
+    OP_TRUE
+  ) ++ StackOperation.operations ++ LocktimeOperation.operations ++
     CryptoOperation.operations ++ ControlOperations.operations ++ BitwiseOperation.operations ++
     ArithmeticOperation.operations ++ BytesToPushOntoStack.operations ++ SpliceOperation.operations ++
     ReservedOperation.operations

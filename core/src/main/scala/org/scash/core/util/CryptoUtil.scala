@@ -62,7 +62,7 @@ trait CryptoUtil {
   def ripeMd160(bytes: ByteVector): RipeMd160Digest = {
     //from this tutorial http://rosettacode.org/wiki/RIPEMD-160#Scala
     val messageDigest = new RIPEMD160Digest
-    val raw = bytes.toArray
+    val raw           = bytes.toArray
     messageDigest.update(raw, 0, raw.length)
     val out = Array.fill[Byte](messageDigest.getDigestSize())(0)
     messageDigest.doFinal(out, 0)

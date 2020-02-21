@@ -1,4 +1,5 @@
 package org.scash.core.script.flag
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018-2019 The Scash developers (MIT License)
@@ -8,8 +9,8 @@ package org.scash.core.script.flag
  * https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/script/script_flags.h
  * these flags indicate how to evaluate a certain script
  */
-
 sealed trait ScriptFlag {
+
   /** The flag's representation represented as an integer. */
   def flag: Int
 
@@ -152,6 +153,6 @@ case object ScriptEnableCheckDataSig extends ScriptFlag {
 
 /** Schnorr signatures enabled for OP_CHECK(DATA)SIG/VERIFY */
 case object ScriptEnableSchnorr extends ScriptFlag {
-  override def flag = 1 << 19
+  override def flag         = 1 << 19
   override def name: String = "SCHNORR"
 }

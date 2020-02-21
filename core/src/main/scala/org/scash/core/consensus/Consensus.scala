@@ -1,4 +1,5 @@
 package org.scash.core.consensus
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
@@ -54,6 +55,7 @@ object Consensus {
   val maxTxSigOpsCount = 20000
 
   val coin = Satoshis(Int64(100000000L))
+
   /**
    * Maximum amount of money in satoshis
    * 21million * 1btc (consensus).

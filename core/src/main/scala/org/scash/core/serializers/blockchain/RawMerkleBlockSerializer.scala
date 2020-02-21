@@ -18,17 +18,18 @@ import scala.annotation.tailrec
 sealed abstract class RawMerkleBlockSerializer extends RawBitcoinSerializer[MerkleBlock] {
 
   def read(bytes: ByteVector): MerkleBlock = {
-    val blockHeader = RawBlockHeaderSerializer.read(bytes.take(80))
+    val blockHeader                  = RawBlockHeaderSerializer.read(bytes.take(80))
     val bytesAfterBlockHeaderParsing = bytes.slice(blockHeader.bytes.size, bytes.size)
-    val transactionCount = UInt32(bytesAfterBlockHeaderParsing.slice(0, 4).reverse)
-    val hashCount = CompactSizeUInt.parseCompactSizeUInt(
-      bytesAfterBlockHeaderParsing.slice(4, bytesAfterBlockHeaderParsing.size))
+    val transactionCount             = UInt32(bytesAfterBlockHeaderParsing.slice(0, 4).reverse)
+    val hashCount =
+      CompactSizeUInt.parseCompactSizeUInt(bytesAfterBlockHeaderParsing.slice(4, bytesAfterBlockHeaderParsing.size))
     val txHashStartIndex = (4 + hashCount.size).toInt
-    val bytesAfterHashCountParsing = bytesAfterBlockHeaderParsing.slice(txHashStartIndex, bytesAfterBlockHeaderParsing.size)
+    val bytesAfterHashCountParsing =
+      bytesAfterBlockHeaderParsing.slice(txHashStartIndex, bytesAfterBlockHeaderParsing.size)
 
     val (hashes, bytesAfterTxHashParsing) = parseTransactionHashes(bytesAfterHashCountParsing, hashCount)
-    val flagCount = CompactSizeUInt.parseCompactSizeUInt(bytesAfterTxHashParsing)
-    val flags = bytesAfterTxHashParsing.slice(flagCount.size.toInt, bytesAfterTxHashParsing.size)
+    val flagCount                         = CompactSizeUInt.parseCompactSizeUInt(bytesAfterTxHashParsing)
+    val flags                             = bytesAfterTxHashParsing.slice(flagCount.size.toInt, bytesAfterTxHashParsing.size)
     val matches = flags.toArray
       .map(BitVector(_).reverse)
       .foldLeft(BitVector.empty)(_ ++ _)
@@ -37,13 +38,13 @@ sealed abstract class RawMerkleBlockSerializer extends RawBitcoinSerializer[Merk
 
   def write(merkleBlock: MerkleBlock): ByteVector = {
     val partialMerkleTree = merkleBlock.partialMerkleTree
-    val bitVectors = partialMerkleTree.bits
+    val bitVectors        = partialMerkleTree.bits
     val byteVectors: ByteVector = {
       bitVectors.toByteArray
         .map(BitVector(_).reverse)
         .foldLeft(ByteVector.empty)(_ ++ _.bytes)
     }
-    val flagCount = CompactSizeUInt(UInt64(Math.ceil(partialMerkleTree.bits.size.toDouble / 8).toInt))
+    val flagCount          = CompactSizeUInt(UInt64(Math.ceil(partialMerkleTree.bits.size.toDouble / 8).toInt))
     val hashes: ByteVector = BitcoinSUtil.toByteVector(merkleBlock.hashes)
     merkleBlock.blockHeader.bytes ++
       merkleBlock.transactionCount.bytes.reverse ++
@@ -57,13 +58,23 @@ sealed abstract class RawMerkleBlockSerializer extends RawBitcoinSerializer[Merk
    * @param hashCount the amount of tx hashes we need to parse from bytes
    * @return the sequence of tx hashes and the remaining bytes to be parsed into a MerkleBlockMessage
    */
-  private def parseTransactionHashes(bytes: ByteVector, hashCount: CompactSizeUInt): (Seq[DoubleSha256Digest], ByteVector) = {
+  private def parseTransactionHashes(
+    bytes: ByteVector,
+    hashCount: CompactSizeUInt
+  ): (Seq[DoubleSha256Digest], ByteVector) = {
     @tailrec
-    def loop(remainingHashes: Long, remainingBytes: ByteVector,
-      accum: List[DoubleSha256Digest]): (Seq[DoubleSha256Digest], ByteVector) = {
+    def loop(
+      remainingHashes: Long,
+      remainingBytes: ByteVector,
+      accum: List[DoubleSha256Digest]
+    ): (Seq[DoubleSha256Digest], ByteVector) =
       if (remainingHashes <= 0) (accum.reverse, remainingBytes)
-      else loop(remainingHashes - 1, remainingBytes.slice(32, remainingBytes.size), DoubleSha256Digest(remainingBytes.take(32)) :: accum)
-    }
+      else
+        loop(
+          remainingHashes - 1,
+          remainingBytes.slice(32, remainingBytes.size),
+          DoubleSha256Digest(remainingBytes.take(32)) :: accum
+        )
     loop(hashCount.num.toInt, bytes, Nil)
   }
 }

@@ -1,10 +1,10 @@
 package org.scash.core.protocol.transaction
 
-import org.scash.core.crypto.{DoubleSha256Digest, DoubleSha256DigestBE}
+import org.scash.core.crypto.{ DoubleSha256Digest, DoubleSha256DigestBE }
 import org.scash.core.number.UInt32
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.transaction.RawTransactionOutPointParser
-import org.scash.core.util.{BitcoinSUtil, Factory}
+import org.scash.core.util.{ BitcoinSUtil, Factory }
 import scodec.bits.ByteVector
 
 /**
@@ -12,6 +12,7 @@ import scodec.bits.ByteVector
  *
  */
 sealed abstract class TransactionOutPoint extends NetworkElement {
+
   /** The transaction id for the crediting transaction for this input */
   def txId: DoubleSha256Digest
 
@@ -30,8 +31,8 @@ sealed abstract class TransactionOutPoint extends NetworkElement {
  * http://stackoverflow.com/questions/2711522/what-happens-if-i-assign-a-negative-value-to-an-unsigned-variable
  */
 case object EmptyTransactionOutPoint extends TransactionOutPoint {
-  def txId = DoubleSha256Digest(
-    BitcoinSUtil.decodeHex("0000000000000000000000000000000000000000000000000000000000000000"))
+  def txId =
+    DoubleSha256Digest(BitcoinSUtil.decodeHex("0000000000000000000000000000000000000000000000000000000000000000"))
   def vout = UInt32("ffffffff")
 }
 
@@ -41,18 +42,15 @@ object TransactionOutPoint extends Factory[TransactionOutPoint] {
 
   def fromBytes(bytes: ByteVector): TransactionOutPoint = RawTransactionOutPointParser.read(bytes)
 
-  def apply(txId: DoubleSha256Digest, index: UInt32): TransactionOutPoint = {
+  def apply(txId: DoubleSha256Digest, index: UInt32): TransactionOutPoint =
     if (txId == EmptyTransactionOutPoint.txId && index == EmptyTransactionOutPoint.vout) {
       EmptyTransactionOutPoint
     } else TransactionOutPointImpl(txId, index)
-  }
 
   /**
    * @param The transaction id for the crediting transaction for this input
    * @param vout The output index in the parent transaction for the output we are spending
    */
-  def apply(txId: DoubleSha256DigestBE, vout: UInt32): TransactionOutPoint = {
+  def apply(txId: DoubleSha256DigestBE, vout: UInt32): TransactionOutPoint =
     TransactionOutPoint(txId.flip, vout)
-  }
 }
-

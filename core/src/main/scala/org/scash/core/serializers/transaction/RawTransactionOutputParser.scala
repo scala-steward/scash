@@ -26,10 +26,10 @@ sealed abstract class RawTransactionOutputParser extends RawBitcoinSerializer[Tr
    */
   override def read(bytes: ByteVector): TransactionOutput = {
     val satoshisBytes = bytes.take(8)
-    val satoshis = RawSatoshisSerializer.read(satoshisBytes)
+    val satoshis      = RawSatoshisSerializer.read(satoshisBytes)
     //it doesn't include itself towards the size, thats why it is incremented by one
     val scriptPubKeyBytes = bytes.slice(8, bytes.size)
-    val scriptPubKey = RawScriptPubKeyParser.read(scriptPubKeyBytes)
+    val scriptPubKey      = RawScriptPubKeyParser.read(scriptPubKeyBytes)
     TransactionOutput(satoshis, scriptPubKey)
   }
 

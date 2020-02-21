@@ -10,12 +10,12 @@ package org.scash.core.script
 sealed abstract class ScriptType {
   import org.scash.core.script.ScriptType._
   override def toString: String = this match {
-    case NONSTANDARD           => "nonstandard"
-    case PUBKEY                => "pubkey"
-    case PUBKEYHASH            => "pubkeyhash"
-    case SCRIPTHASH            => "scripthash"
-    case MULTISIG              => "multisig"
-    case NULLDATA              => "nulldata"
+    case NONSTANDARD => "nonstandard"
+    case PUBKEY      => "pubkey"
+    case PUBKEYHASH  => "pubkeyhash"
+    case SCRIPTHASH  => "scripthash"
+    case MULTISIG    => "multisig"
+    case NULLDATA    => "nulldata"
   }
 }
 
@@ -43,18 +43,16 @@ object ScriptType {
   /** Throws if given string is invalid */
   def fromStringExn(string: String): ScriptType =
     fromString(string)
-      .getOrElse(
-        throw new IllegalArgumentException(
-          s"$string is not a valid script type!"))
+      .getOrElse(throw new IllegalArgumentException(s"$string is not a valid script type!"))
 
   final case object NONSTANDARD extends ScriptType
 
   // ╔ "standard" transaction/script types
   // V
-  final case object PUBKEY extends ScriptType
+  final case object PUBKEY     extends ScriptType
   final case object PUBKEYHASH extends ScriptType
   final case object SCRIPTHASH extends ScriptType
-  final case object MULTISIG extends ScriptType
+  final case object MULTISIG   extends ScriptType
 
   /** unspendable OP_RETURN script that carries data */
   final case object NULLDATA extends ScriptType

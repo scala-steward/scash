@@ -9,9 +9,8 @@ import scala.math.BigInt
  * Created by chris on 2/26/16.
  */
 trait BitcoinSUtil {
-  def decodeHex(hex: String): ByteVector = {
+  def decodeHex(hex: String): ByteVector =
     if (hex.isEmpty) ByteVector.empty else ByteVector.fromValidHex(hex)
-  }
 
   def encodeHex(bytes: ByteVector): String = bytes.toHex
 
@@ -23,7 +22,7 @@ trait BitcoinSUtil {
    */
   def encodeHex(long: Long): String = {
     val hex = long.toHexString.length % 2 match {
-      case 1 => "0" + long.toHexString
+      case 1      => "0" + long.toHexString
       case _: Int => long.toHexString
     }
     addPadding(16, hex)
@@ -31,7 +30,7 @@ trait BitcoinSUtil {
 
   def encodeHex(int: Int): String = {
     val hex = int.toHexString.length % 2 match {
-      case 1 => "0" + int.toHexString
+      case 1      => "0" + int.toHexString
       case _: Int => int.toHexString
     }
     addPadding(8, hex)
@@ -39,7 +38,7 @@ trait BitcoinSUtil {
 
   def encodeHex(short: Short): String = {
     val hex = short.toHexString.length % 2 match {
-      case 1 => "0" + short.toHexString
+      case 1      => "0" + short.toHexString
       case _: Int => short.toHexString
     }
     addPadding(4, hex)
@@ -48,10 +47,9 @@ trait BitcoinSUtil {
   def encodeHex(bigInt: BigInt): String = BitcoinSUtil.encodeHex(ByteVector(bigInt.toByteArray))
 
   /** Tests if a given string is a hexadecimal string. */
-  def isHex(str: String): Boolean = {
+  def isHex(str: String): Boolean =
     //check valid characters & hex strings have to have an even number of chars
     str.matches("^[0-9a-f]+$") && (str.length % 2 == 0)
-  }
 
   /** Converts a two character hex string to its byte representation. */
   def hexToByte(hex: String): Byte = {
@@ -66,6 +64,7 @@ trait BitcoinSUtil {
   def flipEndianness(bytes: ByteVector): String = encodeHex(bytes.reverse)
 
   def flipEndiannessBytes(bytes: ByteVector): ByteVector = bytes.reverse
+
   /**
    * Adds the amount padding bytes needed to fix the size of the hex string
    * for instance, ints are required to be 4 bytes. If the number is just 1
@@ -74,32 +73,28 @@ trait BitcoinSUtil {
    */
   private def addPadding(charactersNeeded: Int, hex: String): String = {
     val paddingNeeded = charactersNeeded - hex.length
-    val padding = List.fill(paddingNeeded)("0")
-    val paddedHex = padding.mkString + hex
+    val padding       = List.fill(paddingNeeded)("0")
+    val paddedHex     = padding.mkString + hex
     paddedHex
   }
 
   /** Converts a sequence of bytes to a sequence of bit vectors */
-  def bytesToBitVectors(bytes: ByteVector): BitVector = {
+  def bytesToBitVectors(bytes: ByteVector): BitVector =
     bytes.toBitVector
-  }
 
   /** Converts a byte to a bit vector representing that byte */
-  def byteToBitVector(byte: Byte): BitVector = {
+  def byteToBitVector(byte: Byte): BitVector =
     BitVector.fromByte(byte)
-  }
 
   /** Checks if the bit at the given index is set */
   def isBitSet(byte: Byte, index: Int): Boolean = ((byte >> index) & 1) == 1
 
   /** Converts a sequence of bit vectors to a sequence of bytes */
-  def bitVectorToBytes(bits: BitVector): ByteVector = {
+  def bitVectorToBytes(bits: BitVector): ByteVector =
     bits.bytes
-  }
 
-  def toByteVector[T <: NetworkElement](h: Seq[T]): ByteVector = {
+  def toByteVector[T <: NetworkElement](h: Seq[T]): ByteVector =
     h.foldLeft(ByteVector.empty)(_ ++ _.bytes)
-  }
 
 }
 

@@ -25,6 +25,7 @@ trait NumberGenerator {
   def uInt8: Gen[UInt8] = Gen.choose(0, 255).map(n => UInt8(n.toShort))
 
   def uInt8s: Gen[Seq[UInt8]] = Gen.listOf(uInt8)
+
   /**
    * Generates a number in the range 0 <= x <= 2 ^^32 - 1
    * then wraps it in a UInt32
@@ -32,8 +33,10 @@ trait NumberGenerator {
   def uInt32s: Gen[UInt32] = Gen.choose(0L, (NumberUtil.pow2(32) - 1).toLong).map(UInt32(_))
 
   /** Chooses a BigInt in the ranges of 0 <= bigInt < 2^^64 */
-  def bigInts: Gen[BigInt] = Gen.chooseNum(Long.MinValue, Long.MaxValue)
-    .map(x => BigInt(x) + BigInt(2).pow(63))
+  def bigInts: Gen[BigInt] =
+    Gen
+      .chooseNum(Long.MinValue, Long.MaxValue)
+      .map(x => BigInt(x) + BigInt(2).pow(63))
 
   def positiveBigInts: Gen[BigInt] = bigInts.filter(_ >= 0)
 
@@ -43,9 +46,10 @@ trait NumberGenerator {
    * Generates a number in the range 0 <= x < 2^^64
    * then wraps it in a UInt64
    */
-  def uInt64s: Gen[UInt64] = for {
-    bigInt <- bigIntsUInt64Range
-  } yield UInt64(bigInt)
+  def uInt64s: Gen[UInt64] =
+    for {
+      bigInt <- bigIntsUInt64Range
+    } yield UInt64(bigInt)
 
   def int32s: Gen[Int32] = Gen.choose(Int32.min.toLong, Int32.max.toLong).map(Int32(_))
 
@@ -61,10 +65,11 @@ trait NumberGenerator {
   def byte: Gen[Byte] = arbitrary[Byte]
 
   /** Generates a 100 byte sequence */
-  def bytes: Gen[List[Byte]] = for {
-    num <- Gen.choose(0, 100)
-    b <- bytes(num)
-  } yield b
+  def bytes: Gen[List[Byte]] =
+    for {
+      num <- Gen.choose(0, 100)
+      b   <- bytes(num)
+    } yield b
 
   /**
    * Generates the number of bytes specified by num
@@ -74,15 +79,17 @@ trait NumberGenerator {
   def bytes(num: Int): Gen[List[Byte]] = Gen.listOfN(num, byte)
 
   /** Generates a random boolean */
-  def bool: Gen[Boolean] = for {
-    num <- Gen.choose(0, 1)
-  } yield num == 1
+  def bool: Gen[Boolean] =
+    for {
+      num <- Gen.choose(0, 1)
+    } yield num == 1
 
   /** Generates a bit vector */
-  def bitVector: Gen[BitVector] = for {
-    n <- Gen.choose(0, 100)
-    vector <- Gen.listOfN(n, bool)
-  } yield BitVector.bits(vector)
+  def bitVector: Gen[BitVector] =
+    for {
+      n      <- Gen.choose(0, 100)
+      vector <- Gen.listOfN(n, bool)
+    } yield BitVector.bits(vector)
 
 }
 

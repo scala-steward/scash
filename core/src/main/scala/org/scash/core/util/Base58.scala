@@ -20,11 +20,12 @@ object Base58 {
       if (decoded.length < 4) Failure(new IllegalArgumentException("Invalid input"))
       else {
         val (data, checksum) = decoded.splitAt(decoded.length - 4)
-        val actualChecksum = CryptoUtil.doubleSHA256(data).bytes.take(4)
+        val actualChecksum   = CryptoUtil.doubleSHA256(data).bytes.take(4)
         if (checksum == actualChecksum) Success(data)
         else Failure(new IllegalArgumentException("checksums don't validate"))
       }
   }
+
   /** Encodes a Hex string into its base58 representation. this call is unsafe so it can throw exceptions when invalid hex **/
   def fromValidHex(hex: String) = ByteVector.fromValidHex(hex).toBase58
 
@@ -39,22 +40,23 @@ object Base58 {
    * * If the string is a private key corresponding to a compressed public key, the 5th-to-last byte must be 0x01.
    *
    */
-  def isValidBitcoinBase58(base58: String): Boolean = Try {
-    (for {
-      decoded <- ByteVector.fromBase58(base58)
-      firstChar <- base58.headOption
-      firstByte <- decoded.headOption
-    } yield {
-      val compressedPubKey = List('K', 'L', 'c').contains(firstChar)
-      if (compressedPubKey) decoded(decoded.length - 5) == 0x01.toByte
-      else if (isValidAddressPreFixByte(firstByte)) base58.length >= 26 && base58.length <= 35
-      else if (isValidSecretKeyPreFixByte(firstByte)) ECPrivateKey.fromWIFToPrivateKey(base58).bytes.size == 32
-      else false
-    }).getOrElse(false)
-  } match {
-    case Failure(_) => false
-    case Success(value) => value
-  }
+  def isValidBitcoinBase58(base58: String): Boolean =
+    Try {
+      (for {
+        decoded   <- ByteVector.fromBase58(base58)
+        firstChar <- base58.headOption
+        firstByte <- decoded.headOption
+      } yield {
+        val compressedPubKey = List('K', 'L', 'c').contains(firstChar)
+        if (compressedPubKey) decoded(decoded.length - 5) == 0x01.toByte
+        else if (isValidAddressPreFixByte(firstByte)) base58.length >= 26 && base58.length <= 35
+        else if (isValidSecretKeyPreFixByte(firstByte)) ECPrivateKey.fromWIFToPrivateKey(base58).bytes.size == 32
+        else false
+      }).getOrElse(false)
+    } match {
+      case Failure(_)     => false
+      case Success(value) => value
+    }
 
   /**
    * Checks if the string begins with an Address prefix byte/character.

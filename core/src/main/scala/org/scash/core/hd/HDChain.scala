@@ -1,10 +1,10 @@
 package org.scash.core.hd
 
 /**
-  * Represents a
-  * [[https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change BIP44]]
-  * change chain
-  */
+ * Represents a
+ * [[https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#change BIP44]]
+ * change chain
+ */
 sealed abstract class HDChain extends BIP32Path {
   override val path: Vector[BIP32Node] = {
     account.path :+ BIP32Node(toInt, hardened = false)
@@ -27,11 +27,7 @@ sealed abstract class HDChain extends BIP32Path {
 
 object HDChain {
 
-  private case class BIP44ChainImpl(
-      coin: HDCoin,
-      chainType: HDChainType,
-      account: HDAccount,
-      purpose: HDPurpose)
+  private case class BIP44ChainImpl(coin: HDCoin, chainType: HDChainType, account: HDAccount, purpose: HDPurpose)
       extends HDChain
 
   def apply(chainType: HDChainType, account: HDAccount): HDChain =

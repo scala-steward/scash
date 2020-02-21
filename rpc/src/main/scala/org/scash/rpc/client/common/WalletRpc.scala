@@ -1,11 +1,6 @@
 package org.scash.rpc.client.common
 
-import org.scash.core.crypto.{
-  DoubleSha256Digest,
-  DoubleSha256DigestBE,
-  ECPrivateKey,
-  ECPublicKey
-}
+import org.scash.core.crypto.{ DoubleSha256Digest, DoubleSha256DigestBE, ECPrivateKey, ECPublicKey }
 import org.scash.core.currency.Bitcoins
 import org.scash.core.protocol.BitcoinAddress
 import org.scash.core.protocol.blockchain.MerkleBlock
@@ -19,59 +14,48 @@ import play.api.libs.json._
 import scala.concurrent.Future
 
 /**
-  * RPC calls related to wallet management
-  * functionality in bitcoind
-  */
+ * RPC calls related to wallet management
+ * functionality in bitcoind
+ */
 trait WalletRpc { self: Client =>
 
-  def backupWallet(destination: String): Future[Unit] = {
+  def backupWallet(destination: String): Future[Unit] =
     bitcoindCall[Unit]("backupwallet", List(JsString(destination)))
-  }
 
-  def dumpPrivKey(address: BitcoinAddress): Future[ECPrivateKey] = {
+  def dumpPrivKey(address: BitcoinAddress): Future[ECPrivateKey] =
     bitcoindCall[String]("dumpprivkey", List(JsString(address.value)))
       .map(ECPrivateKey.fromWIFToPrivateKey)
-  }
 
-  def dumpWallet(filePath: String): Future[DumpWalletResult] = {
+  def dumpWallet(filePath: String): Future[DumpWalletResult] =
     bitcoindCall[DumpWalletResult]("dumpwallet", List(JsString(filePath)))
-  }
 
-  def encryptWallet(passphrase: String): Future[String] = {
+  def encryptWallet(passphrase: String): Future[String] =
     bitcoindCall[String]("encryptwallet", List(JsString(passphrase)))
-  }
 
-  def getBalance: Future[Bitcoins] = {
+  def getBalance: Future[Bitcoins] =
     bitcoindCall[Bitcoins]("getbalance")
-  }
 
-  def getReceivedByAddress(
-      address: BitcoinAddress,
-      minConfirmations: Int = 1): Future[Bitcoins] = {
-    bitcoindCall[Bitcoins](
-      "getreceivedbyaddress",
-      List(JsString(address.toString), JsNumber(minConfirmations)))
-  }
+  def getReceivedByAddress(address: BitcoinAddress, minConfirmations: Int = 1): Future[Bitcoins] =
+    bitcoindCall[Bitcoins]("getreceivedbyaddress", List(JsString(address.toString), JsNumber(minConfirmations)))
 
-  def getUnconfirmedBalance: Future[Bitcoins] = {
+  def getUnconfirmedBalance: Future[Bitcoins] =
     bitcoindCall[Bitcoins]("getunconfirmedbalance")
-  }
 
   def importAddress(
-      address: BitcoinAddress,
-      account: String = "",
-      rescan: Boolean = true,
-      p2sh: Boolean = false): Future[Unit] = {
-    bitcoindCall[Unit]("importaddress",
-                       List(JsString(address.value),
-                            JsString(account),
-                            JsBoolean(rescan),
-                            JsBoolean(p2sh)))
-  }
+    address: BitcoinAddress,
+    account: String = "",
+    rescan: Boolean = true,
+    p2sh: Boolean = false
+  ): Future[Unit] =
+    bitcoindCall[Unit](
+      "importaddress",
+      List(JsString(address.value), JsString(account), JsBoolean(rescan), JsBoolean(p2sh))
+    )
 
   private def getNewAddressInternal(
-      accountOrLabel: String = "",
-      addressType: Option[AddressType]): Future[BitcoinAddress] = {
+    accountOrLabel: String = "",
+    addressType: Option[AddressType]
+  ): Future[BitcoinAddress] = {
     val params =
       List(JsString(accountOrLabel)) ++ addressType.map(Json.toJson(_)).toList
 
@@ -87,133 +71,94 @@ trait WalletRpc { self: Client =>
   def getNewAddress(accountOrLabel: String): Future[BitcoinAddress] =
     getNewAddressInternal(accountOrLabel, None)
 
-  def getNewAddress(
-      accountOrLabel: String,
-      addressType: AddressType): Future[BitcoinAddress] =
+  def getNewAddress(accountOrLabel: String, addressType: AddressType): Future[BitcoinAddress] =
     getNewAddressInternal(accountOrLabel, Some(addressType))
 
-  def getWalletInfo: Future[GetWalletInfoResult] = {
+  def getWalletInfo: Future[GetWalletInfoResult] =
     bitcoindCall[GetWalletInfoResult]("getwalletinfo")
-  }
 
-  def keyPoolRefill(keyPoolSize: Int = 100): Future[Unit] = {
+  def keyPoolRefill(keyPoolSize: Int = 100): Future[Unit] =
     bitcoindCall[Unit]("keypoolrefill", List(JsNumber(keyPoolSize)))
-  }
 
-  def importPubKey(
-      pubKey: ECPublicKey,
-      label: String = "",
-      rescan: Boolean = true): Future[Unit] = {
-    bitcoindCall[Unit](
-      "importpubkey",
-      List(JsString(pubKey.hex), JsString(label), JsBoolean(rescan)))
-  }
+  def importPubKey(pubKey: ECPublicKey, label: String = "", rescan: Boolean = true): Future[Unit] =
+    bitcoindCall[Unit]("importpubkey", List(JsString(pubKey.hex), JsString(label), JsBoolean(rescan)))
 
-  def importPrivKey(
-      key: ECPrivateKey,
-      account: String = "",
-      rescan: Boolean = true): Future[Unit] = {
-    bitcoindCall[Unit](
-      "importprivkey",
-      List(JsString(key.toWIF(network)), JsString(account), JsBoolean(rescan)))
-  }
+  def importPrivKey(key: ECPrivateKey, account: String = "", rescan: Boolean = true): Future[Unit] =
+    bitcoindCall[Unit]("importprivkey", List(JsString(key.toWIF(network)), JsString(account), JsBoolean(rescan)))
 
   def importMulti(
-      requests: Vector[RpcOpts.ImportMultiRequest],
-      rescan: Boolean = true): Future[Vector[ImportMultiResult]] = {
+    requests: Vector[RpcOpts.ImportMultiRequest],
+    rescan: Boolean = true
+  ): Future[Vector[ImportMultiResult]] =
     bitcoindCall[Vector[ImportMultiResult]](
       "importmulti",
-      List(Json.toJson(requests), JsObject(Map("rescan" -> JsBoolean(rescan)))))
-  }
+      List(Json.toJson(requests), JsObject(Map("rescan" -> JsBoolean(rescan))))
+    )
 
-  def importPrunedFunds(
-      transaction: Transaction,
-      txOutProof: MerkleBlock): Future[Unit] = {
-    bitcoindCall[Unit](
-      "importprunedfunds",
-      List(JsString(transaction.hex), JsString(txOutProof.hex)))
-  }
+  def importPrunedFunds(transaction: Transaction, txOutProof: MerkleBlock): Future[Unit] =
+    bitcoindCall[Unit]("importprunedfunds", List(JsString(transaction.hex), JsString(txOutProof.hex)))
 
-  def removePrunedFunds(txid: DoubleSha256DigestBE): Future[Unit] = {
+  def removePrunedFunds(txid: DoubleSha256DigestBE): Future[Unit] =
     bitcoindCall[Unit]("removeprunedfunds", List(JsString(txid.hex)))
-  }
 
-  def removePrunedFunds(txid: DoubleSha256Digest): Future[Unit] = {
+  def removePrunedFunds(txid: DoubleSha256Digest): Future[Unit] =
     removePrunedFunds(txid.flip)
-  }
 
-  def importWallet(filePath: String): Future[Unit] = {
+  def importWallet(filePath: String): Future[Unit] =
     bitcoindCall[Unit]("importwallet", List(JsString(filePath)))
-  }
 
-  def listAddressGroupings: Future[Vector[Vector[RpcAddress]]] = {
+  def listAddressGroupings: Future[Vector[Vector[RpcAddress]]] =
     bitcoindCall[Vector[Vector[RpcAddress]]]("listaddressgroupings")
-  }
 
   def listReceivedByAddress(
-      confirmations: Int = 1,
-      includeEmpty: Boolean = false,
-      includeWatchOnly: Boolean = false): Future[Vector[ReceivedAddress]] = {
-    bitcoindCall[Vector[ReceivedAddress]]("listreceivedbyaddress",
-                                          List(JsNumber(confirmations),
-                                               JsBoolean(includeEmpty),
-                                               JsBoolean(includeWatchOnly)))
-  }
+    confirmations: Int = 1,
+    includeEmpty: Boolean = false,
+    includeWatchOnly: Boolean = false
+  ): Future[Vector[ReceivedAddress]] =
+    bitcoindCall[Vector[ReceivedAddress]](
+      "listreceivedbyaddress",
+      List(JsNumber(confirmations), JsBoolean(includeEmpty), JsBoolean(includeWatchOnly))
+    )
 
-  def listWallets: Future[Vector[String]] = {
+  def listWallets: Future[Vector[String]] =
     bitcoindCall[Vector[String]]("listwallets")
-  }
 
   // TODO: Should be BitcoinFeeUnit
-  def setTxFee(feePerKB: Bitcoins): Future[Boolean] = {
+  def setTxFee(feePerKB: Bitcoins): Future[Boolean] =
     bitcoindCall[Boolean]("settxfee", List(JsNumber(feePerKB.toBigDecimal)))
-  }
 
-  def walletLock(): Future[Unit] = {
+  def walletLock(): Future[Unit] =
     bitcoindCall[Unit]("walletlock")
-  }
 
-  def walletPassphrase(passphrase: String, seconds: Int): Future[Unit] = {
-    bitcoindCall[Unit]("walletpassphrase",
-                       List(JsString(passphrase), JsNumber(seconds)))
-  }
+  def walletPassphrase(passphrase: String, seconds: Int): Future[Unit] =
+    bitcoindCall[Unit]("walletpassphrase", List(JsString(passphrase), JsNumber(seconds)))
 
-  def walletPassphraseChange(
-      currentPassphrase: String,
-      newPassphrase: String): Future[Unit] = {
-    bitcoindCall[Unit](
-      "walletpassphrasechange",
-      List(JsString(currentPassphrase), JsString(newPassphrase)))
-  }
+  def walletPassphraseChange(currentPassphrase: String, newPassphrase: String): Future[Unit] =
+    bitcoindCall[Unit]("walletpassphrasechange", List(JsString(currentPassphrase), JsString(newPassphrase)))
 
   /**
-    *
-    * @param blank Not available to versions before v19
-    * @param passphrase Not available to versions before v19
-    * @return
-    */
+   *
+   * @param blank Not available to versions before v19
+   * @param passphrase Not available to versions before v19
+   * @return
+   */
   def createWallet(
-      walletName: String,
-      disablePrivateKeys: Boolean = false,
-      blank: Boolean = false,
-      passphrase: String = ""): Future[CreateWalletResult] =
+    walletName: String,
+    disablePrivateKeys: Boolean = false,
+    blank: Boolean = false,
+    passphrase: String = ""
+  ): Future[CreateWalletResult] =
     self.version match {
       case V21 | Experimental | Unknown =>
-        bitcoindCall[CreateWalletResult]("createwallet",
-                                         List(JsString(walletName),
-                                              JsBoolean(disablePrivateKeys),
-                                              JsBoolean(blank),
-                                              JsString(passphrase)))
-      case V16 | V17 | V18 =>
-        require(passphrase.isEmpty,
-                "passphrase should not be set for versions before v19")
         bitcoindCall[CreateWalletResult](
           "createwallet",
-          List(JsString(walletName), JsBoolean(disablePrivateKeys)))
+          List(JsString(walletName), JsBoolean(disablePrivateKeys), JsBoolean(blank), JsString(passphrase))
+        )
+      case V16 | V17 | V18 =>
+        require(passphrase.isEmpty, "passphrase should not be set for versions before v19")
+        bitcoindCall[CreateWalletResult]("createwallet", List(JsString(walletName), JsBoolean(disablePrivateKeys)))
     }
 
-  def getAddressInfo(address: BitcoinAddress): Future[AddressInfoResult] = {
-    bitcoindCall[AddressInfoResult]("getaddressinfo",
-                                    List(JsString(address.value)))
-  }
+  def getAddressInfo(address: BitcoinAddress): Future[AddressInfoResult] =
+    bitcoindCall[AddressInfoResult]("getaddressinfo", List(JsString(address.value)))
 }

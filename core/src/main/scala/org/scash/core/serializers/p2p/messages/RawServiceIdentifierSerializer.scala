@@ -6,12 +6,11 @@ import org.scash.core.p2p.ServiceIdentifier
 import scodec.bits.ByteVector
 
 /**
-  * Responsible for serializing and deserializing the
-  * service identifier in a network message
-  * @see https://bitcoin.org/en/developer-reference#version
-  */
-trait RawServiceIdentifierSerializer
-    extends RawBitcoinSerializer[ServiceIdentifier] {
+ * Responsible for serializing and deserializing the
+ * service identifier in a network message
+ * @see https://bitcoin.org/en/developer-reference#version
+ */
+trait RawServiceIdentifierSerializer extends RawBitcoinSerializer[ServiceIdentifier] {
 
   override def read(bytes: ByteVector): ServiceIdentifier = {
     val serviceBytes = bytes.take(8)
@@ -19,9 +18,8 @@ trait RawServiceIdentifierSerializer
     ServiceIdentifier(UInt64(serviceBytes.reverse))
   }
 
-  override def write(serviceIdentifier: ServiceIdentifier): ByteVector = {
+  override def write(serviceIdentifier: ServiceIdentifier): ByteVector =
     serviceIdentifier.num.bytes.reverse
-  }
 
 }
 

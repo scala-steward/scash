@@ -33,24 +33,20 @@ trait ScriptFlagFactory {
     ScriptEnableSchnorr
   )
 
-
   /** Takes in a string and tries to match it with a [[ScriptFlag]]. */
-  def fromString(str: String): Option[ScriptFlag] = {
+  def fromString(str: String): Option[ScriptFlag] =
     flags.find(_.name == str)
-  }
 
   /**
    * Parses the given list into[[ScriptFlag]]s
    * the strings that do not match a [[ScriptFlag]] are discarded.
    */
-  def fromList(list: Seq[String]): Seq[ScriptFlag] = {
+  def fromList(list: Seq[String]): Seq[ScriptFlag] =
     list.flatMap(fromString(_))
-  }
 
   /** Parses a list of [[ScriptFlag]]s that is separated by commas. */
-  def fromList(str: String): Seq[ScriptFlag] = {
+  def fromList(str: String): Seq[ScriptFlag] =
     fromList(str.split(","))
-  }
 
   /** Empty script flag. */
   def empty: Seq[ScriptFlag] = Nil

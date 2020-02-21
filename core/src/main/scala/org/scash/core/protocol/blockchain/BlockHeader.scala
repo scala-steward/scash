@@ -1,10 +1,10 @@
 package org.scash.core.protocol.blockchain
 
-import org.scash.core.crypto.{DoubleSha256Digest, DoubleSha256DigestBE}
-import org.scash.core.number.{Int32, UInt32}
+import org.scash.core.crypto.{ DoubleSha256Digest, DoubleSha256DigestBE }
+import org.scash.core.number.{ Int32, UInt32 }
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.blockchain.RawBlockHeaderSerializer
-import org.scash.core.util.{CryptoUtil, Factory}
+import org.scash.core.util.{ CryptoUtil, Factory }
 import scodec.bits.ByteVector
 
 /**
@@ -38,7 +38,6 @@ sealed trait BlockHeader extends NetworkElement {
    *
    * @return the previous block's hash
    */
-
   def previousBlockHash: DoubleSha256Digest
 
   /**
@@ -58,7 +57,6 @@ sealed trait BlockHeader extends NetworkElement {
    *
    * @return the merkle root of the merkle tree
    */
-
   def merkleRootHash: DoubleSha256Digest
 
   /**
@@ -118,13 +116,24 @@ sealed trait BlockHeader extends NetworkElement {
  */
 object BlockHeader extends Factory[BlockHeader] {
 
-  private sealed case class BlockHeaderImpl(version: Int32, previousBlockHash: DoubleSha256Digest,
-    merkleRootHash: DoubleSha256Digest, time: UInt32, nBits: UInt32, nonce: UInt32) extends BlockHeader
+  private sealed case class BlockHeaderImpl(
+    version: Int32,
+    previousBlockHash: DoubleSha256Digest,
+    merkleRootHash: DoubleSha256Digest,
+    time: UInt32,
+    nBits: UInt32,
+    nonce: UInt32
+  ) extends BlockHeader
 
-  def apply(version: Int32, previousBlockHash: DoubleSha256Digest, merkleRootHash: DoubleSha256Digest,
-    time: UInt32, nBits: UInt32, nonce: UInt32): BlockHeader = {
+  def apply(
+    version: Int32,
+    previousBlockHash: DoubleSha256Digest,
+    merkleRootHash: DoubleSha256Digest,
+    time: UInt32,
+    nBits: UInt32,
+    nonce: UInt32
+  ): BlockHeader =
     BlockHeaderImpl(version, previousBlockHash, merkleRootHash, time, nBits, nonce)
-  }
 
   def fromBytes(bytes: ByteVector): BlockHeader = RawBlockHeaderSerializer.read(bytes)
 

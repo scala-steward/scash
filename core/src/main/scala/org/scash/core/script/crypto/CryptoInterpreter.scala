@@ -1,4 +1,5 @@
 package org.scash.core.script.crypto
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018-2019 The SCash Developers (MIT License)
@@ -8,12 +9,12 @@ import org.scash.core.consensus.Consensus
 import org.scash.core.crypto._
 import org.scash.core.script
 import org.scash.core.script.constant._
-import org.scash.core.script.flag.{ScriptEnableCheckDataSig, ScriptVerifyNullDummy, ScriptVerifyNullFail}
+import org.scash.core.script.flag.{ ScriptEnableCheckDataSig, ScriptVerifyNullDummy, ScriptVerifyNullFail }
 import org.scash.core.script.result._
 import org.scash.core.script._
-import org.scash.core.util.{BitcoinScriptUtil, CryptoUtil}
+import org.scash.core.util.{ BitcoinScriptUtil, CryptoUtil }
 
-import scalaz.{-\/, \/, \/-}
+import scalaz.{ -\/, \/, \/- }
 import scalaz.syntax.std.option._
 
 import scodec.bits.ByteVector
@@ -66,20 +67,22 @@ sealed abstract class CryptoInterpreter {
   def opCheckSigVerify(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_CHECKSIGVERIFY), "Script top must be OP_CHECKSIGVERIFY")
     checkSig(ScriptProgram(program, OP_CHECKSIG :: program.script.tail, ScriptProgram.Script))
-      .flatMap(p => p.stackTopIsTrue match {
-        case true => \/-(ScriptProgram(p, p.stack.tail, p.script))
-        case false => -\/(ScriptErrorCheckSigVerify)
-      })
+      .flatMap(p =>
+        p.stackTopIsTrue match {
+          case true  => \/-(ScriptProgram(p, p.stack.tail, p.script))
+          case false => -\/(ScriptErrorCheckSigVerify)
+        }
+      )
       .leftMap(ScriptProgram(program, _))
       .merge
   }
 
   /**
-    * OP_CHECKDATASIG check whether a signature is valid with respect to a message and a public key.
-    * it permits data to be imported into a script, and have its validity checked against
-    * some signing authority such as an "Oracle".
-    * https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/op_checkdatasig.md
-    */
+   * OP_CHECKDATASIG check whether a signature is valid with respect to a message and a public key.
+   * it permits data to be imported into a script, and have its validity checked against
+   * some signing authority such as an "Oracle".
+   * https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/op_checkdatasig.md
+   */
   def opCheckDataSig(p: ScriptProgram): ScriptProgram = {
     require(p.script.headOption.contains(OP_CHECKDATASIG), "Script top must be OP_CHECKDATASIG")
     checkDataSig(p).leftMap(ScriptProgram(p, _)).merge
@@ -89,10 +92,12 @@ sealed abstract class CryptoInterpreter {
   def opCheckDataSigVerify(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_CHECKDATASIGVERIFY), "Script top must be OP_CHECKDATASIGVERIFY")
     checkDataSig(ScriptProgram(program, OP_CHECKDATASIG :: program.script.tail, ScriptProgram.Script))
-      .flatMap(p => p.stackTopIsTrue match {
-        case true => \/-(ScriptProgram(p, p.stack.tail, p.script))
-        case false => -\/(ScriptErrorCheckDataSigVerify)
-      })
+      .flatMap(p =>
+        p.stackTopIsTrue match {
+          case true  => \/-(ScriptProgram(p, p.stack.tail, p.script))
+          case false => -\/(ScriptErrorCheckDataSigVerify)
+        }
+      )
       .leftMap(ScriptProgram(program, _))
       .merge
   }
@@ -122,9 +127,9 @@ sealed abstract class CryptoInterpreter {
       _ <- script.checkSize(program.stack, 3)
       p <- multiCheckSig(ScriptProgram(program, OP_CHECKMULTISIG :: program.script.tail, ScriptProgram.Script))
       r <- p.stackTopIsTrue match {
-        case true => \/-(ScriptProgram(p, p.stack.tail, p.script))
-        case false => -\/(ScriptErrorCheckMultiSigVerify)
-      }
+            case true  => \/-(ScriptProgram(p, p.stack.tail, p.script))
+            case false => -\/(ScriptErrorCheckMultiSigVerify)
+          }
     } yield r)
       .leftMap(ScriptProgram(program, _))
       .merge
@@ -148,70 +153,75 @@ sealed abstract class CryptoInterpreter {
   @tailrec
   private def multiCheckSig(program: ScriptProgram): ScriptError \/ ScriptProgram = program match {
     case p: PreExecutionScriptProgram => multiCheckSig(ScriptProgram.toExecutionInProgress(p))
-    case p: ExecutedScriptProgram => \/-(p)
+    case p: ExecutedScriptProgram     => \/-(p)
     case p: ExecutionInProgressScriptProgram =>
       for {
         nKeys <- script.getTop(p.stack).flatMap(ScriptNumber(p, _))
-        _ <- script.failIf(nKeys < ScriptNumber.zero || nKeys.toInt > Consensus.maxPublicKeysPerMultiSig, ScriptErrorPubKeyCount)
-        _ <- script.checkSize(p.stack, nKeys.toInt + 2)
-        restOfStack = p.stack.tail
-        stackSansPubKeys = restOfStack.slice(nKeys.toInt, restOfStack.size)
-        nSigs <- script.getTop(stackSansPubKeys).flatMap(ScriptNumber(p, _))
-        _ <- script.failIf(nSigs < ScriptNumber.zero || nSigs > nKeys, ScriptErrorSigCount)
-        pubKeys = restOfStack.slice(0, nKeys.toInt).map(k => ECPublicKey(k.bytes))
+        _ <- script.failIf(
+              nKeys < ScriptNumber.zero || nKeys.toInt > Consensus.maxPublicKeysPerMultiSig,
+              ScriptErrorPubKeyCount
+            )
+        _                       <- script.checkSize(p.stack, nKeys.toInt + 2)
+        restOfStack             = p.stack.tail
+        stackSansPubKeys        = restOfStack.slice(nKeys.toInt, restOfStack.size)
+        nSigs                   <- script.getTop(stackSansPubKeys).flatMap(ScriptNumber(p, _))
+        _                       <- script.failIf(nSigs < ScriptNumber.zero || nSigs > nKeys, ScriptErrorSigCount)
+        pubKeys                 = restOfStack.slice(0, nKeys.toInt).map(k => ECPublicKey(k.bytes))
         stackSansSigsAndPubKeys = stackSansPubKeys.tail.slice(nSigs.toInt, stackSansPubKeys.tail.size)
         sigs = restOfStack
           .slice(nKeys.toInt + 1, nKeys.toInt + nSigs.toInt + 1)
           .map(t => ECDigitalSignature(t.bytes))
         //this is because of a bug in bitcoin core for the implementation of OP_CHECKMULTISIG
-        _ <- script.checkSize(stackSansSigsAndPubKeys, 1)
-        notEmpty = stackSansSigsAndPubKeys.headOption.fold(false)(_.bytes.nonEmpty)
-        _ <- script.checkFlag(p.flags)(ScriptVerifyNullDummy, ScriptErrorSigNullDummy, notEmpty)
+        _            <- script.checkSize(stackSansSigsAndPubKeys, 1)
+        notEmpty     = stackSansSigsAndPubKeys.headOption.fold(false)(_.bytes.nonEmpty)
+        _            <- script.checkFlag(p.flags)(ScriptVerifyNullDummy, ScriptErrorSigNullDummy, notEmpty)
         nonSepScript = BitcoinScriptUtil.removeOpCodeSeparator(p)
-        r <- TxSigCheck.multiSigCheck(p.txSignatureComponent, nonSepScript, sigs, pubKeys, p.flags, nSigs.toLong)
-        opBoolean = if (r) OP_TRUE else OP_FALSE
+        r            <- TxSigCheck.multiSigCheck(p.txSignatureComponent, nonSepScript, sigs, pubKeys, p.flags, nSigs.toLong)
+        opBoolean    = if (r) OP_TRUE else OP_FALSE
       } yield ScriptProgram(p, opBoolean :: stackSansSigsAndPubKeys.tail, p.script.tail)
   }
 
   @tailrec
   private def checkSig(program: ScriptProgram): ScriptError \/ ScriptProgram = program match {
     case p: PreExecutionScriptProgram => checkSig(ScriptProgram.toExecutionInProgress(p))
-    case p: ExecutedScriptProgram => \/-(p)
+    case p: ExecutedScriptProgram     => \/-(p)
     case p: ExecutionInProgressScriptProgram =>
       for {
-        s <- script.getTwo(p.stack)
-        pubKey = ECPublicKey(s._1.bytes)
-        sig = s._2.bytes
-        _ <- SigEncoding.checkTxSigEncoding(sig, p.flags)
-        _ <- SigEncoding.checkPubKeyEncoding(pubKey, p.flags)
+        s            <- script.getTwo(p.stack)
+        pubKey       = ECPublicKey(s._1.bytes)
+        sig          = s._2.bytes
+        _            <- SigEncoding.checkTxSigEncoding(sig, p.flags)
+        _            <- SigEncoding.checkPubKeyEncoding(pubKey, p.flags)
         nonSepScript = BitcoinScriptUtil.removeOpCodeSeparator(p)
-        r <- TxSigCheck.checkSig(p.txSignatureComponent, nonSepScript, pubKey, sig, p.flags)
-        opBoolean = if (r) OP_TRUE else OP_FALSE
+        r            <- TxSigCheck.checkSig(p.txSignatureComponent, nonSepScript, pubKey, sig, p.flags)
+        opBoolean    = if (r) OP_TRUE else OP_FALSE
       } yield ScriptProgram(p, opBoolean :: p.stack.drop(2), p.script.tail)
   }
 
   @tailrec
   private def checkDataSig(program: ScriptProgram): ScriptError \/ ScriptProgram = program match {
     case p: PreExecutionScriptProgram => checkDataSig(ScriptProgram.toExecutionInProgress(p))
-    case p: ExecutedScriptProgram => \/-(p)
+    case p: ExecutedScriptProgram     => \/-(p)
     case p: ExecutionInProgressScriptProgram =>
       if (!p.flags.contains(ScriptEnableCheckDataSig)) -\/(ScriptErrorBadOpCode)
-      else for {
-        s <- getThree(p.stack)
-        pubKey = ECPublicKey(s._1.bytes)
-        msg = s._2
-        sig = s._3.bytes
-        _ <- SigEncoding.checkDataSigEncoding(sig, p.flags)
-        _ <- SigEncoding.checkPubKeyEncoding(pubKey, p.flags)
-        success <-
-          if (sig.isEmpty) \/-(OP_FALSE)
-          else for {
-            hash <- CryptoUtil.sha256Opt(msg.bytes).toRightDisjunction(ScriptErrorUnknownError)
-            success <- \/-(TxSigCheck.verifySig(sig, pubKey, hash, p.flags))
-            _ <- checkFlag(p.flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !success)
-          } yield if (success) OP_TRUE else OP_FALSE
-      } yield ScriptProgram(p, success :: p.stack.drop(3), p.script.tail)
+      else
+        for {
+          s      <- getThree(p.stack)
+          pubKey = ECPublicKey(s._1.bytes)
+          msg    = s._2
+          sig    = s._3.bytes
+          _      <- SigEncoding.checkDataSigEncoding(sig, p.flags)
+          _      <- SigEncoding.checkPubKeyEncoding(pubKey, p.flags)
+          success <- if (sig.isEmpty) \/-(OP_FALSE)
+                    else
+                      for {
+                        hash    <- CryptoUtil.sha256Opt(msg.bytes).toRightDisjunction(ScriptErrorUnknownError)
+                        success <- \/-(TxSigCheck.verifySig(sig, pubKey, hash, p.flags))
+                        _       <- checkFlag(p.flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !success)
+                      } yield if (success) OP_TRUE else OP_FALSE
+        } yield ScriptProgram(p, success :: p.stack.drop(3), p.script.tail)
   }
+
   /**
    * This is a higher order function designed to execute a hash function on the stack top of the program
    * For instance, we could pass in CryptoUtil.sha256 function as the 'hashFunction' argument, which would then
@@ -222,7 +232,7 @@ sealed abstract class CryptoInterpreter {
    */
   private def executeHashFunction(p: => ScriptProgram, hashFunction: ByteVector => HashDigest) = p.stack match {
     case h :: t => ScriptProgram(p, ScriptConstant(hashFunction(h.bytes).bytes) :: t, p.script.tail)
-    case _ => ScriptProgram(p, ScriptErrorInvalidStackOperation)
+    case _      => ScriptProgram(p, ScriptErrorInvalidStackOperation)
   }
 }
 

@@ -4,7 +4,6 @@ package org.scash.core.serializers.script
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
  */
-
 import org.scash.core.number.UInt32
 import org.scash.core.script.constant._
 import org.scash.core.util.BitcoinSUtil
@@ -28,7 +27,7 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    * example: "OP_DUP OP_HASH160 e2e7c1ab3f807151e832dd1accb3d4f5d7d19b4b OP_EQUALVERIFY OP_CHECKSIG"
    * example: ["0", "IF 0x50 ENDIF 1", "P2SH,STRICTENC", "0x50 is reserved (ok if not executed)"] (from script_valid.json)
    */
-  def fromString(str: String): List[ScriptToken] = {
+  def fromString(str: String): List[ScriptToken] =
     if (str.size > 1 && str.substring(0, 2) == "0x" && str.split(" ").size == 1) {
       //parse this as a byte array that is led with a 0x for example
       //0x4e03000000ffff
@@ -38,7 +37,6 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
       val scriptTokens: List[ScriptToken] = parse(str)
       scriptTokens
     }
-  }
 
   /**
    * Parses a string to a sequence of script tokens
@@ -47,7 +45,7 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    */
   private def parse(str: String): List[ScriptToken] = {
     @tailrec
-    def loop(operations: List[String], accum: ByteVector): ByteVector = {
+    def loop(operations: List[String], accum: ByteVector): ByteVector =
       operations match {
         //for parsing strings like 'Az', need to remove single quotes
         case h +: t if (h.size > 0 && h.head == '\'' && h.last == '\'') =>
@@ -82,14 +80,14 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
         case h +: t if (h.size > 1 && h.substring(0, 2) == "0x") =>
           loop(t, BitcoinSUtil.decodeHex(h.substring(2, h.size).toLowerCase).reverse ++ accum)
         //skip the empty string
-        case h +: t if (h == "") => loop(t, accum)
+        case h +: t if (h == "")  => loop(t, accum)
         case h +: t if (h == "0") => loop(t, OP_0.bytes ++ accum)
 
         case h +: t if (ScriptOperation.fromString(h).isDefined) =>
           val op = ScriptOperation.fromString(h).get
           loop(t, op.bytes ++ accum)
         case h +: t if (tryParsingLong(h)) =>
-          val hexLong = BitcoinSUtil.flipEndianness(ScriptNumberUtil.longToHex(h.toLong))
+          val hexLong              = BitcoinSUtil.flipEndianness(ScriptNumberUtil.longToHex(h.toLong))
           val bytesToPushOntoStack = BytesToPushOntoStack(hexLong.size / 2)
           //convert the string to int, then convert to hex
           loop(t, BitcoinSUtil.decodeHex(hexLong) ++ bytesToPushOntoStack.bytes ++ accum)
@@ -100,11 +98,10 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
           loop(t, BitcoinSUtil.decodeHex(BitcoinSUtil.flipEndianness(h)) ++ bytesToPushOntoStack.bytes ++ accum)
         case Nil => accum
       }
-    }
     if (tryParsingLong(str) && str.size > 1 && str.substring(0, 2) != "0x") {
       //for the case when there is just a single decimal constant
       //i.e. "8388607"
-      val scriptNumber = ScriptNumber(parseLong(str))
+      val scriptNumber         = ScriptNumber(parseLong(str))
       val bytesToPushOntoStack = BytesToPushOntoStack(scriptNumber.bytes.size)
       List(bytesToPushOntoStack, scriptNumber)
     } else if (BitcoinSUtil.isHex(str) && str.toLowerCase == str) {
@@ -128,16 +125,14 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    */
   private def parse(bytes: ByteVector): List[ScriptToken] = {
     @tailrec
-    def loop(bytes: ByteVector, accum: List[ScriptToken]): List[ScriptToken] = {
-
+    def loop(bytes: ByteVector, accum: List[ScriptToken]): List[ScriptToken] =
       if (bytes.nonEmpty) {
-        val op = ScriptOperation(bytes.head).get
+        val op                           = ScriptOperation(bytes.head).get
         val parsingHelper: ParsingHelper = parseOperationByte(op, accum, bytes.tail)
         loop(parsingHelper.tail, parsingHelper.accum)
       } else {
         accum
       }
-    }
     loop(bytes, Nil).reverse
 
   }
@@ -153,7 +148,7 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    * from those bytes. Returns the script constant and the byte array without the script constant
    */
   private def sliceConstant(bytesToPushOntoStack: BytesToPushOntoStack, data: ByteVector): (ByteVector, ByteVector) = {
-    val finalIndex = bytesToPushOntoStack.opCode
+    val finalIndex   = bytesToPushOntoStack.opCode
     val dataConstant = data.slice(0, finalIndex)
     (dataConstant, data.slice(finalIndex, data.size))
   }
@@ -165,18 +160,21 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    * for examples of this
    */
   def parseBytesFromString(s: String): List[ScriptConstant] = {
-    val scriptConstants = (raw"\b0x([0-9a-f]+)\b".r
-      .findAllMatchIn(s.toLowerCase)
-      .map(g =>
-        // 1 hex = 4 bits therefore 16 hex characters * 4 bits = 64
-        // if it is not smaller than 16 hex characters it cannot
-        //fit inside of a scala long
-        //therefore store it as a script constant
-        if (g.group(1).size <= 16) {
-          ScriptNumber(g.group(1))
-        } else {
-          ScriptConstant(g.group(1))
-        }))
+    val scriptConstants = (
+      raw"\b0x([0-9a-f]+)\b".r
+        .findAllMatchIn(s.toLowerCase)
+        .map(g =>
+          // 1 hex = 4 bits therefore 16 hex characters * 4 bits = 64
+          // if it is not smaller than 16 hex characters it cannot
+          //fit inside of a scala long
+          //therefore store it as a script constant
+          if (g.group(1).size <= 16) {
+            ScriptNumber(g.group(1))
+          } else {
+            ScriptConstant(g.group(1))
+          }
+        )
+      )
     scriptConstants.toList
   }
 
@@ -189,21 +187,20 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    * i.e. If the operation was BytesToPushOntoStackImpl(5), it would slice 5 bytes off of the tail and
    * places them into a ScriptConstant and add them to the accumulator.
    */
-  private def parseOperationByte(op: ScriptOperation, accum: List[ScriptToken], tail: ByteVector): ParsingHelper = {
+  private def parseOperationByte(op: ScriptOperation, accum: List[ScriptToken], tail: ByteVector): ParsingHelper =
     op match {
       case bytes: BytesToPushOntoStack =>
         //means that we need to push x amount of bytes on to the stack
         val (constant, newTail) = sliceConstant(bytes, tail)
-        val scriptConstant = ScriptConstant(constant)
+        val scriptConstant      = ScriptConstant(constant)
         ParsingHelper(newTail, scriptConstant :: bytes :: accum)
       case OP_PUSHDATA1 => parseOpPushData(op, accum, tail)
       case OP_PUSHDATA2 => parseOpPushData(op, accum, tail)
       case OP_PUSHDATA4 => parseOpPushData(op, accum, tail)
-      case _ =>
+      case _            =>
         //means that we need to push the operation onto the stack
         ParsingHelper(tail, op :: accum)
     }
-  }
 
   /**
    * Parses OP_PUSHDATA operations correctly. Slices the appropriate amount of bytes off of the tail and pushes
@@ -218,7 +215,7 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
     def parseOpPushDataHelper(numBytes: Int): ParsingHelper = {
       //next numBytes is the size of the script constant
       val scriptConstantHex = tail.slice(0, numBytes)
-      val uInt32Push = UInt32(BitcoinSUtil.flipEndianness(scriptConstantHex))
+      val uInt32Push        = UInt32(BitcoinSUtil.flipEndianness(scriptConstantHex))
       //need this for the case where we have an OP_PUSHDATA4 with a number larger than a int32 can hold
       //TODO: Review this more, see this transaction's scriptSig as an example: b30d3148927f620f5b1228ba941c211fdabdae75d0ba0b688a58accbf018f3cc
       val bytesForPushOp: Long = Try(uInt32Push.toLong).getOrElse(tail.length)
@@ -228,8 +225,8 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
         if (idx >= numBytes) idx else tail.size
       }
       val scriptConstantBytes = tail.slice(numBytes, endIndex)
-      val scriptConstant = ScriptConstant(scriptConstantBytes)
-      val restOfBytes = tail.slice(endIndex, tail.size)
+      val scriptConstant      = ScriptConstant(scriptConstantBytes)
+      val restOfBytes         = tail.slice(endIndex, tail.size)
       buildParsingHelper(op, bytesToPushOntoStack, scriptConstant, restOfBytes, accum)
     }
 
@@ -253,27 +250,26 @@ sealed abstract class ScriptParser extends Factory[List[ScriptToken]] {
    * @param accum the accumulator filled with script tokens that have already been parsed
    * @return
    */
-  private def buildParsingHelper(op: ScriptOperation, bytesToPushOntoStack: ScriptConstant,
-    scriptConstant: ScriptConstant, restOfBytes: ByteVector, accum: List[ScriptToken]): ParsingHelper = {
+  private def buildParsingHelper(
+    op: ScriptOperation,
+    bytesToPushOntoStack: ScriptConstant,
+    scriptConstant: ScriptConstant,
+    restOfBytes: ByteVector,
+    accum: List[ScriptToken]
+  ): ParsingHelper =
     if (bytesToPushOntoStack.hex == "00") {
       //if we need to push 0 bytes onto the stack we do not add the script constant
-      ParsingHelper(
-        restOfBytes,
-        bytesToPushOntoStack +: op +: accum)
-    } else ParsingHelper(
-      restOfBytes,
-      scriptConstant +: bytesToPushOntoStack +: op +: accum)
-  }
+      ParsingHelper(restOfBytes, bytesToPushOntoStack +: op +: accum)
+    } else ParsingHelper(restOfBytes, scriptConstant +: bytesToPushOntoStack +: op +: accum)
 
   /** Checks if a string can be cast to an int */
   private def tryParsingLong(str: String): Boolean = Try(parseLong(str)).isSuccess
 
-  private def parseLong(str: String) = {
+  private def parseLong(str: String) =
     if (str.substring(0, 2) == "0x") {
       val strRemoveHex = str.substring(2, str.size)
       ScriptNumberUtil.toLong(strRemoveHex)
     } else str.toLong
-  }
 }
 
 object ScriptParser extends ScriptParser

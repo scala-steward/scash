@@ -7,29 +7,17 @@ import play.api.libs.json.JsString
 import scala.concurrent.Future
 
 /**
-  * RPC calls related to the message signing functionality
-  * in bitcoind
-  */
+ * RPC calls related to the message signing functionality
+ * in bitcoind
+ */
 trait MessageRpc { self: Client =>
 
-  def signMessage(address: P2PKHAddress, message: String): Future[String] = {
-    bitcoindCall[String]("signmessage",
-                         List(JsString(address.value), JsString(message)))
-  }
+  def signMessage(address: P2PKHAddress, message: String): Future[String] =
+    bitcoindCall[String]("signmessage", List(JsString(address.value), JsString(message)))
 
-  def signMessageWithPrivKey(
-      key: ECPrivateKey,
-      message: String): Future[String] = {
-    bitcoindCall[String]("signmessagewithprivkey",
-                         List(JsString(key.toWIF(network)), JsString(message)))
-  }
+  def signMessageWithPrivKey(key: ECPrivateKey, message: String): Future[String] =
+    bitcoindCall[String]("signmessagewithprivkey", List(JsString(key.toWIF(network)), JsString(message)))
 
-  def verifyMessage(
-      address: P2PKHAddress,
-      signature: String,
-      message: String): Future[Boolean] = {
-    bitcoindCall[Boolean](
-      "verifymessage",
-      List(JsString(address.value), JsString(signature), JsString(message)))
-  }
+  def verifyMessage(address: P2PKHAddress, signature: String, message: String): Future[Boolean] =
+    bitcoindCall[Boolean]("verifymessage", List(JsString(address.value), JsString(signature), JsString(message)))
 }

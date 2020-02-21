@@ -3,27 +3,27 @@ package org.scash.testkit.util
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
 import akka.util.Timeout
-import org.scalacheck.{Gen, Shrink}
+import org.scalacheck.{ Gen, Shrink }
 import org.scalactic.anyvals.PosInt
 import org.scalatest._
 import org.scalatest.concurrent.AsyncTimeLimitedTests
-import org.scalatest.flatspec.{AsyncFlatSpec, FixtureAsyncFlatSpec}
+import org.scalatest.flatspec.{ AsyncFlatSpec, FixtureAsyncFlatSpec }
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.time.Span
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import org.scash.core.config.{NetworkParameters, RegTest}
+import org.scash.core.config.{ NetworkParameters, RegTest }
 import org.scash.core.protocol.blockchain.ChainParams
 import org.scash.core.util.BitcoinSLogger
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /** This is a base trait in bitcoin-s for async tests
  *
  *
  * */
 trait BaseAsyncTest
-  extends BeforeAndAfter
+    extends BeforeAndAfter
     with BeforeAndAfterAll
     with Matchers
     with ScalaCheckPropertyChecks
@@ -57,9 +57,8 @@ trait BaseAsyncTest
    */
   implicit def noShrink[T]: Shrink[T] = Shrink.shrinkAny[T]
 
-  override def afterAll: Unit = {
+  override def afterAll: Unit =
     TestKit.shutdownActorSystem(system, verifySystemShutdown = true)
-  }
 
   /** The configuration for property based tests in our testing suite
    * @see http://www.scalatest.org/user_guide/writing_scalacheck_style_properties
@@ -69,42 +68,37 @@ trait BaseAsyncTest
   }
 
   /** Sets the generator driven tests to perform the given amount of execs */
-  def customGenDrivenConfig(executions: Int): PropertyCheckConfiguration = {
+  def customGenDrivenConfig(executions: Int): PropertyCheckConfiguration =
     PropertyCheckConfiguration(
       minSuccessful = PosInt.from(executions).get,
       minSize = PosInt.from(executions).get,
       workers = 2
-      )
-  }
+    )
 
   /** Property based tests that have been around a long time
    * have a less of a chance failing, so execute them less
    * @return
    */
-  def generatorDriveConfigOldCode: PropertyCheckConfiguration = {
+  def generatorDriveConfigOldCode: PropertyCheckConfiguration =
     customGenDrivenConfig(BitcoinSUnitTest.OLD_CODE_EXECUTIONS)
-  }
 
   /** Property based tests that are new have a higher chance of failing
    * so execute them more
    * @return
    */
-  def generatorDrivenConfigNewCode: PropertyCheckConfiguration = {
+  def generatorDrivenConfigNewCode: PropertyCheckConfiguration =
     customGenDrivenConfig(BitcoinSUnitTest.NEW_CODE_EXECUTIONS)
-  }
 
   def sequenceTestRuns(
-    testRunFs: scala.collection.mutable.Builder[
-      Future[Assertion],
-      Vector[Future[Assertion]]]): Future[Assertion] = {
+    testRunFs: scala.collection.mutable.Builder[Future[Assertion], Vector[Future[Assertion]]]
+  ): Future[Assertion] = {
     val testRunsF: Future[Vector[Assertion]] =
       Future.sequence(testRunFs.result())
 
     testRunsF.map(_.reduce((_, testRun) => testRun))
   }
 
-  def forAllAsync[A](gen: Gen[A])(
-    func: A => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A](gen: Gen[A])(func: A => Future[Assertion]): Future[Assertion] = {
     val testRunFs = Vector.newBuilder[Future[Assertion]]
 
     forAll(gen) { input =>
@@ -115,8 +109,7 @@ trait BaseAsyncTest
     sequenceTestRuns(testRunFs)
   }
 
-  def forAllAsync[A, B](genA: Gen[A], genB: Gen[B])(
-    func: (A, B) => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A, B](genA: Gen[A], genB: Gen[B])(func: (A, B) => Future[Assertion]): Future[Assertion] = {
     val testRunFs = Vector.newBuilder[Future[Assertion]]
 
     forAll(genA, genB) {
@@ -129,7 +122,8 @@ trait BaseAsyncTest
   }
 
   def forAllAsync[A, B, C](genA: Gen[A], genB: Gen[B], genC: Gen[C])(
-    func: (A, B, C) => Future[Assertion]): Future[Assertion] = {
+    func: (A, B, C) => Future[Assertion]
+  ): Future[Assertion] = {
     val testRunFs = Vector.newBuilder[Future[Assertion]]
 
     forAll(genA, genB, genC) {
@@ -141,12 +135,9 @@ trait BaseAsyncTest
     sequenceTestRuns(testRunFs)
   }
 
-  def forAllAsync[A, B, C, D](
-    genA: Gen[A],
-    genB: Gen[B],
-    genC: Gen[C],
-    genD: Gen[D])(
-    func: (A, B, C, D) => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A, B, C, D](genA: Gen[A], genB: Gen[B], genC: Gen[C], genD: Gen[D])(
+    func: (A, B, C, D) => Future[Assertion]
+  ): Future[Assertion] = {
     val testRunFs = Vector.newBuilder[Future[Assertion]]
 
     forAll(genA, genB, genC, genD) {
@@ -158,13 +149,9 @@ trait BaseAsyncTest
     sequenceTestRuns(testRunFs)
   }
 
-  def forAllAsync[A, B, C, D, E](
-    genA: Gen[A],
-    genB: Gen[B],
-    genC: Gen[C],
-    genD: Gen[D],
-    genE: Gen[E])(
-    func: (A, B, C, D, E) => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A, B, C, D, E](genA: Gen[A], genB: Gen[B], genC: Gen[C], genD: Gen[D], genE: Gen[E])(
+    func: (A, B, C, D, E) => Future[Assertion]
+  ): Future[Assertion] = {
     val testRunFs = Vector.newBuilder[Future[Assertion]]
 
     forAll(genA, genB, genC, genD, genE) {
@@ -176,14 +163,9 @@ trait BaseAsyncTest
     sequenceTestRuns(testRunFs)
   }
 
-  def forAllAsync[A, B, C, D, E, F](
-    genA: Gen[A],
-    genB: Gen[B],
-    genC: Gen[C],
-    genD: Gen[D],
-    genE: Gen[E],
-    genF: Gen[F])(
-    func: (A, B, C, D, E, F) => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A, B, C, D, E, F](genA: Gen[A], genB: Gen[B], genC: Gen[C], genD: Gen[D], genE: Gen[E], genF: Gen[F])(
+    func: (A, B, C, D, E, F) => Future[Assertion]
+  ): Future[Assertion] = {
     val testRunFs = Vector.newBuilder[Future[Assertion]]
 
     forAll(genA, genB, genC, genD, genE, genF) {

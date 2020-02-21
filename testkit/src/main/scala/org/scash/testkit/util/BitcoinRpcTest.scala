@@ -17,7 +17,7 @@ abstract class BitcoindRpcTest extends BitcoinSAsyncTest {
     .nonEmpty
 
   if (!hasContents) {
-    import System.err.{println => printerr}
+    import System.err.{ println => printerr }
     printerr()
     printerr(s"Run 'sbt downloadBitcoind' to fetch needed binaries")
     sys.error {
@@ -36,9 +36,7 @@ abstract class BitcoindRpcTest extends BitcoinSAsyncTest {
    * stopped running (either by succeeding or failing)
    * all clients found in the builder is shut down.
    */
-  lazy val clientAccum: mutable.Builder[
-    BitcoindRpcClient,
-    Vector[BitcoindRpcClient]] = Vector.newBuilder
+  lazy val clientAccum: mutable.Builder[BitcoindRpcClient, Vector[BitcoindRpcClient]] = Vector.newBuilder
 
   override def afterAll(): Unit = {
     BitcoindRpcTestUtil.stopServers(clientAccum.result)

@@ -36,8 +36,12 @@ sealed abstract class MerkleBlock extends NetworkElement {
 
 object MerkleBlock extends Factory[MerkleBlock] {
 
-  private case class MerkleBlockImpl(blockHeader: BlockHeader, transactionCount: UInt32,
-    partialMerkleTree: PartialMerkleTree) extends MerkleBlock
+  private case class MerkleBlockImpl(
+    blockHeader: BlockHeader,
+    transactionCount: UInt32,
+    partialMerkleTree: PartialMerkleTree
+  ) extends MerkleBlock
+
   /**
    * Creates a [[MerkleBlock]] from the given [[Block]] and [[BloomFilter]]
    * This function iterates through each transaction inside our block checking if it is relevant to the given bloom filter
@@ -48,19 +52,21 @@ object MerkleBlock extends Factory[MerkleBlock] {
    */
   def apply(block: Block, filter: BloomFilter): (MerkleBlock, BloomFilter) = {
     @tailrec
-    def loop(remainingTxs: Seq[Transaction], accumFilter: BloomFilter,
-      txMatches: Seq[(Boolean, DoubleSha256Digest)]): (Seq[(Boolean, DoubleSha256Digest)], BloomFilter) = {
+    def loop(
+      remainingTxs: Seq[Transaction],
+      accumFilter: BloomFilter,
+      txMatches: Seq[(Boolean, DoubleSha256Digest)]
+    ): (Seq[(Boolean, DoubleSha256Digest)], BloomFilter) =
       if (remainingTxs.isEmpty) (txMatches.reverse, accumFilter)
       else {
-        val tx = remainingTxs.head
+        val tx           = remainingTxs.head
         val newTxMatches = (accumFilter.isRelevant(tx), tx.txId) +: txMatches
-        val newFilter = accumFilter.update(tx)
+        val newFilter    = accumFilter.update(tx)
         loop(remainingTxs.tail, newFilter, newTxMatches)
       }
-    }
     val (matchedTxs, newFilter) = loop(block.transactions, filter, Nil)
-    val partialMerkleTree = PartialMerkleTree(matchedTxs)
-    val txCount = UInt32(block.transactions.size)
+    val partialMerkleTree       = PartialMerkleTree(matchedTxs)
+    val txCount                 = UInt32(block.transactions.size)
     (MerkleBlock(block.blockHeader, txCount, partialMerkleTree), newFilter)
   }
 
@@ -69,28 +75,33 @@ object MerkleBlock extends Factory[MerkleBlock] {
     //follows this function inside of bitcoin core
     //https://github.com/bitcoin/bitcoin/blob/master/src/merkleblock.cpp#L40
     @tailrec
-    def loop(remainingTxs: Seq[Transaction], txMatches: Seq[(Boolean, DoubleSha256Digest)]): (Seq[(Boolean, DoubleSha256Digest)]) = {
+    def loop(
+      remainingTxs: Seq[Transaction],
+      txMatches: Seq[(Boolean, DoubleSha256Digest)]
+    ): (Seq[(Boolean, DoubleSha256Digest)]) =
       if (remainingTxs.isEmpty) txMatches.reverse
       else {
-        val tx = remainingTxs.head
+        val tx           = remainingTxs.head
         val newTxMatches = (txIds.contains(tx.txId), tx.txId) +: txMatches
         loop(remainingTxs.tail, newTxMatches)
       }
-    }
 
     val txMatches = loop(block.transactions, Nil)
 
     val partialMerkleTree = PartialMerkleTree(txMatches)
-    val txCount = UInt32(block.transactions.size)
+    val txCount           = UInt32(block.transactions.size)
     MerkleBlock(block.blockHeader, txCount, partialMerkleTree)
   }
 
-  def apply(blockHeader: BlockHeader, txCount: UInt32,
-    partialMerkleTree: PartialMerkleTree): MerkleBlock = {
+  def apply(blockHeader: BlockHeader, txCount: UInt32, partialMerkleTree: PartialMerkleTree): MerkleBlock =
     MerkleBlockImpl(blockHeader, txCount, partialMerkleTree)
-  }
 
-  def apply(blockHeader: BlockHeader, txCount: UInt32, hashes: Seq[DoubleSha256Digest], bits: BitVector): MerkleBlock = {
+  def apply(
+    blockHeader: BlockHeader,
+    txCount: UInt32,
+    hashes: Seq[DoubleSha256Digest],
+    bits: BitVector
+  ): MerkleBlock = {
     val partialMerkleTree = PartialMerkleTree(txCount, hashes, bits)
     MerkleBlock(blockHeader, txCount, partialMerkleTree)
   }

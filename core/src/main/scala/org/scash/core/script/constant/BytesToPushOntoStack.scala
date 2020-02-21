@@ -9,6 +9,7 @@ import org.scash.core.script.ScriptOperationFactory
 trait BytesToPushOntoStack extends ScriptOperation
 
 object BytesToPushOntoStack extends ScriptOperationFactory[BytesToPushOntoStack] {
+
   /**
    * Represents that zero bytes need to be pushed onto the stack
    * this really means we need to push an empty byte vector on the stack
@@ -25,16 +26,16 @@ object BytesToPushOntoStack extends ScriptOperationFactory[BytesToPushOntoStack]
   override def operations: Seq[BytesToPushOntoStack] =
     (for { i <- 0 to 75 } yield BytesToPushOntoStackImpl(i))
 
-  def fromNumber(num: Long): BytesToPushOntoStack = {
+  def fromNumber(num: Long): BytesToPushOntoStack =
     if (num > 75) throw new IllegalArgumentException("We cannot have a BytesToPushOntoStack for greater than 75 bytes")
     else {
       val bytesToPushOntoStackOpt = operations.find(_.opCode == num)
       bytesToPushOntoStackOpt match {
         case Some(bytesToPushOntoStack) => bytesToPushOntoStack
-        case None => throw new IllegalArgumentException("We cannot have a BytesToPushOntoStack for greater than 75 bytes")
+        case None =>
+          throw new IllegalArgumentException("We cannot have a BytesToPushOntoStack for greater than 75 bytes")
       }
     }
-  }
 
   def apply(num: Long): BytesToPushOntoStack = fromNumber(num)
 }

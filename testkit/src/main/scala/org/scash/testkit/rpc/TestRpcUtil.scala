@@ -8,7 +8,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 abstract class TestRpcUtil extends RpcUtil {
-  override protected def retryUntilSatisfiedWithCounter (
+  override protected def retryUntilSatisfiedWithCounter(
     conditionF: () => Future[Boolean],
     duration: FiniteDuration,
     counter: Int,
@@ -18,15 +18,10 @@ abstract class TestRpcUtil extends RpcUtil {
     implicit system: ActorSystem
   ): Future[Unit] = {
     val retryF = super
-      .retryUntilSatisfiedWithCounter(conditionF,
-                                      duration,
-                                      counter,
-                                      maxTries,
-                                      stackTrace)
+      .retryUntilSatisfiedWithCounter(conditionF, duration, counter, maxTries, stackTrace)
 
     TestAsyncUtil.transformRetryToTestFailure(retryF)(system.dispatcher)
   }
 }
 
 object TestRpcUtil extends TestRpcUtil
-

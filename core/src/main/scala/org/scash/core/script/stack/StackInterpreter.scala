@@ -45,7 +45,7 @@ sealed abstract class StackInterpreter {
   /** Puts the number of stack items onto the stack. */
   def opDepth(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_DEPTH), "Top of script stack must be OP_DEPTH")
-    val stackSize = program.stack.size
+    val stackSize                  = program.stack.size
     val numberToPush: ScriptNumber = ScriptNumber(stackSize)
     ScriptProgram(program, numberToPush :: program.stack, program.script.tail)
   }
@@ -54,8 +54,7 @@ sealed abstract class StackInterpreter {
   def opToAltStack(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_TOALTSTACK), "Top of script stack must be OP_TOALTSTACK")
     if (program.stack.nonEmpty) {
-      ScriptProgram(program, program.stack.tail,
-        program.script.tail, program.stack.head :: program.altStack)
+      ScriptProgram(program, program.stack.tail, program.script.tail, program.stack.head :: program.altStack)
     } else {
       logger.error("OP_TOALTSTACK requires an element to be on the stack")
       ScriptProgram(program, ScriptErrorInvalidStackOperation)
@@ -108,32 +107,37 @@ sealed abstract class StackInterpreter {
   /** The item n back in the stack is copied to the top. */
   def opPick(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_PICK), "Top of script stack must be OP_PICK")
-    executeOpWithStackTopAsNumberArg(program, { number: ScriptNumber =>
-      if (program.stack.size < 2) ScriptProgram(program, ScriptErrorInvalidStackOperation)
-      else if (number.toLong >= 0 && number.toLong < program.stack.tail.size) {
-        val newStackTop = program.stack.tail(number.toInt)
-        ScriptProgram(program, newStackTop :: program.stack.tail, program.script.tail)
-      } else {
-        logger.error("The index for OP_PICK would have caused an index out of bounds exception")
-        ScriptProgram(program, ScriptErrorInvalidStackOperation)
+    executeOpWithStackTopAsNumberArg(
+      program, { number: ScriptNumber =>
+        if (program.stack.size < 2) ScriptProgram(program, ScriptErrorInvalidStackOperation)
+        else if (number.toLong >= 0 && number.toLong < program.stack.tail.size) {
+          val newStackTop = program.stack.tail(number.toInt)
+          ScriptProgram(program, newStackTop :: program.stack.tail, program.script.tail)
+        } else {
+          logger.error("The index for OP_PICK would have caused an index out of bounds exception")
+          ScriptProgram(program, ScriptErrorInvalidStackOperation)
+        }
       }
-    })
+    )
   }
 
   /** The item n back in the stack is moved to the top. */
   def opRoll(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_ROLL), "Top of script stack must be OP_ROLL")
-    executeOpWithStackTopAsNumberArg(program, (number: ScriptNumber) =>
-      if (program.stack.size < 2) ScriptProgram(program, ScriptErrorInvalidStackOperation)
-      else if (number.toLong >= 0 && number.toLong < program.stack.tail.size) {
-        val newStackTop = program.stack.tail(number.toInt)
-        //removes the old instance of the stack top, appends the new index to the head
-        val newStack = newStackTop :: program.stack.tail.diff(List(newStackTop))
-        ScriptProgram(program, newStack, program.script.tail)
-      } else {
-        logger.error("The index for OP_ROLL would have caused an index out of bounds exception")
-        ScriptProgram(program, ScriptErrorInvalidStackOperation)
-      })
+    executeOpWithStackTopAsNumberArg(
+      program,
+      (number: ScriptNumber) =>
+        if (program.stack.size < 2) ScriptProgram(program, ScriptErrorInvalidStackOperation)
+        else if (number.toLong >= 0 && number.toLong < program.stack.tail.size) {
+          val newStackTop = program.stack.tail(number.toInt)
+          //removes the old instance of the stack top, appends the new index to the head
+          val newStack = newStackTop :: program.stack.tail.diff(List(newStackTop))
+          ScriptProgram(program, newStack, program.script.tail)
+        } else {
+          logger.error("The index for OP_ROLL would have caused an index out of bounds exception")
+          ScriptProgram(program, ScriptErrorInvalidStackOperation)
+        }
+    )
   }
 
   /**
@@ -262,12 +266,16 @@ sealed abstract class StackInterpreter {
    * @param op the operation that is executed with the script number on the top of the stack
    * @return the program with the result of the op pushed onto to the top of the stack
    */
-  private def executeOpWithStackTopAsNumberArg(program: ScriptProgram, op: ScriptNumber => ScriptProgram): ScriptProgram = {
+  private def executeOpWithStackTopAsNumberArg(
+    program: ScriptProgram,
+    op: ScriptNumber => ScriptProgram
+  ): ScriptProgram =
     program.stack.head match {
       case scriptNum: ScriptNumber => op(scriptNum)
-      case _: ScriptToken =>
+      case _: ScriptToken          =>
         //interpret the stack top as a number
-        val number: Try[ScriptNumber] = ScriptNumber(program.stack.head.bytes, ScriptFlagUtil.requireMinimalData(program.flags))
+        val number: Try[ScriptNumber] =
+          ScriptNumber(program.stack.head.bytes, ScriptFlagUtil.requireMinimalData(program.flags))
         number match {
           case Success(n) => op(n)
           case Failure(_) =>
@@ -275,7 +283,6 @@ sealed abstract class StackInterpreter {
             ScriptProgram(program, ScriptErrorUnknownError)
         }
     }
-  }
 }
 
 object StackInterpreter extends StackInterpreter

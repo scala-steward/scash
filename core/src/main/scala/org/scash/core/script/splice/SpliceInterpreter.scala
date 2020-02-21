@@ -1,4 +1,5 @@
 package org.scash.core.script.splice
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
@@ -22,33 +23,35 @@ sealed abstract class SpliceInterpreter {
    * Spec info
    * [[https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/may-2018-reenabled-opcodes.md#op_cat]]
    */
-  def opCat(program: ScriptProgram): ScriptProgram = (for {
-    p <- script.checkBinary(program)
-    v1 = p.stack(1)
-    v2 = p.stack(0)
-    np <- scriptPushSize(p)(v1.size + v2.size)
-    n <- (v1, v2) match {
-      case (s1: ScriptConstant, s2: ScriptConstant) => \/-(s1 ++ s2)
-      case _ => -\/(ScriptProgram(p, ScriptErrorUnknownError))
-    }
-  } yield ScriptProgram(np, n :: p.stack.tail.tail, p.script.tail)).merge
+  def opCat(program: ScriptProgram): ScriptProgram =
+    (for {
+      p  <- script.checkBinary(program)
+      v1 = p.stack(1)
+      v2 = p.stack(0)
+      np <- scriptPushSize(p)(v1.size + v2.size)
+      n <- (v1, v2) match {
+            case (s1: ScriptConstant, s2: ScriptConstant) => \/-(s1 ++ s2)
+            case _                                        => -\/(ScriptProgram(p, ScriptErrorUnknownError))
+          }
+    } yield ScriptProgram(np, n :: p.stack.tail.tail, p.script.tail)).merge
 
   /**
    * Split the operand at the given position. This operation is the exact inverse of OP_CAT
    * Spec info
    * [[https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/may-2018-reenabled-opcodes.md#op_split]]
    */
-  def opSplit(program: ScriptProgram): ScriptProgram = (for {
-    p <- script.checkBinary(program)
-    n <- ScriptNumber(p, p.stack.head.bytes)
-    pos = n.toLong
-    data = p.stack(1).bytes
-    s <- if (pos >= 0 && pos.toLong <= data.size) {
-      \/-(data.splitAt(pos))
-    } else {
-      -\/(ScriptProgram(p, ScriptErrorInvalidSplitRange))
-    }
-  } yield ScriptProgram(p, List(ScriptConstant(s._2), ScriptConstant(s._1)) ::: p.stack.tail.tail, p.script.tail)).merge
+  def opSplit(program: ScriptProgram): ScriptProgram =
+    (for {
+      p    <- script.checkBinary(program)
+      n    <- ScriptNumber(p, p.stack.head.bytes)
+      pos  = n.toLong
+      data = p.stack(1).bytes
+      s <- if (pos >= 0 && pos.toLong <= data.size) {
+            \/-(data.splitAt(pos))
+          } else {
+            -\/(ScriptProgram(p, ScriptErrorInvalidSplitRange))
+          }
+    } yield ScriptProgram(p, List(ScriptConstant(s._2), ScriptConstant(s._1)) ::: p.stack.tail.tail, p.script.tail)).merge
 
   /**
    * Convert the numeric value into a byte sequence of a certain size, taking account of the sign bit.
@@ -60,9 +63,9 @@ sealed abstract class SpliceInterpreter {
   def opNum2Bin(program: ScriptProgram): ScriptProgram = {
     require(program.script.headOption.contains(OP_NUM2BIN), "Script top must be OP_NUM2BIN")
     (for {
-      p <- script.checkBinary(program)
+      p    <- script.checkBinary(program)
       size <- ScriptNumber(p, p.stack.head.bytes)
-      np <- scriptPushSize(p)(size.toLong)
+      np   <- scriptPushSize(p)(size.toLong)
     } yield {
 
       val bin = BitcoinScriptUtil.toMinimalEncoding(np.stack(1).bytes)
@@ -76,15 +79,14 @@ sealed abstract class SpliceInterpreter {
           ScriptConstant(ByteVector.fill(size.toLong)(0x00))
         } else {
           val signBit = (bin.bytes.last & 0x80).toByte
-          val bit = (bin.bytes.last & 0x7f).toByte
+          val bit     = (bin.bytes.last & 0x7f).toByte
           val padding = ByteVector.fill((size.toLong - 1) - bin.size)(0x00)
-          val nNum = bin.bytes.update(bin.size - 1, bit) ++ padding :+ signBit
+          val nNum    = bin.bytes.update(bin.size - 1, bit) ++ padding :+ signBit
           ScriptConstant(nNum)
         }
         ScriptProgram(np, r +: np.stack.tail.tail, np.script.tail)
       }
-    })
-      .merge
+    }).merge
   }
 
   /**
@@ -116,7 +118,7 @@ sealed abstract class SpliceInterpreter {
       } else {
         val scriptNumber = program.stack.head match {
           case ScriptNumber.zero => ScriptNumber.zero
-          case x: ScriptToken => ScriptNumber(x.bytes.size)
+          case x: ScriptToken    => ScriptNumber(x.bytes.size)
         }
         ScriptProgram(program, scriptNumber :: program.stack, program.script.tail)
       }

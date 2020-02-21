@@ -7,8 +7,8 @@ import org.scash.core.p2p.PingMessage
 import scodec.bits.ByteVector
 
 /**
-  * @see https://bitcoin.org/en/developer-reference#ping
-  */
+ * @see https://bitcoin.org/en/developer-reference#ping
+ */
 trait RawPingMessageSerializer extends RawBitcoinSerializer[PingMessage] {
 
   override def read(bytes: ByteVector): PingMessage = {

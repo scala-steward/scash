@@ -28,4 +28,3 @@ trait Sign {
 
   def publicKey: ECPublicKey
 }
-

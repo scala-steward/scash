@@ -28,11 +28,12 @@ sealed abstract class Address {
 sealed abstract class BitcoinAddress extends Address
 
 sealed abstract class P2PKHAddress extends BitcoinAddress {
+
   /** The base58 string representation of this address */
   override def value: String = {
     val versionByte = networkParameters.p2pkhNetworkByte
-    val bytes = versionByte ++ hash.bytes
-    val checksum = CryptoUtil.doubleSHA256(bytes).bytes.take(4)
+    val bytes       = versionByte ++ hash.bytes
+    val checksum    = CryptoUtil.doubleSHA256(bytes).bytes.take(4)
     (bytes ++ checksum).toBase58
   }
 
@@ -43,11 +44,12 @@ sealed abstract class P2PKHAddress extends BitcoinAddress {
 }
 
 sealed abstract class P2SHAddress extends BitcoinAddress {
+
   /** The base58 string representation of this address */
   override def value: String = {
     val versionByte = networkParameters.p2shNetworkByte
-    val bytes = versionByte ++ hash.bytes
-    val checksum = CryptoUtil.doubleSHA256(bytes).bytes.take(4)
+    val bytes       = versionByte ++ hash.bytes
+    val checksum    = CryptoUtil.doubleSHA256(bytes).bytes.take(4)
     (bytes ++ checksum).toBase58
   }
 
@@ -59,11 +61,9 @@ sealed abstract class P2SHAddress extends BitcoinAddress {
 /**
  * https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
  */
-
 object P2PKHAddress extends AddressFactory[P2PKHAddress] {
-  private case class P2PKHAddressImpl(
-    hash: Sha256Hash160Digest,
-    networkParameters: NetworkParameters) extends P2PKHAddress
+  private case class P2PKHAddressImpl(hash: Sha256Hash160Digest, networkParameters: NetworkParameters)
+      extends P2PKHAddress
 
   def apply(hash: Sha256Hash160Digest, network: NetworkParameters): P2PKHAddress = P2PKHAddressImpl(hash, network)
 
@@ -72,15 +72,14 @@ object P2PKHAddress extends AddressFactory[P2PKHAddress] {
     P2PKHAddress(hash, networkParameters)
   }
 
-  def apply(spk: P2PKHScriptPubKey, networkParameters: NetworkParameters): P2PKHAddress = {
+  def apply(spk: P2PKHScriptPubKey, networkParameters: NetworkParameters): P2PKHAddress =
     P2PKHAddress(spk.pubKeyHash, networkParameters)
-  }
 
   override def fromString(address: String): Try[P2PKHAddress] = {
     val decodeCheckP2PKH: Try[ByteVector] = Base58.decodeCheck(address)
     decodeCheckP2PKH.flatMap { bytes =>
-      val networkBytes: Option[(NetworkParameters, ByteVector)] = Networks.knownNetworks.map(n => (n, n.p2pkhNetworkByte))
-        .find {
+      val networkBytes: Option[(NetworkParameters, ByteVector)] =
+        Networks.knownNetworks.map(n => (n, n.p2pkhNetworkByte)).find {
           case (_, bs) =>
             bytes.startsWith(bs)
         }
@@ -93,7 +92,8 @@ object P2PKHAddress extends AddressFactory[P2PKHAddress] {
       }
       result match {
         case Some(addr) => Success(addr)
-        case None => Failure(new IllegalArgumentException(s"Given address was not a valid P2PKH address, got: $address"))
+        case None =>
+          Failure(new IllegalArgumentException(s"Given address was not a valid P2PKH address, got: $address"))
       }
     }
   }
@@ -106,9 +106,8 @@ object P2PKHAddress extends AddressFactory[P2PKHAddress] {
 }
 
 object P2SHAddress extends AddressFactory[P2SHAddress] {
-  private case class P2SHAddressImpl(
-    hash: Sha256Hash160Digest,
-    networkParameters: NetworkParameters) extends P2SHAddress
+  private case class P2SHAddressImpl(hash: Sha256Hash160Digest, networkParameters: NetworkParameters)
+      extends P2SHAddress
 
   /**
    * Creates a [[P2SHScriptPubKey]] from the given [[ScriptPubKey]],
@@ -119,15 +118,16 @@ object P2SHAddress extends AddressFactory[P2SHAddress] {
     P2SHAddress(p2shScriptPubKey, network)
   }
 
-  def apply(p2shScriptPubKey: P2SHScriptPubKey, network: NetworkParameters): P2SHAddress = P2SHAddress(p2shScriptPubKey.scriptHash, network)
+  def apply(p2shScriptPubKey: P2SHScriptPubKey, network: NetworkParameters): P2SHAddress =
+    P2SHAddress(p2shScriptPubKey.scriptHash, network)
 
   def apply(hash: Sha256Hash160Digest, network: NetworkParameters): P2SHAddress = P2SHAddressImpl(hash, network)
 
   override def fromString(address: String): Try[P2SHAddress] = {
     val decodeCheckP2SH: Try[ByteVector] = Base58.decodeCheck(address)
     decodeCheckP2SH.flatMap { bytes =>
-      val networkBytes: Option[(NetworkParameters, ByteVector)] = Networks.knownNetworks.map(n => (n, n.p2shNetworkByte))
-        .find {
+      val networkBytes: Option[(NetworkParameters, ByteVector)] =
+        Networks.knownNetworks.map(n => (n, n.p2shNetworkByte)).find {
           case (_, bs) =>
             bytes.startsWith(bs)
         }
@@ -140,14 +140,15 @@ object P2SHAddress extends AddressFactory[P2SHAddress] {
       }
       result match {
         case Some(addr) => Success(addr)
-        case None => Failure(new IllegalArgumentException(s"Given address was not a valid P2PKH address, got: $address"))
+        case None =>
+          Failure(new IllegalArgumentException(s"Given address was not a valid P2PKH address, got: $address"))
       }
     }
   }
 
   override def fromScriptPubKey(spk: ScriptPubKey, np: NetworkParameters): Try[P2SHAddress] = spk match {
     case p2sh: P2SHScriptPubKey => Success(P2SHAddress(p2sh, np))
-    case _ => Failure(new IllegalArgumentException("Cannot create a address for the scriptPubKey: " + spk))
+    case _                      => Failure(new IllegalArgumentException("Cannot create a address for the scriptPubKey: " + spk))
   }
 }
 
@@ -172,8 +173,8 @@ object BitcoinAddress extends AddressFactory[BitcoinAddress] {
 
   override def fromScriptPubKey(spk: ScriptPubKey, np: NetworkParameters): Try[BitcoinAddress] = spk match {
     case p2pkh: P2PKHScriptPubKey => Success(P2PKHAddress(p2pkh, np))
-    case p2sh: P2SHScriptPubKey => Success(P2SHAddress(p2sh, np))
-    case _ => Failure(new IllegalArgumentException("Cannot create an address for the scriptPubKey: " + spk))
+    case p2sh: P2SHScriptPubKey   => Success(P2SHAddress(p2sh, np))
+    case _                        => Failure(new IllegalArgumentException("Cannot create an address for the scriptPubKey: " + spk))
   }
 
 }
@@ -193,7 +194,6 @@ object Address extends AddressFactory[Address] {
   override def fromScriptPubKey(spk: ScriptPubKey, network: NetworkParameters): Try[Address] =
     BitcoinAddress.fromScriptPubKey(spk, network)
 
-  def apply(spk: ScriptPubKey, networkParameters: NetworkParameters): Try[Address] = {
+  def apply(spk: ScriptPubKey, networkParameters: NetworkParameters): Try[Address] =
     fromScriptPubKey(spk, networkParameters)
-  }
 }

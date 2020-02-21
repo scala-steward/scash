@@ -4,7 +4,6 @@ package org.scash.core.policy
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
  */
-
 import org.scash.core.script.flag._
 import org.scash.core.currency.{ CurrencyUnit, CurrencyUnits, Satoshis }
 import org.scash.core.number.Int64
@@ -22,12 +21,8 @@ sealed abstract class Policy {
    * Failing one of these tests may trigger a DoS ban - see CheckInputs() for
    * details.
    */
-  def mandatoryScriptVerifyFlags: Seq[ScriptFlag] = Seq(
-    ScriptVerifyP2SH,
-    ScriptVerifyStrictEnc,
-    ScriptEnableSigHashForkId,
-    ScriptVerifyLowS,
-    ScriptVerifyNullFail)
+  def mandatoryScriptVerifyFlags: Seq[ScriptFlag] =
+    Seq(ScriptVerifyP2SH, ScriptVerifyStrictEnc, ScriptEnableSigHashForkId, ScriptVerifyLowS, ScriptVerifyNullFail)
 
   /**
    * Standard script verification flags that standard transactions will comply
@@ -52,8 +47,9 @@ sealed abstract class Policy {
   /**
    * For convenience, standard but not mandatory verify flags.
    */
-  def standardNonMandatoryVerifyFlags = standardScriptVerifyFlags
-    .filterNot(mandatoryScriptVerifyFlags.contains)
+  def standardNonMandatoryVerifyFlags =
+    standardScriptVerifyFlags
+      .filterNot(mandatoryScriptVerifyFlags.contains)
 
   def standardFlags = standardScriptVerifyFlags
 

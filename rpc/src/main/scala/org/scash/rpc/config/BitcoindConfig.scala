@@ -7,32 +7,28 @@ import java.nio.file.Files
 
 import scala.util.Properties
 import java.nio.file.Paths
-import java.net.{InetSocketAddress, URI}
+import java.net.{ InetSocketAddress, URI }
 import java.nio.file.Path
 
 /**
-  * This class represents a parsed `bitcoin.conf` file. It
-  * respects the different ways of writing options in
-  * `bitcoin.conf`: Raw options, network-prefixed options
-  * and options within network sections. It also tries to
-  * conform to the way Bitcoin Core gives precedence to the
-  * different properties.
-  *
-  * Not all options are exposed from this class. We only
-  * expose those that are of relevance when making RPC
-  * requests.
-  *
-  * @see https://github.com/bitcoin/bitcoin/blob/master/doc/bitcoin-conf.md
-  */
-case class BitcoindConfig(
-    private[scash] val lines: Seq[String],
-    datadir: File)
-    extends BitcoinSLogger {
+ * This class represents a parsed `bitcoin.conf` file. It
+ * respects the different ways of writing options in
+ * `bitcoin.conf`: Raw options, network-prefixed options
+ * and options within network sections. It also tries to
+ * conform to the way Bitcoin Core gives precedence to the
+ * different properties.
+ *
+ * Not all options are exposed from this class. We only
+ * expose those that are of relevance when making RPC
+ * requests.
+ *
+ * @see https://github.com/bitcoin/bitcoin/blob/master/doc/bitcoin-conf.md
+ */
+case class BitcoindConfig(private[scash] val lines: Seq[String], datadir: File) extends BitcoinSLogger {
 
   //create datadir and config if it DNE on disk
   if (!datadir.exists()) {
-    logger.debug(
-      s"datadir=${datadir.getAbsolutePath} does not exist, creating now")
+    logger.debug(s"datadir=${datadir.getAbsolutePath} does not exist, creating now")
     datadir.mkdirs()
     BitcoindConfig.writeConfigToFile(this, datadir)
   }
@@ -41,15 +37,14 @@ case class BitcoindConfig(
 
   //create bitcoin.conf file in datadir if it does not exist
   if (!Files.exists(confFile)) {
-    logger.debug(
-      s"bitcoin.conf in datadir=${datadir.getAbsolutePath} does not exist, creating now")
+    logger.debug(s"bitcoin.conf in datadir=${datadir.getAbsolutePath} does not exist, creating now")
     BitcoindConfig.writeConfigToFile(this, datadir)
   }
 
   /**
-    * Converts the config back to a string that can be written
-    * to file, and passed to `bitcoind`
-    */
+   * Converts the config back to a string that can be written
+   * to file, and passed to `bitcoind`
+   */
   lazy val toWriteableString: String = lines.mkString("\n")
 
   /** The optional index of the first header section encountered */
@@ -83,17 +78,17 @@ case class BitcoindConfig(
   private lazy val ourNetworkString: String = networkString(network)
 
   /** Splits the provided lines into pairs of keys/values
-    * based on `=`, and then applies the provided
-    * `collect` function on those pairs
-    */
-  private def collectFrom(lines: Seq[String])(
-      collect: PartialFunction[(String, String), String]): Seq[String] = {
+   * based on `=`, and then applies the provided
+   * `collect` function on those pairs
+   */
+  private def collectFrom(lines: Seq[String])(collect: PartialFunction[(String, String), String]): Seq[String] = {
 
     val splittedPairs = {
       val splitLines = lines.map(
         _.split("=")
           .map(_.trim)
-          .toList)
+          .toList
+      )
 
       splitLines.collect {
         case h :: t :: _ => h -> t
@@ -104,11 +99,10 @@ case class BitcoindConfig(
   }
 
   /**
-    * Applies the given partial function to all key/value pairs
-    * found in this config
-    */
-  private val collectAllLines: PartialFunction[(String, String), String] => Seq[
-    String] = collectFrom(lines)(_)
+   * Applies the given partial function to all key/value pairs
+   * found in this config
+   */
+  private val collectAllLines: PartialFunction[(String, String), String] => Seq[String] = collectFrom(lines)(_)
 
   /** The blockchain network associated with this `bitcoind` config */
   lazy val network = {
@@ -121,8 +115,7 @@ case class BitcoindConfig(
 
     (networkOpt, networkStrOpt) match {
       case (None, Some(badStr)) =>
-        logger.warn(
-          s"'$badStr' is not a valid Bitcoin network! Defaulting to mainnet")
+        logger.warn(s"'$badStr' is not a valid Bitcoin network! Defaulting to mainnet")
       case _ =>
     }
 
@@ -130,19 +123,19 @@ case class BitcoindConfig(
   }
 
   /**
-    * First searches for option prefixed with network,
-    * then section with header
-    * and lastly just raw option
-    */
+   * First searches for option prefixed with network,
+   * then section with header
+   * and lastly just raw option
+   */
   private[config] def getValue(key: String): Option[String] =
     readPrefixOpt(key)
       .orElse(readSectionHeaderOpt(key))
       .orElse(readRawOpt(key))
 
   /** Searches the config for a key matching the provided
-    * string that's prefixed by the network we're currently
-    * on
-    */
+   * string that's prefixed by the network we're currently
+   * on
+   */
   private def readPrefixOpt(key: String): Option[String] = {
     val prefixedOptKey = s"$ourNetworkString.$key"
     val collect = firstHeaderSectionIndex match {
@@ -155,10 +148,10 @@ case class BitcoindConfig(
   }
 
   /**
-    * Searches the config for a key matching the provided
-    * string that's under a section header matching the
-    * network we're on.
-    */
+   * Searches the config for a key matching the provided
+   * string that's under a section header matching the
+   * network we're on.
+   */
   private def readSectionHeaderOpt(key: String): Option[String] = {
     val startIndexOpt = lines.indexOf(s"[$ourNetworkString]") match {
       case -1 =>
@@ -172,21 +165,19 @@ case class BitcoindConfig(
         // we're looking for the first section _after_ the
         // section for our current network
         val toSearchIn = lines.zipWithIndex.drop(startIndex)
-        toSearchIn
-          .find {
-            case (line, _) =>
-              otherNetworks.exists(net => s"[$net]" == line)
-          }
-          .map {
-            case (_, index) => index
-          }
-          // we got to the end without finding a new section header,
-          // that means we can search to the bottom
+        toSearchIn.find {
+          case (line, _) =>
+            otherNetworks.exists(net => s"[$net]" == line)
+        }.map {
+          case (_, index) => index
+        }
+        // we got to the end without finding a new section header,
+        // that means we can search to the bottom
           .getOrElse(lines.length)
       }
       result <- {
         val linesToSearchIn = lines.slice(startIndex, endIndex)
-        val collect = collectFrom(linesToSearchIn)(_)
+        val collect         = collectFrom(linesToSearchIn)(_)
         collect {
           case (`key`, value) => value
         }.headOption
@@ -195,13 +186,13 @@ case class BitcoindConfig(
   }
 
   /**
-    * Searches the config for a key matchinng the provided
-    * string that's _not_ in a section header or prefixed
-    * by a network.
-    */
+   * Searches the config for a key matchinng the provided
+   * string that's _not_ in a section header or prefixed
+   * by a network.
+   */
   private def readRawOpt(key: String): Option[String] = {
     val linesToSearchIn = lines.takeWhile(!_.startsWith("["))
-    val collect = collectFrom(linesToSearchIn)(_)
+    val collect         = collectFrom(linesToSearchIn)(_)
     collect {
       case (`key`, value) => value
     }.headOption
@@ -251,41 +242,36 @@ case class BitcoindConfig(
 
   /** Creates a new config with the given keys and values appended */
   def withOption(key: String, value: String): BitcoindConfig = {
-    val ourLines = this.lines
-    val newLine = s"$key=$value"
-    val lines = newLine +: ourLines
+    val ourLines  = this.lines
+    val newLine   = s"$key=$value"
+    val lines     = newLine +: ourLines
     val newConfig = BitcoindConfig(lines, datadir)
-    logger.debug(
-      s"Appending new config with $key=$value to datadir=${datadir.getAbsolutePath}")
+    logger.debug(s"Appending new config with $key=$value to datadir=${datadir.getAbsolutePath}")
     BitcoindConfig.writeConfigToFile(newConfig, datadir)
 
     newConfig
   }
 
   /** Creates a new config with the given key and values,
-    * with the given network prefixed to the key
-    *
-    * Old config:
-    * {{{
-    * rpcport=4000
-    * }}}
-    *
-    * New config:
-    * {{{
-    * withOption("rpcport", "2000", MainNet) =
-    * main.rpcport=2000
-    * rpcport=4000
-    * }}}
-    */
-  def withOption(
-      key: String,
-      value: String,
-      network: NetworkParameters): BitcoindConfig =
+   * with the given network prefixed to the key
+   *
+   * Old config:
+   * {{{
+   * rpcport=4000
+   * }}}
+   *
+   * New config:
+   * {{{
+   * withOption("rpcport", "2000", MainNet) =
+   * main.rpcport=2000
+   * rpcport=4000
+   * }}}
+   */
+  def withOption(key: String, value: String, network: NetworkParameters): BitcoindConfig =
     withOption(key = s"${networkString(network)}.$key", value = value)
 
-  def withDatadir(newDatadir: File): BitcoindConfig = {
+  def withDatadir(newDatadir: File): BitcoindConfig =
     BitcoindConfig(lines, newDatadir)
-  }
 
 }
 
@@ -295,9 +281,9 @@ object BitcoindConfig extends BitcoinSLogger {
   lazy val empty: BitcoindConfig = BitcoindConfig("", DEFAULT_DATADIR)
 
   /**
-    * Constructs a `bitcoind` config from the given string,
-    * by splitting it on newlines
-    */
+   * Constructs a `bitcoind` config from the given string,
+   * by splitting it on newlines
+   */
   def apply(config: String, datadir: File): BitcoindConfig =
     apply(config.split("\n").toList, datadir)
 
@@ -319,34 +305,25 @@ object BitcoindConfig extends BitcoinSLogger {
   }
 
   /**
-    * If there is a `bitcoin.conf` in the default
-    * data directory, this is read. Otherwise, the
-    * default configuration is returned.
-    */
-  def fromDefaultDatadir: BitcoindConfig = {
+   * If there is a `bitcoin.conf` in the default
+   * data directory, this is read. Otherwise, the
+   * default configuration is returned.
+   */
+  def fromDefaultDatadir: BitcoindConfig =
     if (DEFAULT_CONF_FILE.isFile()) {
       apply(DEFAULT_CONF_FILE)
     } else {
       BitcoindConfig.empty
     }
-  }
 
   /**
-    * @see https://en.bitcoin.it/wiki/Data_directory
-    */
+   * @see https://en.bitcoin.it/wiki/Data_directory
+   */
   val DEFAULT_DATADIR: File = {
     val path = if (Properties.isMac) {
-      Paths.get(Properties.userHome,
-                "Library",
-                "Application Support",
-                "Bitcoin")
+      Paths.get(Properties.userHome, "Library", "Application Support", "Bitcoin")
     } else if (Properties.isWin) {
-      Paths.get("C:",
-                "Users",
-                Properties.userName,
-                "Appdata",
-                "Roaming",
-                "Bitcoin")
+      Paths.get("C:", "Users", Properties.userName, "Appdata", "Roaming", "Bitcoin")
     } else {
       Paths.get(Properties.userHome, ".bitcoin")
     }
@@ -360,9 +337,9 @@ object BitcoindConfig extends BitcoinSLogger {
     .toFile
 
   /**
-    * Writes the config to the data directory within it, if it doesn't
-    * exist. Returns the written file.
-    */
+   * Writes the config to the data directory within it, if it doesn't
+   * exist. Returns the written file.
+   */
   def writeConfigToFile(config: BitcoindConfig, datadir: File): Path = {
 
     val confStr = config.lines.mkString("\n")
@@ -371,8 +348,7 @@ object BitcoindConfig extends BitcoinSLogger {
     val confFile = datadir.toPath.resolve("bitcoin.conf")
 
     if (datadir == DEFAULT_DATADIR && confFile == DEFAULT_CONF_FILE.toPath) {
-      logger.warn(
-        s"We will not overrwrite the existing bitcoin.conf in default datadir")
+      logger.warn(s"We will not overrwrite the existing bitcoin.conf in default datadir")
     } else {
       Files.write(confFile, confStr.getBytes)
     }

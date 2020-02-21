@@ -11,24 +11,23 @@ import play.api.libs.json._
 import scala.concurrent.Future
 
 /**
-  * RPC calls related to administration of a given node
-  */
+ * RPC calls related to administration of a given node
+ */
 trait NodeRpc { self: Client =>
 
-  def abortRescan(): Future[Unit] = {
+  def abortRescan(): Future[Unit] =
     bitcoindCall[Unit]("abortrescan")
-  }
 
   private def logging(
-      include: Option[Vector[String]],
-      exclude: Option[Vector[String]]): Future[Map[String, Boolean]] = {
-    val params = List(Json.toJson(include.getOrElse(Vector.empty)),
-                      Json.toJson(exclude.getOrElse(Vector.empty)))
+    include: Option[Vector[String]],
+    exclude: Option[Vector[String]]
+  ): Future[Map[String, Boolean]] = {
+    val params = List(Json.toJson(include.getOrElse(Vector.empty)), Json.toJson(exclude.getOrElse(Vector.empty)))
 
     /**
-      * Bitcoin Core v0.16 returns a map of 1/0s,
-      * v0.17 returns proper booleans
-      */
+     * Bitcoin Core v0.16 returns a map of 1/0s,
+     * v0.17 returns proper booleans
+     */
     object IntOrBoolReads extends Reads[Boolean] {
       override def reads(json: JsValue): JsResult[Boolean] =
         json
@@ -54,22 +53,20 @@ trait NodeRpc { self: Client =>
   def logging: Future[Map[String, Boolean]] = logging(None, None)
 
   def logging(
-      include: Vector[String] = Vector.empty,
-      exclude: Vector[String] = Vector.empty): Future[Map[String, Boolean]] = {
+    include: Vector[String] = Vector.empty,
+    exclude: Vector[String] = Vector.empty
+  ): Future[Map[String, Boolean]] = {
     val inc = if (include.nonEmpty) Some(include) else None
     val exc = if (exclude.nonEmpty) Some(exclude) else None
     logging(inc, exc)
   }
 
-  def uptime: Future[UInt32] = {
+  def uptime: Future[UInt32] =
     bitcoindCall[UInt32]("uptime")
-  }
 
-  def getMemoryInfo: Future[GetMemoryInfoResult] = {
+  def getMemoryInfo: Future[GetMemoryInfoResult] =
     bitcoindCall[GetMemoryInfoResult]("getmemoryinfo")
-  }
 
-  def help(rpcName: String = ""): Future[String] = {
+  def help(rpcName: String = ""): Future[String] =
     bitcoindCall[String]("help", List(JsString(rpcName)))
-  }
 }

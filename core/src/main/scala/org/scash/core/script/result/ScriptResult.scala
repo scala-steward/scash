@@ -235,6 +235,7 @@ case object ScriptErrorDivByZero extends ScriptError {
 case object ScriptErrorModByZero extends ScriptError {
   override def description: String = "MOD_BY_ZERO"
 }
+
 /**
  * Factory companion object for creating ScriptError objects
  */
@@ -281,7 +282,8 @@ object ScriptResult {
     ScriptErrorIllegalForkId,
     ScriptErrorMustUseForkId,
     ScriptErrorDivByZero,
-    ScriptErrorModByZero)
+    ScriptErrorModByZero
+  )
 
   val resultsMap: Map[String, ScriptResult] = results.map(s => (s.description, s)).toMap
 

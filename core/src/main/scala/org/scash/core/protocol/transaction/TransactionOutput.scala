@@ -22,7 +22,7 @@ sealed abstract class TransactionOutput extends NetworkElement {
 }
 
 case object EmptyTransactionOutput extends TransactionOutput {
-  override def value = CurrencyUnits.negativeSatoshi
+  override def value        = CurrencyUnits.negativeSatoshi
   override def scriptPubKey = ScriptPubKey.empty
 }
 
@@ -31,7 +31,6 @@ object TransactionOutput extends Factory[TransactionOutput] {
 
   def fromBytes(bytes: ByteVector): TransactionOutput = RawTransactionOutputParser.read(bytes)
 
-  def apply(currencyUnit: CurrencyUnit, scriptPubKey: ScriptPubKey): TransactionOutput = {
+  def apply(currencyUnit: CurrencyUnit, scriptPubKey: ScriptPubKey): TransactionOutput =
     TransactionOutputImpl(currencyUnit, scriptPubKey)
-  }
 }

@@ -1,15 +1,15 @@
 package org.scash.core.crypto
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018-2019 The SCash Developers (MIT License)
  */
-
 import org.scash.core.script
-import org.scash.core.script.crypto.{HashType, SigHashType}
+import org.scash.core.script.crypto.{ HashType, SigHashType }
 import org.scash.core.script.flag._
 import org.scash.core.script.result._
 import org.scash.core.util.BitcoinSLogger
-import scalaz.{\/, \/-}
+import scalaz.{ \/, \/- }
 import scodec.bits.ByteVector
 
 object SigEncoding {
@@ -125,57 +125,55 @@ object SigEncoding {
   }
 
   /**
-    * Test whether the tx element is a valid signature schnorr signature
-    * Requires [[ScriptEnableSchnorr]]
-    * or ECDSA signature basedon the encoding, S value, and sighash type.
-    * Requires
-    * [[ScriptVerifyDerSig]] | [[ScriptVerifyLowS]] | [[ScriptVerifyStrictEnc]],
-    * [[ScriptVerifyLowS &&  [[ScriptVerifyStrictEnc]]
-    * to be enabled respectively. Note that this will allow zero-length signatures.
-    *
-    */
+   * Test whether the tx element is a valid signature schnorr signature
+   * Requires [[ScriptEnableSchnorr]]
+   * or ECDSA signature basedon the encoding, S value, and sighash type.
+   * Requires
+   * [[ScriptVerifyDerSig]] | [[ScriptVerifyLowS]] | [[ScriptVerifyStrictEnc]],
+   * [[ScriptVerifyLowS &&  [[ScriptVerifyStrictEnc]]
+   * to be enabled respectively. Note that this will allow zero-length signatures.
+   *
+   */
   def checkRawSigEncoding(
     sig: => ByteVector,
     flags: Seq[ScriptFlag]
   ): ScriptError \/ ByteVector =
     if (flags.contains(ScriptEnableSchnorr) && sig.size == 64) \/-(sig)
-    else for {
-      _ <- script.checkFlags(flags)(
-        List(ScriptVerifyDerSig, ScriptVerifyLowS, ScriptVerifyStrictEnc),
-        ScriptErrorSigDer,
-        !isValidSignatureEncoding(sig))
-      _ <- script.checkFlag(flags)(ScriptVerifyLowS, ScriptErrorSigHighS, !DERSignatureUtil.isLowS(sig))
-    } yield sig
+    else
+      for {
+        _ <- script.checkFlags(flags)(
+              List(ScriptVerifyDerSig, ScriptVerifyLowS, ScriptVerifyStrictEnc),
+              ScriptErrorSigDer,
+              !isValidSignatureEncoding(sig)
+            )
+        _ <- script.checkFlag(flags)(ScriptVerifyLowS, ScriptErrorSigHighS, !DERSignatureUtil.isLowS(sig))
+      } yield sig
 
   def checkSigHashEncoding(
     sig: ByteVector,
     flags: Seq[ScriptFlag]
-  ): ScriptError \/ Boolean = {
+  ): ScriptError \/ Boolean =
     if (ScriptFlagUtil.requireStrictEncoding(flags)) {
       val f = script.to(true) _
       for {
-        _ <- f(ScriptErrorSigHashType, !(SigHashType.isDefined(sig)))
-        useForkId = SigHashType.fromByte(sig.last).has(HashType.FORKID)
+        _             <- f(ScriptErrorSigHashType, !(SigHashType.isDefined(sig)))
+        useForkId     = SigHashType.fromByte(sig.last).has(HashType.FORKID)
         forkIdEnabled = ScriptFlagUtil.sighashForkIdEnabled(flags)
-        _ <- f(ScriptErrorIllegalForkId, !forkIdEnabled && useForkId)
-        _ <- f(ScriptErrorMustUseForkId, forkIdEnabled && !useForkId)
+        _             <- f(ScriptErrorIllegalForkId, !forkIdEnabled && useForkId)
+        _             <- f(ScriptErrorMustUseForkId, forkIdEnabled && !useForkId)
       } yield true
     } else \/-(true)
-  }
 
-  def checkTxSigEncoding(
-    sig: => ByteVector,
-    flags: Seq[ScriptFlag]): ScriptError \/ ByteVector =
+  def checkTxSigEncoding(sig: => ByteVector, flags: Seq[ScriptFlag]): ScriptError \/ ByteVector =
     //allow empty sigs
     if (sig.isEmpty) \/-(sig)
-    else for {
-      _ <- checkRawSigEncoding(sig.init, flags)
-      _ <- checkSigHashEncoding(sig, flags)
-    } yield sig
+    else
+      for {
+        _ <- checkRawSigEncoding(sig.init, flags)
+        _ <- checkSigHashEncoding(sig, flags)
+      } yield sig
 
-  def checkDataSigEncoding(
-    sig: => ByteVector,
-    flags: Seq[ScriptFlag]): ScriptError \/ ByteVector =
+  def checkDataSigEncoding(sig: => ByteVector, flags: Seq[ScriptFlag]): ScriptError \/ ByteVector =
     // Empty signature. Not strictly DER encoded, but allowed to provide a
     // compact way to provide an invalid signature for use with CHECK(MULTI)SIG
     if (sig.isEmpty) \/-(sig)
@@ -185,9 +183,7 @@ object SigEncoding {
    * Determines if the given pubkey is valid in accordance to the given [[ScriptFlag]].
    * [[https://github.com/Bitcoin-ABC/bitcoin-abc/blob/058a6c027b5d4749b4fa23a0ac918e5fc04320e8/src/script/sigencoding.cpp#L245]]
    */
-  def checkPubKeyEncoding(
-    pubKey: => ECPublicKey,
-    flags: Seq[ScriptFlag]): ScriptError \/ ECPublicKey = {
+  def checkPubKeyEncoding(pubKey: => ECPublicKey, flags: Seq[ScriptFlag]): ScriptError \/ ECPublicKey = {
     val f = script.checkFlag(flags) _
     for {
       _ <- f(ScriptVerifyStrictEnc, ScriptErrorPubKeyType, !isKeyEncoding(pubKey))

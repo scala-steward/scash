@@ -42,12 +42,14 @@ object TxSigComponent {
     transaction: Transaction,
     inputIndex: UInt32,
     output: TransactionOutput,
-    flags: Seq[ScriptFlag]) extends TxSigComponent
+    flags: Seq[ScriptFlag]
+  ) extends TxSigComponent
 
   def apply(
     transaction: Transaction,
     inputIndex: UInt32,
     output: TransactionOutput,
-    flags: Seq[ScriptFlag]): TxSigComponent = TxSigComponentImpl(transaction, inputIndex, output, flags)
+    flags: Seq[ScriptFlag]
+  ): TxSigComponent = TxSigComponentImpl(transaction, inputIndex, output, flags)
 
 }

@@ -1,4 +1,5 @@
 package org.scash.core.crypto
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018-2019 The SCash Developers (MIT License)
@@ -6,13 +7,13 @@ package org.scash.core.crypto
  */
 import org.scash.core.script.constant.ScriptToken
 import org.scash.core.script.crypto._
-import org.scash.core.script.flag.{ScriptEnableSchnorr, ScriptFlag, ScriptVerifyNullFail}
-import org.scash.core.util.{BitcoinSLogger, BitcoinScriptUtil}
+import org.scash.core.script.flag.{ ScriptEnableSchnorr, ScriptFlag, ScriptVerifyNullFail }
+import org.scash.core.util.{ BitcoinSLogger, BitcoinScriptUtil }
 import org.scash.core.script
 import org.scash.core.protocol.script.ScriptPubKey
 import org.scash.core.protocol.transaction.TransactionOutput
-import org.scash.core.script.result.{ScriptError, ScriptErrorInvalidStackOperation, ScriptErrorSigNullFail}
-import scalaz.{-\/, \/, \/-}
+import org.scash.core.script.result.{ ScriptError, ScriptErrorInvalidStackOperation, ScriptErrorSigNullFail }
+import scalaz.{ -\/, \/, \/- }
 import scodec.bits.ByteVector
 
 import scala.annotation.tailrec
@@ -40,17 +41,20 @@ trait TxSigCheck extends BitcoinSLogger {
     nonSepScript: Seq[ScriptToken],
     pubKey: ECPublicKey,
     sig: ByteVector,
-    flags: Seq[ScriptFlag]): ScriptError \/ Boolean = {
+    flags: Seq[ScriptFlag]
+  ): ScriptError \/ Boolean = {
     val sigsRemovedScript = BitcoinScriptUtil.calculateScriptForChecking(txSig, sig, nonSepScript)
-    val hashTypeByte = sig.lastOption.getOrElse(0x00.toByte)
-    val hashType = SigHashType.fromByte(hashTypeByte)
-    val spk = ScriptPubKey.fromAsm(sigsRemovedScript)
-    val txSComp = TxSigComponent(txSig.transaction, txSig.inputIndex, TransactionOutput(txSig.output.value, spk), txSig.flags)
+    val hashTypeByte      = sig.lastOption.getOrElse(0x00.toByte)
+    val hashType          = SigHashType.fromByte(hashTypeByte)
+    val spk               = ScriptPubKey.fromAsm(sigsRemovedScript)
+    val txSComp =
+      TxSigComponent(txSig.transaction, txSig.inputIndex, TransactionOutput(txSig.output.value, spk), txSig.flags)
     val hashForSignature = TransactionSignatureSerializer.hashForSignature(txSComp, hashType)
-    val sigSansHashType = sig.init
-    val success = verifySig(sigSansHashType, pubKey, hashForSignature, flags)
+    val sigSansHashType  = sig.init
+    val success          = verifySig(sigSansHashType, pubKey, hashForSignature, flags)
 
-    script.checkFlag(flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !success && sig.nonEmpty)
+    script
+      .checkFlag(flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !success && sig.nonEmpty)
       .map(_ => success)
   }
 
@@ -79,35 +83,40 @@ trait TxSigCheck extends BitcoinSLogger {
     sigs: List[ECDigitalSignature],
     pubKeys: List[ECPublicKey],
     flags: Seq[ScriptFlag],
-    requiredSigs: Long): ScriptError \/ Boolean = {
+    requiredSigs: Long
+  ): ScriptError \/ Boolean = {
     @tailrec
-    def go(ss: List[ECDigitalSignature], pks: List[ECPublicKey], reqSigs: Long): ScriptError \/ Boolean = (ss, pks) match {
-      case (s, p) if (s.length > p.length) =>
-        logger.info("We have more sigs than we have public keys remaining")
-        nullFailCheck(sigs, flags, false)
-      case (s, _) if (reqSigs > s.length) =>
-        logger.info("We do not have enough sigs to meet the threshold of requireSigs in the multiSignatureScriptPubKey")
-        val err = nullFailCheck(ss, flags, false)
-        if (err.isRight) -\/(ScriptErrorInvalidStackOperation) else err
-      case (sig :: sigsT, pubKey :: pubKeysT) =>
-        if (flags.contains(ScriptEnableSchnorr) && sig.bytes.size == 64) {
-          logger.info("Schnorr signatures are not allowed in multisig at the moment")
-          \/-(false)
-        } else (for {
-          _ <- SigEncoding.checkTxSigEncoding(sig.bytes, flags)
-          _ <- SigEncoding.checkPubKeyEncoding(pubKey, flags)
-          b <- checkSig(txSig, nonSepScript, pubKey, sig.bytes, flags)
-        } yield b) match {
-          case \/-(true) => go(sigsT, pubKeysT, reqSigs - 1)
-          //checkSig may return a negative result, but we need to continue evaluating the signatures
-          //in the multisig script, we don't check for nullfail until evaluation the OP_CHECKMULTSIG is completely done
-          case \/-(false) | -\/(ScriptErrorSigNullFail) => go(ss, pubKeysT, reqSigs)
-          case s => s
-        }
-      //means that we have checked all of the sigs against the pubkeys
-      case (Nil, _) => \/-(true)
-      case _ => nullFailCheck(sigs, flags, false)
-    }
+    def go(ss: List[ECDigitalSignature], pks: List[ECPublicKey], reqSigs: Long): ScriptError \/ Boolean =
+      (ss, pks) match {
+        case (s, p) if (s.length > p.length) =>
+          logger.info("We have more sigs than we have public keys remaining")
+          nullFailCheck(sigs, flags, false)
+        case (s, _) if (reqSigs > s.length) =>
+          logger.info(
+            "We do not have enough sigs to meet the threshold of requireSigs in the multiSignatureScriptPubKey"
+          )
+          val err = nullFailCheck(ss, flags, false)
+          if (err.isRight) -\/(ScriptErrorInvalidStackOperation) else err
+        case (sig :: sigsT, pubKey :: pubKeysT) =>
+          if (flags.contains(ScriptEnableSchnorr) && sig.bytes.size == 64) {
+            logger.info("Schnorr signatures are not allowed in multisig at the moment")
+            \/-(false)
+          } else
+            (for {
+              _ <- SigEncoding.checkTxSigEncoding(sig.bytes, flags)
+              _ <- SigEncoding.checkPubKeyEncoding(pubKey, flags)
+              b <- checkSig(txSig, nonSepScript, pubKey, sig.bytes, flags)
+            } yield b) match {
+              case \/-(true) => go(sigsT, pubKeysT, reqSigs - 1)
+              //checkSig may return a negative result, but we need to continue evaluating the signatures
+              //in the multisig script, we don't check for nullfail until evaluation the OP_CHECKMULTSIG is completely done
+              case \/-(false) | -\/(ScriptErrorSigNullFail) => go(ss, pubKeysT, reqSigs)
+              case s                                        => s
+            }
+        //means that we have checked all of the sigs against the pubkeys
+        case (Nil, _) => \/-(true)
+        case _        => nullFailCheck(sigs, flags, false)
+      }
     go(sigs, pubKeys, requiredSigs)
   }
 
@@ -115,10 +124,14 @@ trait TxSigCheck extends BitcoinSLogger {
    * If the NULLFAIL flag is set as defined in BIP146, it checks to make sure all failed signatures were an empty byte vector
    * [[https://github.com/bitcoin/bips/blob/master/bip-0146.mediawiki#NULLFAIL]]
    */
-  private def nullFailCheck(sigs: List[ECDigitalSignature], flags: Seq[ScriptFlag], isValid: Boolean): ScriptError \/ Boolean =
-    script.checkFlag(flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !isValid && sigs.exists(_.bytes.nonEmpty))
+  private def nullFailCheck(
+    sigs: List[ECDigitalSignature],
+    flags: Seq[ScriptFlag],
+    isValid: Boolean
+  ): ScriptError \/ Boolean =
+    script
+      .checkFlag(flags)(ScriptVerifyNullFail, ScriptErrorSigNullFail, !isValid && sigs.exists(_.bytes.nonEmpty))
       .map(_ => isValid)
 }
 
 object TxSigCheck extends TxSigCheck
-

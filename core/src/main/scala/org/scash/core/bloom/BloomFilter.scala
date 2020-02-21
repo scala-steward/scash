@@ -45,7 +45,7 @@ sealed abstract class BloomFilter extends NetworkElement {
     //these are the bit indexes that need to be set inside of data
     val bitIndexes = (0 until hashFuncs.toInt).map(i => murmurHash(i, bytes))
     @tailrec
-    def loop(remainingBitIndexes: Seq[Int], accum: ByteVector): ByteVector = {
+    def loop(remainingBitIndexes: Seq[Int], accum: ByteVector): ByteVector =
       if (remainingBitIndexes.isEmpty) accum
       else {
         val currentIndex = remainingBitIndexes.head
@@ -53,14 +53,13 @@ sealed abstract class BloomFilter extends NetworkElement {
         //the bit inside of.
         val byteIndex = currentIndex >>> 3
         //we need to calculate the bitIndex we need to set inside of our byte
-        val bitIndex = (1 << (7 & currentIndex)).toByte
-        val byte = accum(byteIndex)
+        val bitIndex         = (1 << (7 & currentIndex)).toByte
+        val byte             = accum(byteIndex)
         val setBitByte: Byte = (byte | bitIndex).toByte
         //replace old byte with new byte with bit set
         val newAccum: ByteVector = accum.update(byteIndex, setBitByte)
         loop(remainingBitIndexes.tail, newAccum)
       }
-    }
     val newData = loop(bitIndexes, data)
     BloomFilter(filterSize, newData, hashFuncs, tweak, flags)
   }
@@ -81,18 +80,17 @@ sealed abstract class BloomFilter extends NetworkElement {
   def contains(bytes: ByteVector): Boolean = {
     val bitIndexes = (0 until hashFuncs.toInt).map(i => murmurHash(i, bytes))
     @tailrec
-    def loop(remainingBitIndexes: Seq[Int], accum: BitVector): Boolean = {
+    def loop(remainingBitIndexes: Seq[Int], accum: BitVector): Boolean =
       if (remainingBitIndexes.isEmpty) {
         !accum.toIndexedSeq.exists(_ == false)
       } else {
         val currentIndex = remainingBitIndexes.head
-        val byteIndex = currentIndex >>> 3
-        val bitIndex = (1 << (7 & currentIndex)).toByte
-        val byte = data(byteIndex)
-        val isBitSet = (byte & bitIndex) != 0
+        val byteIndex    = currentIndex >>> 3
+        val bitIndex     = (1 << (7 & currentIndex)).toByte
+        val byte         = data(byteIndex)
+        val isBitSet     = (byte & bitIndex) != 0
         loop(remainingBitIndexes.tail, isBitSet +: accum)
       }
-    }
     loop(bitIndexes, BitVector.empty)
   }
 
@@ -139,7 +137,7 @@ sealed abstract class BloomFilter extends NetworkElement {
     }
 
     constantsOutput.nonEmpty || constantsInput.nonEmpty ||
-      containsOutPoint.nonEmpty || contains(transaction.txId)
+    containsOutPoint.nonEmpty || contains(transaction.txId)
   }
 
   /**
@@ -160,17 +158,18 @@ sealed abstract class BloomFilter extends NetworkElement {
       }
 
       logger.debug("Inserting outPoints: " + outPoints)
-      val outPointsBytes = outPoints.map(_.bytes)
+      val outPointsBytes      = outPoints.map(_.bytes)
       val filterWithOutPoints = insertByteVectors(outPointsBytes)
       //add txid
       val filterWithTxIdAndOutPoints = filterWithOutPoints.insert(transaction.txId)
       filterWithTxIdAndOutPoints
     case BloomUpdateNone =>
-      logger.debug("You are attempting to update a bloom filter when the flag is set to BloomUpdateNone, " +
-        "no information will be added to the bloom filter, specifically this transaction: " + transaction)
+      logger.debug(
+        "You are attempting to update a bloom filter when the flag is set to BloomUpdateNone, " +
+          "no information will be added to the bloom filter, specifically this transaction: " + transaction
+      )
       this
     case BloomUpdateP2PKOnly =>
-
       //update the filter with the outpoint if the filter matches any of the constants in a p2pkh or multisig script pubkey
       val scriptPubKeysWithIndex = transaction.outputs.map(_.scriptPubKey).zipWithIndex
       updateP2PKOnly(scriptPubKeysWithIndex, transaction.txId)
@@ -184,14 +183,15 @@ sealed abstract class BloomFilter extends NetworkElement {
    */
   def updateP2PKOnly(scriptPubKeysWithIndex: Seq[(ScriptPubKey, Int)], txId: DoubleSha256Digest): BloomFilter = {
     @tailrec
-    def loop(constantsWithIndex: Seq[(ScriptToken, Int)], accumFilter: BloomFilter): BloomFilter = constantsWithIndex match {
-      case h :: t if (accumFilter.contains(h._1.bytes)) =>
-        logger.debug("Found constant in bloom filter: " + h._1.hex)
-        val filter = accumFilter.insert(TransactionOutPoint(txId, UInt32(h._2)))
-        loop(t, filter)
-      case _ :: t => loop(t, accumFilter)
-      case Nil => accumFilter
-    }
+    def loop(constantsWithIndex: Seq[(ScriptToken, Int)], accumFilter: BloomFilter): BloomFilter =
+      constantsWithIndex match {
+        case h :: t if (accumFilter.contains(h._1.bytes)) =>
+          logger.debug("Found constant in bloom filter: " + h._1.hex)
+          val filter = accumFilter.insert(TransactionOutPoint(txId, UInt32(h._2)))
+          loop(t, filter)
+        case _ :: t => loop(t, accumFilter)
+        case Nil    => accumFilter
+      }
     val p2pkOrMultiSigScriptPubKeys = scriptPubKeysWithIndex.filter {
       case (s, _) => s.isInstanceOf[P2PKScriptPubKey] || s.isInstanceOf[MultiSignatureScriptPubKey]
     }
@@ -213,10 +213,10 @@ sealed abstract class BloomFilter extends NetworkElement {
   private def murmurHash(hashNum: Int, bytes: ByteVector): Int = {
     //TODO: The call of .toInt is probably the source of a bug here, need to come back and look at this
     //since this isn't consensus critical though I'm leaving this for now
-    val seed = (hashNum * murmurConstant.toLong + tweak.toLong).toInt
+    val seed       = (hashNum * murmurConstant.toLong + tweak.toLong).toInt
     val murmurHash = MurmurHash3.bytesHash(bytes.toArray, seed)
-    val uint32 = UInt32(BitcoinSUtil.encodeHex(murmurHash))
-    val modded = uint32.toLong % (filterSize.num.toInt * 8)
+    val uint32     = UInt32(BitcoinSUtil.encodeHex(murmurHash))
+    val modded     = uint32.toLong % (filterSize.num.toInt * 8)
     modded.toInt
   }
 
@@ -229,10 +229,9 @@ sealed abstract class BloomFilter extends NetworkElement {
   /** Adds a sequence of byte vectors to our bloom filter then returns that new filter*/
   def insertByteVectors(bytes: Seq[ByteVector]): BloomFilter = {
     @tailrec
-    def loop(remainingByteVectors: Seq[ByteVector], accumBloomFilter: BloomFilter): BloomFilter = {
+    def loop(remainingByteVectors: Seq[ByteVector], accumBloomFilter: BloomFilter): BloomFilter =
       if (remainingByteVectors.isEmpty) accumBloomFilter
       else loop(remainingByteVectors.tail, accumBloomFilter.insert(remainingByteVectors.head))
-    }
     loop(bytes, this)
   }
 
@@ -241,8 +240,14 @@ sealed abstract class BloomFilter extends NetworkElement {
 
 object BloomFilter extends Factory[BloomFilter] {
 
-  private case class BloomFilterImpl(filterSize: CompactSizeUInt, data: ByteVector, hashFuncs: UInt32,
-    tweak: UInt32, flags: BloomFlag) extends BloomFilter
+  private case class BloomFilterImpl(
+    filterSize: CompactSizeUInt,
+    data: ByteVector,
+    hashFuncs: UInt32,
+    tweak: UInt32,
+    flags: BloomFlag
+  ) extends BloomFilter
+
   /** Max bloom filter size as per [[https://bitcoin.org/en/developer-reference#filterload]] */
   val maxSize = UInt32(36000)
 
@@ -272,9 +277,14 @@ object BloomFilter extends Factory[BloomFilter] {
     BloomFilter(CompactSizeUInt(UInt64(actualFilterSize)), emptyByteArray, UInt32(actualHashFuncs), tweak, flags)
   }
 
-  def apply(filterSize: CompactSizeUInt, data: ByteVector, hashFuncs: UInt32, tweak: UInt32, flags: BloomFlag): BloomFilter = {
+  def apply(
+    filterSize: CompactSizeUInt,
+    data: ByteVector,
+    hashFuncs: UInt32,
+    tweak: UInt32,
+    flags: BloomFlag
+  ): BloomFilter =
     BloomFilterImpl(filterSize, data, hashFuncs, tweak, flags)
-  }
 
   override def fromBytes(bytes: ByteVector): BloomFilter = RawBloomFilterSerializer.read(bytes)
 

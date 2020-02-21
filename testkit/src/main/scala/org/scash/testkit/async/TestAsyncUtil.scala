@@ -1,27 +1,21 @@
 package org.scash.testkit.async
 
 import akka.actor.ActorSystem
-import org.scalatest.exceptions.{StackDepthException, TestFailedException}
+import org.scalatest.exceptions.{ StackDepthException, TestFailedException }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.FiniteDuration
 
-abstract class TestAsyncUtil
-  extends org.scash.rpc.util.AsyncUtil
-    with Serializable {
+abstract class TestAsyncUtil extends org.scash.rpc.util.AsyncUtil with Serializable {
   override protected def retryUntilSatisfiedWithCounter(
     conditionF: () => Future[Boolean],
     duration: FiniteDuration,
     counter: Int,
     maxTries: Int,
-    stackTrace: Array[StackTraceElement])(
-    implicit system: ActorSystem): Future[Unit] = {
+    stackTrace: Array[StackTraceElement]
+  )(implicit system: ActorSystem): Future[Unit] = {
     val retryF = super
-      .retryUntilSatisfiedWithCounter(conditionF,
-                                      duration,
-                                      counter,
-                                      maxTries,
-                                      stackTrace)
+      .retryUntilSatisfiedWithCounter(conditionF, duration, counter, maxTries, stackTrace)
 
     TestAsyncUtil.transformRetryToTestFailure(retryF)(system.dispatcher)
   }
@@ -36,19 +30,18 @@ object TestAsyncUtil extends TestAsyncUtil {
    * Additionally, we want to transform RpcRetryExceptions to TestFailedExceptions which
    * conveniently mention the line that called the TestAsyncUtil method.
    */
-  def transformRetryToTestFailure[T](fut: Future[T])(
-    implicit ec: ExecutionContext): Future[T] = {
-    def transformRetry(err: Throwable): Throwable = {
+  def transformRetryToTestFailure[T](fut: Future[T])(implicit ec: ExecutionContext): Future[T] = {
+    def transformRetry(err: Throwable): Throwable =
       if (err.isInstanceOf[RpcRetryException]) {
         val retryErr = err.asInstanceOf[RpcRetryException]
         val relevantStackTrace = retryErr.caller.tail
           .dropWhile(elem => retryErr.internalFiles.contains(elem.getFileName))
           .takeWhile(!_.getFileName.contains("TestSuite"))
         val stackElement = relevantStackTrace.head
-        val file = stackElement.getFileName
-        val path = stackElement.getClassName
-        val line = stackElement.getLineNumber
-        val pos = org.scalactic.source.Position(file, path, line)
+        val file         = stackElement.getFileName
+        val path         = stackElement.getClassName
+        val line         = stackElement.getLineNumber
+        val pos          = org.scalactic.source.Position(file, path, line)
         val newErr = new TestFailedException({ _: StackDepthException =>
           Some(retryErr.message)
         }, None, pos)
@@ -57,7 +50,6 @@ object TestAsyncUtil extends TestAsyncUtil {
       } else {
         err
       }
-    }
 
     fut.transform({ elem: T =>
       elem

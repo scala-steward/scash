@@ -44,4 +44,3 @@ object BloomFlag extends Factory[BloomFlag] {
 
   def fromBytes(bytes: ByteVector): BloomFlag = BloomFlag(bytes.head)
 }
-

@@ -12,4 +12,3 @@ object ChainCode extends Factory[ChainCode] {
 
   def fromBytes(bytes: ByteVector): ChainCode = ChainCodeImpl(bytes)
 }
-

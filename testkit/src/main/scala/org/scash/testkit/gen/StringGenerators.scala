@@ -48,10 +48,11 @@ trait StringGenerators {
     l.map(_.mkString)
   }
 
-  def genString: Gen[String] = for {
-    randomNum <- Gen.choose(0, 100)
-    randomString <- genString(randomNum)
-  } yield randomString
+  def genString: Gen[String] =
+    for {
+      randomNum    <- Gen.choose(0, 100)
+      randomString <- genString(randomNum)
+    } yield randomString
 
 }
 

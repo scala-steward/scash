@@ -13,7 +13,7 @@ abstract class AddressFactory[T] {
   /** Same as fromString, but throws the exception */
   def fromStringExn(str: String): T = fromString(str) match {
     case Success(addr) => addr
-    case Failure(exn) => throw exn
+    case Failure(exn)  => throw exn
   }
 
   /**

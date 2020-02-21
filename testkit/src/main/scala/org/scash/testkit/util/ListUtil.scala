@@ -20,12 +20,11 @@ object ListUtil {
    *    Vector(Vector(1, 2, 3), Vector(2, 3, 1), Vector(3, 1, 2))
    * }}}
    */
-  def rotateHead[T](xs: Vector[T]): Vector[Vector[T]] = {
+  def rotateHead[T](xs: Vector[T]): Vector[Vector[T]] =
     for {
       (x, idxX) <- xs.zipWithIndex
     } yield {
       val (firstHalf, secondHalf) = xs.splitAt(idxX)
       secondHalf ++ firstHalf
     }
-  }
 }

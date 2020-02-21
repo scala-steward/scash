@@ -7,12 +7,10 @@ import org.scash.core.p2p.MerkleBlockMessage
 import scodec.bits.ByteVector
 
 /**
-  * Responsible for serialization and deserialization of MerkleBlockMessages
-  * @see https://bitcoin.org/en/developer-reference#merkleblock
-  */
-trait RawMerkleBlockMessageSerializer
-    extends RawBitcoinSerializer[MerkleBlockMessage]
-    with BitcoinSLogger {
+ * Responsible for serialization and deserialization of MerkleBlockMessages
+ * @see https://bitcoin.org/en/developer-reference#merkleblock
+ */
+trait RawMerkleBlockMessageSerializer extends RawBitcoinSerializer[MerkleBlockMessage] with BitcoinSLogger {
 
   def read(bytes: ByteVector): MerkleBlockMessage = {
     val merkleBlock = MerkleBlock(bytes)

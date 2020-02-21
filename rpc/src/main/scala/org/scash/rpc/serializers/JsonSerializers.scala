@@ -1,26 +1,75 @@
 package org.scash.rpc.serializers
 
 import java.io.File
-import java.net.{InetAddress, URI}
+import java.net.{ InetAddress, URI }
 
 import org.scash.core.crypto._
-import org.scash.core.currency.{Bitcoins, Satoshis}
+import org.scash.core.currency.{ Bitcoins, Satoshis }
 import org.scash.core.hd.BIP32Path
-import org.scash.core.number.{Int32, UInt32, UInt64}
-import org.scash.core.protocol.blockchain.{Block, BlockHeader, MerkleBlock}
-import org.scash.core.protocol.script.{ScriptPubKey, ScriptSignature}
-import org.scash.core.protocol.transaction.{Transaction, TransactionInput, TransactionOutPoint}
-import org.scash.core.protocol.{Address, BitcoinAddress, P2PKHAddress, P2SHAddress}
+import org.scash.core.number.{ Int32, UInt32, UInt64 }
+import org.scash.core.protocol.blockchain.{ Block, BlockHeader, MerkleBlock }
+import org.scash.core.protocol.script.{ ScriptPubKey, ScriptSignature }
+import org.scash.core.protocol.transaction.{ Transaction, TransactionInput, TransactionOutPoint }
+import org.scash.core.protocol.{ Address, BitcoinAddress, P2PKHAddress, P2SHAddress }
 import org.scash.core.script.ScriptType
-import org.scash.core.wallet.fee.{BitcoinFeeUnit, SatoshisPerKiloByte}
+import org.scash.core.wallet.fee.{ BitcoinFeeUnit, SatoshisPerKiloByte }
 import org.scash.rpc.client.common.RpcOpts.AddressType
 import org.scash.rpc.jsonmodels._
 import org.scash.rpc.serializers.JsonReaders._
 import org.scash.rpc.serializers.JsonWriters._
 import java.time.LocalDateTime
 
-import org.scash.rpc.jsonmodels.{Bip9Softfork, BlockTransaction, ChainTip, DeriveAddressesResult, EstimateSmartFeeResult, FeeInfo, GetBlockChainInfoResult, GetBlockHeaderResult, GetBlockResult, GetBlockTemplateResult, GetBlockWithTransactionsResult, GetChainTxStatsResult, GetDescriptorInfoResult, GetMemPoolEntryResultPostV19, GetMemPoolEntryResultPreV19, GetMemPoolInfoResult, GetMemPoolResultPostV19, GetMemPoolResultPreV19, GetMemoryInfoResult, GetMiningInfoResult, GetNetTotalsResult, GetNetworkInfoResult, GetNodeAddressesResult, GetTxOutResult, GetTxOutSetInfoResult, MemoryManager, NetTarget, Network, NetworkAddress, Node, NodeAddress, NodeBan, Peer, PeerNetworkInfo, Softfork, SoftforkProgress, SubmitHeaderResult, TestMempoolAcceptResult, ValidateAddressResultImpl}
-import org.scash.rpc.serializers.JsonWriters.{AddressTypeWrites, BitcoinAddressWrites, BitcoinsWrites, DoubleSha256DigestWrites, ScriptPubKeyWrites, TransactionInputWrites, TransactionWrites, UInt32Writes}
+import org.scash.rpc.jsonmodels.{
+  Bip9Softfork,
+  BlockTransaction,
+  ChainTip,
+  DeriveAddressesResult,
+  EstimateSmartFeeResult,
+  FeeInfo,
+  GetBlockChainInfoResult,
+  GetBlockHeaderResult,
+  GetBlockResult,
+  GetBlockTemplateResult,
+  GetBlockWithTransactionsResult,
+  GetChainTxStatsResult,
+  GetDescriptorInfoResult,
+  GetMemPoolEntryResultPostV19,
+  GetMemPoolEntryResultPreV19,
+  GetMemPoolInfoResult,
+  GetMemPoolResultPostV19,
+  GetMemPoolResultPreV19,
+  GetMemoryInfoResult,
+  GetMiningInfoResult,
+  GetNetTotalsResult,
+  GetNetworkInfoResult,
+  GetNodeAddressesResult,
+  GetTxOutResult,
+  GetTxOutSetInfoResult,
+  MemoryManager,
+  NetTarget,
+  Network,
+  NetworkAddress,
+  Node,
+  NodeAddress,
+  NodeBan,
+  Peer,
+  PeerNetworkInfo,
+  Softfork,
+  SoftforkProgress,
+  SubmitHeaderResult,
+  TestMempoolAcceptResult,
+  ValidateAddressResultImpl
+}
+import org.scash.rpc.serializers.JsonWriters.{
+  AddressTypeWrites,
+  BitcoinAddressWrites,
+  BitcoinsWrites,
+  DoubleSha256DigestWrites,
+  ScriptPubKeyWrites,
+  TransactionInputWrites,
+  TransactionWrites,
+  UInt32Writes
+}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -28,7 +77,7 @@ import scala.concurrent.duration.DurationLong
 
 object JsonSerializers {
 
-  implicit val bigIntReads: Reads[BigInt] = BigIntReads
+  implicit val bigIntReads: Reads[BigInt]               = BigIntReads
   implicit val localDateTimeReads: Reads[LocalDateTime] = LocalDateTimeReads
 
   // Internal Types
@@ -40,32 +89,32 @@ object JsonSerializers {
     RipeMd160DigestReads
   implicit val ripeMd160DigestBEReads: Reads[RipeMd160DigestBE] =
     RipeMd160DigestBEReads
-  implicit val bitcoinsReads: Reads[Bitcoins] = BitcoinsReads
-  implicit val satoshisReads: Reads[Satoshis] = SatoshisReads
-  implicit val blockHeaderReads: Reads[BlockHeader] = BlockHeaderReads
-  implicit val int32Reads: Reads[Int32] = Int32Reads
-  implicit val uInt32Reads: Reads[UInt32] = UInt32Reads
-  implicit val uInt64Reads: Reads[UInt64] = UInt64Reads
-  implicit val addressReads: Reads[Address] = AddressReads
-  implicit val unitReads: Reads[Unit] = UnitReads
-  implicit val inetAddressReads: Reads[InetAddress] = InetAddressReads
+  implicit val bitcoinsReads: Reads[Bitcoins]         = BitcoinsReads
+  implicit val satoshisReads: Reads[Satoshis]         = SatoshisReads
+  implicit val blockHeaderReads: Reads[BlockHeader]   = BlockHeaderReads
+  implicit val int32Reads: Reads[Int32]               = Int32Reads
+  implicit val uInt32Reads: Reads[UInt32]             = UInt32Reads
+  implicit val uInt64Reads: Reads[UInt64]             = UInt64Reads
+  implicit val addressReads: Reads[Address]           = AddressReads
+  implicit val unitReads: Reads[Unit]                 = UnitReads
+  implicit val inetAddressReads: Reads[InetAddress]   = InetAddressReads
   implicit val scriptPubKeyReads: Reads[ScriptPubKey] = ScriptPubKeyReads
-  implicit val blockReads: Reads[Block] = BlockReads
+  implicit val blockReads: Reads[Block]               = BlockReads
   implicit val sha256Hash160DigestReads: Reads[Sha256Hash160Digest] =
     Sha256Hash160DigestReads
-  implicit val eCPublicKeyReads: Reads[ECPublicKey] = ECPublicKeyReads
+  implicit val eCPublicKeyReads: Reads[ECPublicKey]   = ECPublicKeyReads
   implicit val p2PKHAddressReads: Reads[P2PKHAddress] = P2PKHAddressReads
-  implicit val p2SHAddressReads: Reads[P2SHAddress] = P2SHAddressReads
+  implicit val p2SHAddressReads: Reads[P2SHAddress]   = P2SHAddressReads
   implicit val transactionInputReads: Reads[TransactionInput] =
     TransactionInputReads
   implicit val bitcoinAddressReads: Reads[BitcoinAddress] = BitcoinAddressReads
-  implicit val merkleBlockReads: Reads[MerkleBlock] = MerkleBlockReads
-  implicit val transactionReads: Reads[Transaction] = TransactionReads
+  implicit val merkleBlockReads: Reads[MerkleBlock]       = MerkleBlockReads
+  implicit val transactionReads: Reads[Transaction]       = TransactionReads
   implicit val transactionOutPointReads: Reads[TransactionOutPoint] =
     TransactionOutPointReads
   implicit val bitcoinFeeUnitReads: Reads[BitcoinFeeUnit] = BitcoinFeeUnitReads
-  implicit val fileReads: Reads[File] = FileReads
-  implicit val uRIReads: Reads[URI] = URIReads
+  implicit val fileReads: Reads[File]                     = FileReads
+  implicit val uRIReads: Reads[URI]                       = URIReads
   implicit val scriptSignatureReads: Reads[ScriptSignature] =
     ScriptSignatureReads
 
@@ -77,20 +126,18 @@ object JsonSerializers {
   implicit val scriptPubKeyWrites: Writes[ScriptPubKey] = ScriptPubKeyWrites
   implicit val transactionInputWrites: Writes[TransactionInput] =
     TransactionInputWrites
-  implicit val uInt32Writes: Writes[UInt32] = UInt32Writes
+  implicit val uInt32Writes: Writes[UInt32]           = UInt32Writes
   implicit val transactionWrites: Writes[Transaction] = TransactionWrites
   implicit val xpubFormat: Format[ExtPublicKey] = new Format[ExtPublicKey] {
     override def reads(json: JsValue): JsResult[ExtPublicKey] =
-      SerializerUtil.processJsStringOpt(ExtPublicKey.fromString(_).toOption)(
-        json)
+      SerializerUtil.processJsStringOpt(ExtPublicKey.fromString(_).toOption)(json)
 
     override def writes(key: ExtPublicKey): JsValue = JsString(key.toString)
   }
 
   implicit val xprivForamt: Format[ExtPrivateKey] = new Format[ExtPrivateKey] {
     override def reads(json: JsValue): JsResult[ExtPrivateKey] =
-      SerializerUtil.processJsStringOpt(ExtPrivateKey.fromString(_).toOption)(
-        json)
+      SerializerUtil.processJsStringOpt(ExtPrivateKey.fromString(_).toOption)(json)
     override def writes(key: ExtPrivateKey): JsValue = JsString(key.toString)
   }
 
@@ -116,8 +163,8 @@ object JsonSerializers {
   implicit val fundRawTransactionResultReads: Reads[FundRawTransactionResult] =
     Json.reads[FundRawTransactionResult]
 
-  implicit val getRawTransactionScriptSigReads: Reads[
-    GetRawTransactionScriptSig] = Json.reads[GetRawTransactionScriptSig]
+  implicit val getRawTransactionScriptSigReads: Reads[GetRawTransactionScriptSig] =
+    Json.reads[GetRawTransactionScriptSig]
   implicit val getRawTransactionVinReads: Reads[GetRawTransactionVin] =
     Json.reads[GetRawTransactionVin]
   implicit val getRawTransactionResultReads: Reads[GetRawTransactionResult] =
@@ -130,7 +177,7 @@ object JsonSerializers {
 
   // Network Models
   implicit val nodeAddressReads: Reads[NodeAddress] = Json.reads[NodeAddress]
-  implicit val nodeReads: Reads[Node] = Json.reads[Node]
+  implicit val nodeReads: Reads[Node]               = Json.reads[Node]
 
   implicit val netTargetReads: Reads[NetTarget] = Json.reads[NetTarget]
   implicit val getNetTotalsResultReads: Reads[GetNetTotalsResult] =
@@ -146,8 +193,7 @@ object JsonSerializers {
     new Reads[SatoshisPerKiloByte] {
 
       def reads(json: JsValue): JsResult[SatoshisPerKiloByte] =
-        SerializerUtil.processJsNumber(num =>
-          SatoshisPerKiloByte(Satoshis(num.toBigInt)))(json)
+        SerializerUtil.processJsNumber(num => SatoshisPerKiloByte(Satoshis(num.toBigInt)))(json)
     }
 
   implicit val peerNetworkInfoReads: Reads[PeerNetworkInfo] =
@@ -175,13 +221,12 @@ object JsonSerializers {
   implicit val getBlockResultReads: Reads[GetBlockResult] =
     Json.reads[GetBlockResult]
 
-  implicit val getBlockWithTransactionsResultReads: Reads[
-    GetBlockWithTransactionsResult] =
+  implicit val getBlockWithTransactionsResultReads: Reads[GetBlockWithTransactionsResult] =
     Json.reads[GetBlockWithTransactionsResult]
 
   implicit val softforkProgressReads: Reads[SoftforkProgress] =
     Json.reads[SoftforkProgress]
-  implicit val softforkReads: Reads[Softfork] = Json.reads[Softfork]
+  implicit val softforkReads: Reads[Softfork]         = Json.reads[Softfork]
   implicit val bip9SoftforkReads: Reads[Bip9Softfork] = Json.reads[Bip9Softfork]
   implicit val getBlockChainInfoResultReads: Reads[GetBlockChainInfoResult] =
     Json.reads[GetBlockChainInfoResult]
@@ -202,12 +247,10 @@ object JsonSerializers {
   implicit val getMemPoolResultPostV19Reads: Reads[GetMemPoolResultPostV19] =
     Json.reads[GetMemPoolResultPostV19]
 
-  implicit val getMemPoolEntryResultPreV19Reads: Reads[
-    GetMemPoolEntryResultPreV19] =
+  implicit val getMemPoolEntryResultPreV19Reads: Reads[GetMemPoolEntryResultPreV19] =
     Json.reads[GetMemPoolEntryResultPreV19]
 
-  implicit val getMemPoolEntryResultPostV19Reads: Reads[
-    GetMemPoolEntryResultPostV19] =
+  implicit val getMemPoolEntryResultPostV19Reads: Reads[GetMemPoolEntryResultPostV19] =
     Json.reads[GetMemPoolEntryResultPostV19]
 
   implicit val getMemPoolInfoResultReads: Reads[GetMemPoolInfoResult] =
@@ -388,8 +431,7 @@ object JsonSerializers {
   implicit val psbtWitnessUtxoInputReads: Reads[PsbtWitnessUtxoInput] =
     Json.reads[PsbtWitnessUtxoInput]
 
-  implicit val mapPubKeySignatureReads: Reads[
-    Map[ECPublicKey, ECDigitalSignature]] = MapPubKeySignatureReads
+  implicit val mapPubKeySignatureReads: Reads[Map[ECPublicKey, ECDigitalSignature]] = MapPubKeySignatureReads
 
   implicit val rpcPsbtInputReads: Reads[RpcPsbtInput] = RpcPsbtInputReads
 
@@ -408,19 +450,18 @@ object JsonSerializers {
   implicit val getNodeAddressesReads: Reads[GetNodeAddressesResult] =
     Reads[GetNodeAddressesResult] { js =>
       for {
-        time <- (js \ "time").validate[Long].map(_.seconds)
+        time     <- (js \ "time").validate[Long].map(_.seconds)
         services <- (js \ "services").validate[Int]
-        address <- (js \ "address").validate[URI]
-        port <- (js \ "port").validate[Int]
+        address  <- (js \ "address").validate[URI]
+        port     <- (js \ "port").validate[Int]
       } yield GetNodeAddressesResult(time, services, address, port)
     }
 
-  implicit val rgetpcCommandsReads: Reads[RpcCommands] = Reads[RpcCommands] {
-    js =>
-      for {
-        method <- (js \ "method").validate[String]
-        duration <- (js \ "duration").validate[Long].map(_.microseconds)
-      } yield RpcCommands(method, duration)
+  implicit val rgetpcCommandsReads: Reads[RpcCommands] = Reads[RpcCommands] { js =>
+    for {
+      method   <- (js \ "method").validate[String]
+      duration <- (js \ "duration").validate[Long].map(_.microseconds)
+    } yield RpcCommands(method, duration)
   }
 
   implicit val getRpcInfoResultReads: Reads[GetRpcInfoResult] =
@@ -441,8 +482,7 @@ object JsonSerializers {
   implicit val getDescriptorInfoResultReads: Reads[GetDescriptorInfoResult] =
     Json.reads[GetDescriptorInfoResult]
 
-  implicit val walletCreateFundedPsbtResultReads: Reads[
-    WalletCreateFundedPsbtResult] =
+  implicit val walletCreateFundedPsbtResultReads: Reads[WalletCreateFundedPsbtResult] =
     Json.reads[WalletCreateFundedPsbtResult]
 
   implicit val scriptTypeReads: Reads[ScriptType] = ScriptTypeReads
@@ -454,30 +494,20 @@ object JsonSerializers {
     Json.reads[CreateWalletResult]
 
   // Map stuff
-  implicit def mapDoubleSha256DigestReadsPreV19: Reads[
-    Map[DoubleSha256Digest, GetMemPoolResultPreV19]] =
-    Reads.mapReads[DoubleSha256Digest, GetMemPoolResultPreV19](s =>
-      JsSuccess(DoubleSha256Digest.fromHex(s)))
+  implicit def mapDoubleSha256DigestReadsPreV19: Reads[Map[DoubleSha256Digest, GetMemPoolResultPreV19]] =
+    Reads.mapReads[DoubleSha256Digest, GetMemPoolResultPreV19](s => JsSuccess(DoubleSha256Digest.fromHex(s)))
 
-  implicit def mapDoubleSha256DigestReadsPostV19: Reads[
-    Map[DoubleSha256Digest, GetMemPoolResultPostV19]] =
-    Reads.mapReads[DoubleSha256Digest, GetMemPoolResultPostV19](s =>
-      JsSuccess(DoubleSha256Digest.fromHex(s)))
+  implicit def mapDoubleSha256DigestReadsPostV19: Reads[Map[DoubleSha256Digest, GetMemPoolResultPostV19]] =
+    Reads.mapReads[DoubleSha256Digest, GetMemPoolResultPostV19](s => JsSuccess(DoubleSha256Digest.fromHex(s)))
 
-  implicit def mapDoubleSha256DigestBEReadsPreV19: Reads[
-    Map[DoubleSha256DigestBE, GetMemPoolResultPreV19]] =
-    Reads.mapReads[DoubleSha256DigestBE, GetMemPoolResultPreV19](s =>
-      JsSuccess(DoubleSha256DigestBE.fromHex(s)))
+  implicit def mapDoubleSha256DigestBEReadsPreV19: Reads[Map[DoubleSha256DigestBE, GetMemPoolResultPreV19]] =
+    Reads.mapReads[DoubleSha256DigestBE, GetMemPoolResultPreV19](s => JsSuccess(DoubleSha256DigestBE.fromHex(s)))
 
-  implicit def mapDoubleSha256DigestBEReadsPostV19: Reads[
-    Map[DoubleSha256DigestBE, GetMemPoolResultPostV19]] =
-    Reads.mapReads[DoubleSha256DigestBE, GetMemPoolResultPostV19](s =>
-      JsSuccess(DoubleSha256DigestBE.fromHex(s)))
+  implicit def mapDoubleSha256DigestBEReadsPostV19: Reads[Map[DoubleSha256DigestBE, GetMemPoolResultPostV19]] =
+    Reads.mapReads[DoubleSha256DigestBE, GetMemPoolResultPostV19](s => JsSuccess(DoubleSha256DigestBE.fromHex(s)))
 
-  implicit def mapAddressesByLabelReads: Reads[
-    Map[BitcoinAddress, LabelResult]] =
-    Reads.mapReads[BitcoinAddress, LabelResult](s =>
-      JsSuccess(BitcoinAddress.fromString(s).get))
+  implicit def mapAddressesByLabelReads: Reads[Map[BitcoinAddress, LabelResult]] =
+    Reads.mapReads[BitcoinAddress, LabelResult](s => JsSuccess(BitcoinAddress.fromString(s).get))
 
   implicit val outputMapWrites: Writes[Map[BitcoinAddress, Bitcoins]] =
     mapWrites[BitcoinAddress, Bitcoins](_.value)

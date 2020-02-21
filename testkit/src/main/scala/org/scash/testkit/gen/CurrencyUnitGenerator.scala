@@ -9,13 +9,15 @@ import org.scash.core.number
  */
 trait CurrencyUnitGenerator {
 
-  def satoshis: Gen[Satoshis] = for {
-    int64 <- NumberGenerator.int64s
-  } yield Satoshis(int64)
+  def satoshis: Gen[Satoshis] =
+    for {
+      int64 <- NumberGenerator.int64s
+    } yield Satoshis(int64)
 
-  def bitcoins: Gen[Bitcoins] = for {
-    sat <- satoshis
-  } yield Bitcoins(sat)
+  def bitcoins: Gen[Bitcoins] =
+    for {
+      sat <- satoshis
+    } yield Bitcoins(sat)
 
   def currencyUnit: Gen[CurrencyUnit] = Gen.oneOf(satoshis, bitcoins)
 

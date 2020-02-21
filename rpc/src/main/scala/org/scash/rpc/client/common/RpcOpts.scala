@@ -1,37 +1,38 @@
 package org.scash.rpc.client.common
 
-import org.scash.core.crypto.{DoubleSha256DigestBE, ECPrivateKey}
+import org.scash.core.crypto.{ DoubleSha256DigestBE, ECPrivateKey }
 import org.scash.core.currency.Bitcoins
 import org.scash.core.number.UInt32
 import org.scash.core.protocol.BitcoinAddress
 import org.scash.core.protocol.script.ScriptPubKey
 import org.scash.core.protocol.transaction.TransactionInput
 import org.scash.rpc.serializers.JsonWriters._
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{ Json, Writes }
 
 object RpcOpts {
 
   case class WalletCreateFundedPsbtOptions(
-      changeAddress: Option[BitcoinAddress] = None,
-      changePosition: Option[Int] = None,
-      changeType: Option[AddressType] = None,
-      includeWatching: Boolean = false,
-      lockUnspents: Boolean = false,
-      feeRate: Option[Bitcoins] = None,
-      subtractFeeFromOutputs: Option[Vector[Int]] = None,
-      replaceable: Boolean = false,
-      confTarget: Option[Int] = None,
-      estimateMode: FeeEstimationMode = FeeEstimationMode.Unset
+    changeAddress: Option[BitcoinAddress] = None,
+    changePosition: Option[Int] = None,
+    changeType: Option[AddressType] = None,
+    includeWatching: Boolean = false,
+    lockUnspents: Boolean = false,
+    feeRate: Option[Bitcoins] = None,
+    subtractFeeFromOutputs: Option[Vector[Int]] = None,
+    replaceable: Boolean = false,
+    confTarget: Option[Int] = None,
+    estimateMode: FeeEstimationMode = FeeEstimationMode.Unset
   )
 
   case class FundRawTransactionOptions(
-      changeAddress: Option[BitcoinAddress] = None,
-      changePosition: Option[Int] = None,
-      includeWatching: Boolean = false,
-      lockUnspents: Boolean = false,
-      reverseChangeKey: Boolean = true,
-      feeRate: Option[Bitcoins] = None,
-      subtractFeeFromOutputs: Option[Vector[Int]])
+    changeAddress: Option[BitcoinAddress] = None,
+    changePosition: Option[Int] = None,
+    includeWatching: Boolean = false,
+    lockUnspents: Boolean = false,
+    reverseChangeKey: Boolean = true,
+    feeRate: Option[Bitcoins] = None,
+    subtractFeeFromOutputs: Option[Vector[Int]]
+  )
 
   sealed abstract class FeeEstimationMode
 
@@ -58,27 +59,28 @@ object RpcOpts {
     }
   }
 
-  implicit val fundRawTransactionOptionsWrites: Writes[
-    FundRawTransactionOptions] = Json.writes[FundRawTransactionOptions]
+  implicit val fundRawTransactionOptionsWrites: Writes[FundRawTransactionOptions] =
+    Json.writes[FundRawTransactionOptions]
 
   case class SignRawTransactionOutputParameter(
-      txid: DoubleSha256DigestBE,
-      vout: Int,
-      scriptPubKey: ScriptPubKey,
-      redeemScript: Option[ScriptPubKey] = None,
-      amount: Option[Bitcoins] = None)
+    txid: DoubleSha256DigestBE,
+    vout: Int,
+    scriptPubKey: ScriptPubKey,
+    redeemScript: Option[ScriptPubKey] = None,
+    amount: Option[Bitcoins] = None
+  )
 
-  implicit val signRawTransactionOutputParameterWrites: Writes[
-    SignRawTransactionOutputParameter] =
+  implicit val signRawTransactionOutputParameterWrites: Writes[SignRawTransactionOutputParameter] =
     Json.writes[SignRawTransactionOutputParameter]
 
   object SignRawTransactionOutputParameter {
 
     def fromTransactionInput(
-        transactionInput: TransactionInput,
-        scriptPubKey: ScriptPubKey,
-        redeemScript: Option[ScriptPubKey] = None,
-        amount: Option[Bitcoins] = None): SignRawTransactionOutputParameter = {
+      transactionInput: TransactionInput,
+      scriptPubKey: ScriptPubKey,
+      redeemScript: Option[ScriptPubKey] = None,
+      amount: Option[Bitcoins] = None
+    ): SignRawTransactionOutputParameter =
       SignRawTransactionOutputParameter(
         txid = transactionInput.previousOutput.txIdBE,
         vout = transactionInput.previousOutput.vout.toInt,
@@ -86,18 +88,18 @@ object RpcOpts {
         redeemScript = redeemScript,
         amount = amount
       )
-    }
   }
 
   case class ImportMultiRequest(
-      scriptPubKey: ImportMultiAddress,
-      timestamp: UInt32,
-      redeemscript: Option[ScriptPubKey] = None,
-      pubkeys: Option[Vector[ScriptPubKey]] = None,
-      keys: Option[Vector[ECPrivateKey]] = None,
-      internal: Option[Boolean] = None,
-      watchonly: Option[Boolean] = None,
-      label: Option[String] = None)
+    scriptPubKey: ImportMultiAddress,
+    timestamp: UInt32,
+    redeemscript: Option[ScriptPubKey] = None,
+    pubkeys: Option[Vector[ScriptPubKey]] = None,
+    keys: Option[Vector[ECPrivateKey]] = None,
+    internal: Option[Boolean] = None,
+    watchonly: Option[Boolean] = None,
+    label: Option[String] = None
+  )
 
   case class ImportMultiAddress(address: BitcoinAddress)
 
@@ -159,10 +161,7 @@ object RpcOpts {
     }
   }
 
-  case class BlockTemplateRequest(
-      mode: String,
-      capabilities: Vector[String],
-      rules: Vector[String])
+  case class BlockTemplateRequest(mode: String, capabilities: Vector[String], rules: Vector[String])
 
   implicit val blockTemplateRequest: Writes[BlockTemplateRequest] =
     Json.writes[BlockTemplateRequest]

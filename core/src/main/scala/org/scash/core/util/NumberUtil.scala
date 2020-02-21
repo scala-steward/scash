@@ -20,15 +20,14 @@ object NumberUtil {
   }
 
   /** Converts a sequence of bytes to a **big endian** unsigned integer */
-  def toUnsignedInt(bytes: ByteVector): BigInt = {
+  def toUnsignedInt(bytes: ByteVector): BigInt =
     BigInt(new BigInteger(1, bytes.toArray))
-  }
 
   /** Takes a hex string and parses it to a [[BigInt]]. */
   def toBigInt(hex: String): BigInt = toBigInt(BitcoinSUtil.decodeHex(hex))
 
   /** Converts a sequence of bytes to twos complement signed number. */
-  def toBigInt(bytes: ByteVector): BigInt = {
+  def toBigInt(bytes: ByteVector): BigInt =
     //BigInt interprets the number as an unsigned number then applies the given
     //sign in front of that number, therefore if we have a negative number we need to invert it
     //since twos complement is an inverted number representation for negative numbers
@@ -36,16 +35,15 @@ object NumberUtil {
     if (bytes.isEmpty) BigInt(0)
     //check if sign bit is set
     else if ((0x80.toByte & bytes.head) != 0) {
-      val invertedBytes = bytes.tail.map(b => (b ^ 0xff.toByte).toByte)
+      val invertedBytes     = bytes.tail.map(b => (b ^ 0xff.toByte).toByte)
       val firstByteInverted = (bytes.head ^ 0xff.toByte).toByte
-      val num = firstByteInverted +: invertedBytes
+      val num               = firstByteInverted +: invertedBytes
       BigInt(-1, num.toArray) - 1
     } else {
       val firstBitOff = (0x7f & bytes.head).toByte
-      val num = firstBitOff +: bytes.tail
+      val num         = firstBitOff +: bytes.tail
       BigInt(num.toArray)
     }
-  }
 
   /** Converts a sequence of [[Byte]] to a [[Int]]. */
   def toInt(bytes: ByteVector): Int = toBigInt(bytes).toInt
@@ -61,11 +59,11 @@ object NumberUtil {
 
   /** Converts a sequence uint8 'from' base to 'to' base */
   def convertUInt8s(data: Seq[UInt8], from: UInt32, to: UInt32, pad: Boolean): Try[Seq[UInt8]] = {
-    var acc: UInt32 = UInt32.zero
-    var bits: UInt32 = UInt32.zero
+    var acc: UInt32     = UInt32.zero
+    var bits: UInt32    = UInt32.zero
     var ret: Seq[UInt8] = Nil
-    val maxv: UInt32 = (UInt32.one << to) - UInt32.one
-    val eight = UInt32(8)
+    val maxv: UInt32    = (UInt32.one << to) - UInt32.one
+    val eight           = UInt32(8)
     if (from > eight || to > eight) {
       Failure(new IllegalArgumentException("Can't have convert bits 'from' or 'to' parameter greater than 8"))
     } else {
@@ -95,7 +93,6 @@ object NumberUtil {
     }
   }
 
-  def convertBytes(data: ByteVector, from: UInt32, to: UInt32, pad: Boolean): Try[Seq[UInt8]] = {
+  def convertBytes(data: ByteVector, from: UInt32, to: UInt32, pad: Boolean): Try[Seq[UInt8]] =
     convertUInt8s(UInt8.toUInt8s(data), from, to, pad)
-  }
 }

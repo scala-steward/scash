@@ -1,4 +1,5 @@
 package org.scash.core.script.constant
+
 /**
  *   Copyright (c) 2016-2018 Chris Stewart (MIT License)
  *   Copyright (c) 2018 Flores Lorca (MIT License)
@@ -81,14 +82,12 @@ trait ScriptNumberUtil {
    * @param bytes
    * @return
    */
-  def isPositive(bytes: ByteVector): Boolean = {
+  def isPositive(bytes: ByteVector): Boolean =
     if (bytes.isEmpty) false
     else {
       val result: Int = bytes(bytes.size - 1) & 0x80
       if (result == 0x80) false else true
     }
-
-  }
 
   /**
    * Change sign bit to positive
@@ -116,7 +115,7 @@ trait ScriptNumberUtil {
    * @param long
    * @return
    */
-  def longToHex(long: Long): String = {
+  def longToHex(long: Long): String =
     if (long > -1) {
       val bytes = toByteVec(long)
       BitcoinSUtil.flipEndianness(BitcoinSUtil.encodeHex(bytes))
@@ -124,14 +123,12 @@ trait ScriptNumberUtil {
       val bytes = toByteVec(long.abs)
       //add sign bit
       val negativeNumberBytes = changeSignBitToNegative(bytes)
-      val hex = BitcoinSUtil.encodeHex(negativeNumberBytes.reverse)
+      val hex                 = BitcoinSUtil.encodeHex(negativeNumberBytes.reverse)
       hex
     }
-  }
 
-  def toByteVec(long: Long): ByteVector = {
+  def toByteVec(long: Long): ByteVector =
     ByteVector(BigInt(long).toByteArray)
-  }
 
   /**
    * Determines if a given hex string is a positive number
@@ -143,9 +140,8 @@ trait ScriptNumberUtil {
 
   def isNegative(hex: String): Boolean = isNegative(BitcoinSUtil.decodeHex(hex))
 
-  def isNegative(bytes: ByteVector): Boolean = {
+  def isNegative(bytes: ByteVector): Boolean =
     if (bytes.isEmpty) false else !isPositive(bytes)
-  }
 
   def changeSignBitToPositive(hex: String): ByteVector = changeSignBitToPositive(BitcoinSUtil.decodeHex(hex))
 

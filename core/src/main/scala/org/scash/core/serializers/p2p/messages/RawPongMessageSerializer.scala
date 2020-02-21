@@ -8,13 +8,11 @@ import scodec.bits.ByteVector
 
 trait RawPongMessageSerializer extends RawBitcoinSerializer[PongMessage] {
 
-  override def read(bytes: ByteVector): PongMessage = {
+  override def read(bytes: ByteVector): PongMessage =
     PongMessage(UInt64(bytes.take(8)))
-  }
 
-  override def write(pongMessage: PongMessage): ByteVector = {
+  override def write(pongMessage: PongMessage): ByteVector =
     pongMessage.nonce.bytes
-  }
 }
 
 object RawPongMessageSerializer extends RawPongMessageSerializer

@@ -10,6 +10,7 @@ import scala.concurrent.{ ExecutionContext, Future }
  * Created by chris on 7/21/16.
  */
 sealed abstract class TransactionSignatureCreator {
+
   /**
    * Creates a signature from a tx signature component
    *
@@ -18,7 +19,11 @@ sealed abstract class TransactionSignatureCreator {
    * @param hashType the procedure to use for hashing to transaction
    * @return
    */
-  def createSig(txSignatureComponent: TxSigComponent, privateKey: ECPrivateKey, hashType: SigHashType): ECDigitalSignature = {
+  def createSig(
+    txSignatureComponent: TxSigComponent,
+    privateKey: ECPrivateKey,
+    hashType: SigHashType
+  ): ECDigitalSignature = {
     val sign: ByteVector => ECDigitalSignature = privateKey.signECDSA(_: ByteVector)
     createSig(txSignatureComponent, sign, hashType)
   }
@@ -32,8 +37,12 @@ sealed abstract class TransactionSignatureCreator {
    * @param hashType - the hash type to be appended on the digital signature when the hardware wallet is done being signed
    * @return the digital signature returned by the hardware wallet
    */
-  def createSig(component: TxSigComponent, sign: ByteVector => ECDigitalSignature, hashType: SigHashType): ECDigitalSignature = {
-    val hash = TransactionSignatureSerializer.hashForSignature(component, hashType)
+  def createSig(
+    component: TxSigComponent,
+    sign: ByteVector => ECDigitalSignature,
+    hashType: SigHashType
+  ): ECDigitalSignature = {
+    val hash      = TransactionSignatureSerializer.hashForSignature(component, hashType)
     val signature = sign(hash.bytes)
     //append 1 byte hash type onto the end
     val sig = ECDigitalSignature(signature.bytes :+ hashType.byte)
@@ -44,9 +53,10 @@ sealed abstract class TransactionSignatureCreator {
   }
 
   /** This is the same as createSig above, except the 'sign' function returns a Future[ECDigitalSignature] */
-  def createSig(component: TxSigComponent, sign: ByteVector => Future[ECDigitalSignature],
-    hashType: SigHashType)(implicit ec: ExecutionContext): Future[ECDigitalSignature] = {
-    val hash = TransactionSignatureSerializer.hashForSignature(component, hashType)
+  def createSig(component: TxSigComponent, sign: ByteVector => Future[ECDigitalSignature], hashType: SigHashType)(
+    implicit ec: ExecutionContext
+  ): Future[ECDigitalSignature] = {
+    val hash      = TransactionSignatureSerializer.hashForSignature(component, hashType)
     val signature = sign(hash.bytes)
     //append 1 byte hash type onto the end
     val sig = signature.map(s => ECDigitalSignature(s.bytes :+ hashType.byte))

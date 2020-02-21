@@ -1,12 +1,12 @@
 package org.scash.core.serializers.p2p.messages
 
 import org.scash.core.serializers.RawBitcoinSerializer
-import org.scash.core.p2p.{GetDataMessage, InventoryMessage}
+import org.scash.core.p2p.{ GetDataMessage, InventoryMessage }
 import scodec.bits.ByteVector
 
 /**
-  * @see https://bitcoin.org/en/developer-reference#getdata
-  */
+ * @see https://bitcoin.org/en/developer-reference#getdata
+ */
 trait RawGetDataMessageSerializer extends RawBitcoinSerializer[GetDataMessage] {
   //InventoryMessages & GetDataMessages have the same structure and are serialized the same
   //so we can piggy back off of the serialilzers for InventoryMessages
@@ -17,8 +17,7 @@ trait RawGetDataMessageSerializer extends RawBitcoinSerializer[GetDataMessage] {
   }
 
   def write(getDataMessage: GetDataMessage): ByteVector = {
-    val inv = InventoryMessage(getDataMessage.inventoryCount,
-                               getDataMessage.inventories)
+    val inv = InventoryMessage(getDataMessage.inventoryCount, getDataMessage.inventories)
     inv.bytes
   }
 }

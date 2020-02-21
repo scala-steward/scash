@@ -7,10 +7,10 @@ sealed abstract class EscrowTimeoutHelper {
 
   /*
   /**
-   * Signs a [[org.scash.core.protocol.transaction.BaseTransaction]] with the given private key
-   * This will result in a Transaction that is partially signed, we need to send the transaction to
-   * the server to be fully signed
-   */
+ * Signs a [[org.scash.core.protocol.transaction.BaseTransaction]] with the given private key
+ * This will result in a Transaction that is partially signed, we need to send the transaction to
+ * the server to be fully signed
+ */
   def clientSign(outPoint: TransactionOutPoint, creditingTx: Transaction, destinations: Seq[TransactionOutput],
     signer: Sign,
     lock: EscrowTimeoutScriptPubKey,
@@ -40,9 +40,9 @@ sealed abstract class EscrowTimeoutHelper {
   }
 
   /**
-   * Helper function to build a [[org.scash.core.protocol.transaction.TransactionWitness]]
-   * for an [[EscrowTimeoutScriptPubKey]]
-   */
+ * Helper function to build a [[org.scash.core.protocol.transaction.TransactionWitness]]
+ * for an [[EscrowTimeoutScriptPubKey]]
+ */
   def buildEscrowTimeoutScriptWitness(
     signedScriptSig: EscrowTimeoutScriptSignature,
     lock: EscrowTimeoutScriptPubKey,
@@ -100,12 +100,12 @@ sealed abstract class EscrowTimeoutHelper {
   }
 
   /**
-   * Closes the given [[EscrowTimeoutScriptPubKey]] with it's timeout branch.
-   * Assumes we are spending the given [[TransactionOutPoint]]
-   *
-   * It is important to note that we assume the nestedScriptPubKey inside of the EscrowTimeoutScriptPubKey
-   * is a [[P2PKHScriptPubKey]] that can be spent by the given [[ECPrivateKey]]
-   */
+ * Closes the given [[EscrowTimeoutScriptPubKey]] with it's timeout branch.
+ * Assumes we are spending the given [[TransactionOutPoint]]
+ *
+ * It is important to note that we assume the nestedScriptPubKey inside of the EscrowTimeoutScriptPubKey
+ * is a [[P2PKHScriptPubKey]] that can be spent by the given [[ECPrivateKey]]
+ */
   def closeWithTimeout(inputs: Seq[TransactionInput], outputs: Seq[TransactionOutput], inputIndex: UInt32, privKey: ECPrivateKey,
     lock: EscrowTimeoutScriptPubKey, creditingOutput: TransactionOutput,
     hashType: HashType): Future[WitnessTxSigComponentRaw] = lock.timeout.nestedScriptPubKey match {
@@ -135,7 +135,7 @@ sealed abstract class EscrowTimeoutHelper {
       | _: CSVScriptPubKey | _: CLTVScriptPubKey | _: WitnessCommitment | _: UnassignedWitnessScriptPubKey
       | EmptyScriptPubKey => Future.fromTry(TxBuilderError.WrongRedeemScript)
   }
-  */
+ */
 }
 
 //object EscrowTimeoutHelper extends EscrowTimeoutHelper

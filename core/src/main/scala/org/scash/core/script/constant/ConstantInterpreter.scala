@@ -38,18 +38,23 @@ sealed abstract class ConstantInterpreter {
         bytesNeededForPushOp(program.script(1))
       case _: ScriptToken => bytesNeededForPushOp(program.script.head)
     }
+
     /** Parses the script tokens that need to be pushed onto our stack. */
     @tailrec
-    def takeUntilBytesNeeded(scriptTokens: List[ScriptToken], accum: List[ScriptToken]): (List[ScriptToken], List[ScriptToken]) = {
+    def takeUntilBytesNeeded(
+      scriptTokens: List[ScriptToken],
+      accum: List[ScriptToken]
+    ): (List[ScriptToken], List[ScriptToken]) = {
       val bytesSum = accum.map(_.bytes.size).sum
       if (bytesSum == bytesNeeded) (scriptTokens, accum)
       else if (scriptTokens.isEmpty) (Nil, accum)
-      else if (bytesSum > bytesNeeded) throw new RuntimeException("We cannot have more bytes than what our script number specified")
+      else if (bytesSum > bytesNeeded)
+        throw new RuntimeException("We cannot have more bytes than what our script number specified")
       else {
         //for the case when a ScriptNumberImpl(x) was parsed as a ByteToPushOntoStackImpl(x)
         val scriptToken = scriptTokens.head match {
           case x: BytesToPushOntoStack => ScriptNumber(x.opCode)
-          case x => x
+          case x                       => x
         }
         takeUntilBytesNeeded(scriptTokens.tail, scriptToken :: accum)
       }
@@ -57,19 +62,20 @@ sealed abstract class ConstantInterpreter {
 
     val (newScript, bytesToPushOntoStack) = program.script.head match {
       case OP_PUSHDATA1 | OP_PUSHDATA2 | OP_PUSHDATA4 => takeUntilBytesNeeded(program.script.tail.tail, Nil)
-      case _: ScriptToken => takeUntilBytesNeeded(program.script.tail, Nil)
+      case _: ScriptToken                             => takeUntilBytesNeeded(program.script.tail, Nil)
     }
     logger.debug("new script: " + newScript)
     logger.debug("Bytes to push onto stack: " + bytesToPushOntoStack)
-    val constant: ScriptToken = if (bytesToPushOntoStack.size == 1) bytesToPushOntoStack.head
-    else ScriptConstant(BitcoinSUtil.flipEndianness(BitcoinSUtil.toByteVector(bytesToPushOntoStack)))
+    val constant: ScriptToken =
+      if (bytesToPushOntoStack.size == 1) bytesToPushOntoStack.head
+      else ScriptConstant(BitcoinSUtil.flipEndianness(BitcoinSUtil.toByteVector(bytesToPushOntoStack)))
 
     logger.debug("Constant to be pushed onto stack: " + constant)
     //check to see if we have the exact amount of bytes needed to be pushed onto the stack
     //if we do not, mark the program as invalid
     if (bytesNeeded == 0) ScriptProgram(program, ScriptNumber.zero :: program.stack, newScript)
     else if (ScriptFlagUtil.requireMinimalData(program.flags) && bytesNeeded == 1 &&
-      constant.isInstanceOf[ScriptNumber] && constant.toLong <= 16) {
+             constant.isInstanceOf[ScriptNumber] && constant.toLong <= 16) {
       logger.error("We can push this constant onto the stack with OP_0 - OP_16 instead of using a script constant")
       ScriptProgram(program, ScriptErrorMinimalData)
     } else if (bytesNeeded != bytesToPushOntoStack.map(_.bytes.size).sum) {
@@ -77,7 +83,10 @@ sealed abstract class ConstantInterpreter {
       logger.error("Bytes needed: " + bytesNeeded)
       logger.error("Number of byte received: " + bytesToPushOntoStack.map(_.bytes.size).sum)
       ScriptProgram(program, ScriptErrorBadOpCode)
-    } else if (ScriptFlagUtil.requireMinimalData(program.flags) && !BitcoinScriptUtil.isMinimalPush(program.script.head, constant)) {
+    } else if (ScriptFlagUtil.requireMinimalData(program.flags) && !BitcoinScriptUtil.isMinimalPush(
+                 program.script.head,
+                 constant
+               )) {
       logger.debug("Pushing operation: " + program.script.head)
       logger.debug("Constant parsed: " + constant)
       logger.debug("Constant size: " + constant.bytes.size)
@@ -96,12 +105,14 @@ sealed abstract class ConstantInterpreter {
     val scriptNumOp = program.script(1).bytes.headOption.flatMap(b => ScriptNumberOperation.fromNumber(b.toInt))
 
     if (ScriptFlagUtil.requireMinimalData(program.flags) && program.script(1).bytes.size == 1 &&
-      scriptNumOp.isDefined) {
-      logger.error("We cannot use an OP_PUSHDATA operation for pushing " +
-        "a script number operation onto the stack, scriptNumberOperation: " + scriptNumOp)
+        scriptNumOp.isDefined) {
+      logger.error(
+        "We cannot use an OP_PUSHDATA operation for pushing " +
+          "a script number operation onto the stack, scriptNumberOperation: " + scriptNumOp
+      )
       ScriptProgram(program, ScriptErrorMinimalData)
     } else if (ScriptFlagUtil.requireMinimalData(program.flags) && program.script.size > 2 &&
-      !BitcoinScriptUtil.isMinimalPush(program.script.head, program.script(2))) {
+               !BitcoinScriptUtil.isMinimalPush(program.script.head, program.script(2))) {
       logger.error("We are not using the minimal push operation to push the bytes onto the stack for the constant")
       ScriptProgram(program, ScriptErrorMinimalData)
     } else {
@@ -120,11 +131,12 @@ sealed abstract class ConstantInterpreter {
   private def bytesNeededForPushOp(token: ScriptToken): Long = token match {
     case scriptNumber: BytesToPushOntoStack => scriptNumber.opCode
     case scriptNumOp: ScriptNumberOperation => scriptNumOp.opCode
-    case scriptNumber: ScriptNumber => scriptNumber.toLong
+    case scriptNumber: ScriptNumber         => scriptNumber.toLong
     case scriptConstant: ScriptConstant =>
       val constantFlippedEndianness = BitcoinSUtil.flipEndianness(scriptConstant.hex)
       java.lang.Long.parseLong(constantFlippedEndianness, 16)
-    case _ => throw new IllegalArgumentException("Token must be BytesToPushOntoStack to push a number of bytes onto the stack")
+    case _ =>
+      throw new IllegalArgumentException("Token must be BytesToPushOntoStack to push a number of bytes onto the stack")
   }
 }
 

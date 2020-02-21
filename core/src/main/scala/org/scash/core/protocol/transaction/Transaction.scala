@@ -1,16 +1,17 @@
 package org.scash.core.protocol.transaction
 
-import org.scash.core.crypto.{DoubleSha256Digest, DoubleSha256DigestBE}
-import org.scash.core.number.{Int32, UInt32}
+import org.scash.core.crypto.{ DoubleSha256Digest, DoubleSha256DigestBE }
+import org.scash.core.number.{ Int32, UInt32 }
 import org.scash.core.protocol.NetworkElement
 import org.scash.core.serializers.transaction.RawBaseTransactionParser
-import org.scash.core.util.{CryptoUtil, Factory}
+import org.scash.core.util.{ CryptoUtil, Factory }
 import scodec.bits.ByteVector
 
 /**
  * Created by chris on 7/14/15.
  */
 sealed abstract class Transaction extends NetworkElement {
+
   /**
    * The sha256(sha256(tx)) of this transaction
    * Note that this is the little endian encoding of the hash, NOT the big endian encoding shown in block
@@ -42,10 +43,11 @@ sealed abstract class Transaction extends NetworkElement {
 
   /** Determines if this transaction is a coinbase transaction. */
   def isCoinbase: Boolean = inputs.size match {
-    case 1 => inputs.head match {
-      case _: CoinbaseInput => true
-      case _: TransactionInput => false
-    }
+    case 1 =>
+      inputs.head match {
+        case _: CoinbaseInput    => true
+        case _: TransactionInput => false
+      }
     case _: Int => false
   }
 }
@@ -55,10 +57,10 @@ sealed abstract class BaseTransaction extends Transaction {
 }
 
 case object EmptyTransaction extends BaseTransaction {
-  override def txId = CryptoUtil.emptyDoubleSha256Hash
-  override def version = TransactionConstants.version
-  override def inputs = Nil
-  override def outputs = Nil
+  override def txId     = CryptoUtil.emptyDoubleSha256Hash
+  override def version  = TransactionConstants.version
+  override def inputs   = Nil
+  override def outputs  = Nil
   override def lockTime = TransactionConstants.lockTime
 }
 
@@ -68,12 +70,19 @@ object Transaction extends Factory[Transaction] {
 }
 
 object BaseTransaction extends Factory[BaseTransaction] {
-  private case class BaseTransactionImpl(version: Int32, inputs: Seq[TransactionInput],
-    outputs: Seq[TransactionOutput], lockTime: UInt32) extends BaseTransaction
+  private case class BaseTransactionImpl(
+    version: Int32,
+    inputs: Seq[TransactionInput],
+    outputs: Seq[TransactionOutput],
+    lockTime: UInt32
+  ) extends BaseTransaction
 
   override def fromBytes(bytes: ByteVector): BaseTransaction = RawBaseTransactionParser.read(bytes)
 
-  def apply(version: Int32, inputs: Seq[TransactionInput],
-    outputs: Seq[TransactionOutput], lockTime: UInt32): BaseTransaction = BaseTransactionImpl(version, inputs, outputs, lockTime)
+  def apply(
+    version: Int32,
+    inputs: Seq[TransactionInput],
+    outputs: Seq[TransactionOutput],
+    lockTime: UInt32
+  ): BaseTransaction = BaseTransactionImpl(version, inputs, outputs, lockTime)
 }
-

@@ -2,14 +2,13 @@ package org.scash.core.serializers.p2p.messages
 
 import org.scash.core.crypto.DoubleSha256Digest
 import org.scash.core.protocol.CompactSizeUInt
-import org.scash.core.serializers.{RawBitcoinSerializer, RawSerializerHelper}
+import org.scash.core.serializers.{ RawBitcoinSerializer, RawSerializerHelper }
 import org.scash.core.p2p._
 import scodec.bits.ByteVector
 
 import scala.annotation.tailrec
 
-trait RawGetHeadersMessageSerializer
-    extends RawBitcoinSerializer[GetHeadersMessage] {
+trait RawGetHeadersMessageSerializer extends RawBitcoinSerializer[GetHeadersMessage] {
 
   override def read(bytes: ByteVector): GetHeadersMessage = {
     val version = ProtocolVersion(bytes.take(4))
@@ -22,36 +21,31 @@ trait RawGetHeadersMessageSerializer
     GetHeadersMessage(version, hashCount, hashes, hashStop)
   }
 
-  override def write(getHeadersMessage: GetHeadersMessage): ByteVector = {
+  override def write(getHeadersMessage: GetHeadersMessage): ByteVector =
     getHeadersMessage.version.bytes ++
       getHeadersMessage.hashCount.bytes ++
       RawSerializerHelper.writeNetworkElements(getHeadersMessage.hashes) ++
       getHeadersMessage.hashStop.bytes
-  }
 
   /**
-    * Parses hashes inside of [[GetHeadersMessage]]
-    *
-    * @param bytes     the bytes which the hashes are parsed from
-    * @param numHashes the number of hases that need to be parsed
-    * @return the parsed hases and the remaining bytes in the network message
-    */
-  private def parseHashes(
-      bytes: ByteVector,
-      numHashes: CompactSizeUInt): (List[DoubleSha256Digest], ByteVector) = {
+   * Parses hashes inside of [[GetHeadersMessage]]
+   *
+   * @param bytes     the bytes which the hashes are parsed from
+   * @param numHashes the number of hases that need to be parsed
+   * @return the parsed hases and the remaining bytes in the network message
+   */
+  private def parseHashes(bytes: ByteVector, numHashes: CompactSizeUInt): (List[DoubleSha256Digest], ByteVector) = {
     @tailrec
     def loop(
-        remainingBytes: ByteVector,
-        remainingHashes: Long,
-        accum: List[DoubleSha256Digest]): (List[DoubleSha256Digest], ByteVector) = {
+      remainingBytes: ByteVector,
+      remainingHashes: Long,
+      accum: List[DoubleSha256Digest]
+    ): (List[DoubleSha256Digest], ByteVector) =
       if (remainingHashes <= 0) (accum.reverse, remainingBytes)
       else {
         val hash = DoubleSha256Digest(remainingBytes.take(32))
-        loop(remainingBytes.slice(32, remainingBytes.length),
-             remainingHashes - 1,
-             hash :: accum)
+        loop(remainingBytes.slice(32, remainingBytes.length), remainingHashes - 1, hash :: accum)
       }
-    }
 
     loop(bytes, numHashes.num.toInt, List.empty)
   }

@@ -10,6 +10,7 @@ import org.scash.core.util.{ BitcoinSLogger, BitcoinScriptUtil }
  * Created by chris on 2/3/16.
  */
 sealed trait ScriptProgram {
+
   /**
    * This contains all relevant information for hashing and checking a [[org.scash.core.protocol.script.ScriptSignature]] for a [[org.scash.core.protocol.transaction.Transaction]].
    */
@@ -54,6 +55,7 @@ sealed trait ExecutionInProgressScriptProgram extends ScriptProgram {
 }
 
 sealed trait ExecutedScriptProgram extends ScriptProgram {
+
   /** Indicates if the [[ScriptProgram]] has encountered a [[ScriptError]] in its execution.*/
   def error: Option[ScriptError]
 }
@@ -65,9 +67,9 @@ object ScriptProgram extends BitcoinSLogger {
 
   //indicates whether the script or the stack needs to be updated
   sealed trait UpdateIndicator
-  case object Stack extends UpdateIndicator
-  case object Script extends UpdateIndicator
-  case object AltStack extends UpdateIndicator
+  case object Stack          extends UpdateIndicator
+  case object Script         extends UpdateIndicator
+  case object AltStack       extends UpdateIndicator
   case object OriginalScript extends UpdateIndicator
 
   /**
@@ -80,75 +82,155 @@ object ScriptProgram extends BitcoinSLogger {
     case program: PreExecutionScriptProgram =>
       ScriptProgram(ScriptProgram.toExecutionInProgress(program), error)
     case program: ExecutionInProgressScriptProgram =>
-      ExecutedScriptProgram(program.txSignatureComponent, program.stack, program.script, program.originalScript,
-        program.altStack, program.flags, Some(error))
+      ExecutedScriptProgram(
+        program.txSignatureComponent,
+        program.stack,
+        program.script,
+        program.originalScript,
+        program.altStack,
+        program.flags,
+        Some(error)
+      )
     case program: ExecutedScriptProgram =>
-      ExecutedScriptProgram(program.txSignatureComponent, program.stack, program.script, program.originalScript,
-        program.altStack, program.flags, Some(error))
+      ExecutedScriptProgram(
+        program.txSignatureComponent,
+        program.stack,
+        program.script,
+        program.originalScript,
+        program.altStack,
+        program.flags,
+        Some(error)
+      )
   }
 
   def apply(oldProgram: ScriptProgram, flags: Seq[ScriptFlag]): ScriptProgram = oldProgram match {
     case program: PreExecutionScriptProgram =>
-      PreExecutionScriptProgram(program.txSignatureComponent, program.stack, program.script, program.originalScript,
-        program.altStack, flags)
+      PreExecutionScriptProgram(
+        program.txSignatureComponent,
+        program.stack,
+        program.script,
+        program.originalScript,
+        program.altStack,
+        flags
+      )
     case program: ExecutionInProgressScriptProgram =>
-      ExecutionInProgressScriptProgram(program.txSignatureComponent, program.stack, program.script, program.originalScript,
-        program.altStack, flags, program.lastCodeSeparator)
+      ExecutionInProgressScriptProgram(
+        program.txSignatureComponent,
+        program.stack,
+        program.script,
+        program.originalScript,
+        program.altStack,
+        flags,
+        program.lastCodeSeparator
+      )
     case _: ExecutedScriptProgram =>
       throw new RuntimeException("Cannot update the script flags on a program that has been executed")
   }
 
-  def apply(oldProgram: ScriptProgram, tokens: Seq[ScriptToken], indicator: UpdateIndicator): ScriptProgram = {
+  def apply(oldProgram: ScriptProgram, tokens: Seq[ScriptToken], indicator: UpdateIndicator): ScriptProgram =
     indicator match {
       case Stack =>
         oldProgram match {
           case program: PreExecutionScriptProgram =>
-            PreExecutionScriptProgram(program.txSignatureComponent, tokens.toList, program.script, program.originalScript,
-              program.altStack, program.flags)
+            PreExecutionScriptProgram(
+              program.txSignatureComponent,
+              tokens.toList,
+              program.script,
+              program.originalScript,
+              program.altStack,
+              program.flags
+            )
           case program: ExecutionInProgressScriptProgram =>
-            ExecutionInProgressScriptProgram(program.txSignatureComponent, tokens.toList, program.script, program.originalScript,
-              program.altStack, program.flags, program.lastCodeSeparator)
+            ExecutionInProgressScriptProgram(
+              program.txSignatureComponent,
+              tokens.toList,
+              program.script,
+              program.originalScript,
+              program.altStack,
+              program.flags,
+              program.lastCodeSeparator
+            )
           case _: ExecutedScriptProgram =>
             throw new RuntimeException("Cannot update stack for program that has been fully executed")
         }
       case Script =>
         oldProgram match {
           case program: PreExecutionScriptProgram =>
-            PreExecutionScriptProgram(program.txSignatureComponent, program.stack, tokens.toList, program.originalScript,
-              program.altStack, program.flags)
+            PreExecutionScriptProgram(
+              program.txSignatureComponent,
+              program.stack,
+              tokens.toList,
+              program.originalScript,
+              program.altStack,
+              program.flags
+            )
           case program: ExecutionInProgressScriptProgram =>
-            ExecutionInProgressScriptProgram(program.txSignatureComponent, program.stack, tokens.toList, program.originalScript,
-              program.altStack, program.flags, program.lastCodeSeparator)
+            ExecutionInProgressScriptProgram(
+              program.txSignatureComponent,
+              program.stack,
+              tokens.toList,
+              program.originalScript,
+              program.altStack,
+              program.flags,
+              program.lastCodeSeparator
+            )
           case _: ExecutedScriptProgram =>
             throw new RuntimeException("Cannot update the script for a program that has been fully executed")
         }
-      case AltStack => oldProgram match {
-        case program: PreExecutionScriptProgram =>
-          PreExecutionScriptProgram(program.txSignatureComponent, program.stack, program.script, program.originalScript,
-            tokens.toList, program.flags)
-        case program: ExecutionInProgressScriptProgram =>
-          ExecutionInProgressScriptProgram(program.txSignatureComponent, program.stack, program.script, program.originalScript,
-            tokens.toList, program.flags, program.lastCodeSeparator)
-        case _: ExecutedScriptProgram =>
-          throw new RuntimeException("Cannot update the alt stack for a program that has been fully executed")
-      }
+      case AltStack =>
+        oldProgram match {
+          case program: PreExecutionScriptProgram =>
+            PreExecutionScriptProgram(
+              program.txSignatureComponent,
+              program.stack,
+              program.script,
+              program.originalScript,
+              tokens.toList,
+              program.flags
+            )
+          case program: ExecutionInProgressScriptProgram =>
+            ExecutionInProgressScriptProgram(
+              program.txSignatureComponent,
+              program.stack,
+              program.script,
+              program.originalScript,
+              tokens.toList,
+              program.flags,
+              program.lastCodeSeparator
+            )
+          case _: ExecutedScriptProgram =>
+            throw new RuntimeException("Cannot update the alt stack for a program that has been fully executed")
+        }
 
-      case OriginalScript => oldProgram match {
-        case program: PreExecutionScriptProgram =>
-          PreExecutionScriptProgram(program.txSignatureComponent, program.stack, program.script, tokens.toList,
-            program.altStack, program.flags)
-        case program: ExecutionInProgressScriptProgram =>
-          ExecutionInProgressScriptProgram(program.txSignatureComponent, program.stack, program.script, tokens.toList,
-            program.altStack, program.flags, program.lastCodeSeparator)
-        case _: ExecutedScriptProgram =>
-          throw new RuntimeException("Cannot update the original script for a program that has been fully executed")
-      }
+      case OriginalScript =>
+        oldProgram match {
+          case program: PreExecutionScriptProgram =>
+            PreExecutionScriptProgram(
+              program.txSignatureComponent,
+              program.stack,
+              program.script,
+              tokens.toList,
+              program.altStack,
+              program.flags
+            )
+          case program: ExecutionInProgressScriptProgram =>
+            ExecutionInProgressScriptProgram(
+              program.txSignatureComponent,
+              program.stack,
+              program.script,
+              tokens.toList,
+              program.altStack,
+              program.flags,
+              program.lastCodeSeparator
+            )
+          case _: ExecutedScriptProgram =>
+            throw new RuntimeException("Cannot update the original script for a program that has been fully executed")
+        }
 
     }
-  }
 
   def apply(oldProgram: ScriptProgram, stackTokens: Seq[ScriptToken], scriptTokens: Seq[ScriptToken]): ScriptProgram = {
-    val updatedStack = ScriptProgram(oldProgram, stackTokens, Stack)
+    val updatedStack  = ScriptProgram(oldProgram, stackTokens, Stack)
     val updatedScript = ScriptProgram(updatedStack, scriptTokens, Script)
     require(updatedStack.stack == stackTokens)
     require(updatedScript.script == scriptTokens)
@@ -156,66 +238,107 @@ object ScriptProgram extends BitcoinSLogger {
   }
 
   /** Updates the last [[org.scash.core.script.crypto.OP_CODESEPARATOR]] index. */
-  def apply(oldProgram: ExecutionInProgressScriptProgram, lastCodeSeparator: Int): ExecutionInProgressScriptProgram = {
+  def apply(oldProgram: ExecutionInProgressScriptProgram, lastCodeSeparator: Int): ExecutionInProgressScriptProgram =
     ExecutionInProgressScriptProgram(
       oldProgram.txSignatureComponent,
-      oldProgram.stack, oldProgram.script, oldProgram.originalScript,
-      oldProgram.altStack, oldProgram.flags, Some(lastCodeSeparator))
-  }
+      oldProgram.stack,
+      oldProgram.script,
+      oldProgram.originalScript,
+      oldProgram.altStack,
+      oldProgram.flags,
+      Some(lastCodeSeparator)
+    )
 
   /** Updates the [[ScriptToken]]s in either the stack or script and the last [[org.scash.core.script.crypto.OP_CODESEPARATOR]] index */
-  def apply(oldProgram: ExecutionInProgressScriptProgram, tokens: Seq[ScriptToken], indicator: UpdateIndicator,
-    lastCodeSeparator: Int): ExecutionInProgressScriptProgram = {
+  def apply(
+    oldProgram: ExecutionInProgressScriptProgram,
+    tokens: Seq[ScriptToken],
+    indicator: UpdateIndicator,
+    lastCodeSeparator: Int
+  ): ExecutionInProgressScriptProgram = {
     val updatedIndicator = ScriptProgram(oldProgram, tokens, indicator)
     updatedIndicator match {
       case e: ExecutionInProgressScriptProgram =>
         ScriptProgram(e, lastCodeSeparator)
       case _: PreExecutionScriptProgram | _: ExecutedScriptProgram =>
-        throw new RuntimeException("We must have a ExecutionInProgressScriptProgram to update the last OP_CODESEPARATOR index")
+        throw new RuntimeException(
+          "We must have a ExecutionInProgressScriptProgram to update the last OP_CODESEPARATOR index"
+        )
     }
   }
 
   /** Updates the [[Stack]], [[Script]], [[AltStack]] of the given [[ScriptProgram]]. */
-  def apply(oldProgram: ScriptProgram, stack: Seq[ScriptToken], script: Seq[ScriptToken], altStack: Seq[ScriptToken]): ScriptProgram = {
-    val updatedProgramStack = ScriptProgram(oldProgram, stack, Stack)
-    val updatedProgramScript = ScriptProgram(updatedProgramStack, script, Script)
+  def apply(
+    oldProgram: ScriptProgram,
+    stack: Seq[ScriptToken],
+    script: Seq[ScriptToken],
+    altStack: Seq[ScriptToken]
+  ): ScriptProgram = {
+    val updatedProgramStack    = ScriptProgram(oldProgram, stack, Stack)
+    val updatedProgramScript   = ScriptProgram(updatedProgramStack, script, Script)
     val updatedProgramAltStack = ScriptProgram(updatedProgramScript, altStack, AltStack)
     updatedProgramAltStack
   }
 
   /** Changes a [[ScriptProgram]] that is a [[ExecutionInProgressScriptProgram]] and changes it to an [[ExecutedScriptProgram]].*/
-  def toExecutedProgram(executionInProgressScriptProgram: ExecutionInProgressScriptProgram): ExecutedScriptProgram = {
-    ExecutedScriptProgram(executionInProgressScriptProgram.txSignatureComponent, executionInProgressScriptProgram.stack,
-      executionInProgressScriptProgram.script, executionInProgressScriptProgram.originalScript, executionInProgressScriptProgram.altStack,
-      executionInProgressScriptProgram.flags, None)
-  }
+  def toExecutedProgram(executionInProgressScriptProgram: ExecutionInProgressScriptProgram): ExecutedScriptProgram =
+    ExecutedScriptProgram(
+      executionInProgressScriptProgram.txSignatureComponent,
+      executionInProgressScriptProgram.stack,
+      executionInProgressScriptProgram.script,
+      executionInProgressScriptProgram.originalScript,
+      executionInProgressScriptProgram.altStack,
+      executionInProgressScriptProgram.flags,
+      None
+    )
 
   /** Changes a [[ScriptProgram]] that is a [[PreExecutionScriptProgram]] and changes it to an [[ExecutionInProgressScriptProgram]].*/
-  def toExecutionInProgress(preExecutionScriptProgram: PreExecutionScriptProgram): ExecutionInProgressScriptProgram = {
+  def toExecutionInProgress(preExecutionScriptProgram: PreExecutionScriptProgram): ExecutionInProgressScriptProgram =
     toExecutionInProgress(preExecutionScriptProgram, None)
-  }
 
   /** Changes a [[ScriptProgram]] that is a [[PreExecutionScriptProgram]] and changes it to an [[ExecutionInProgressScriptProgram]] given the stack state. */
-  def toExecutionInProgress(preExecutionScriptProgram: PreExecutionScriptProgram, stack: Option[Seq[ScriptToken]]): ExecutionInProgressScriptProgram = {
+  def toExecutionInProgress(
+    preExecutionScriptProgram: PreExecutionScriptProgram,
+    stack: Option[Seq[ScriptToken]]
+  ): ExecutionInProgressScriptProgram =
     stack match {
-      case Some(stackTokens) => ExecutionInProgressScriptProgram(preExecutionScriptProgram.txSignatureComponent, stackTokens.toList, preExecutionScriptProgram.script,
-        preExecutionScriptProgram.originalScript, preExecutionScriptProgram.altStack, preExecutionScriptProgram.flags, None)
+      case Some(stackTokens) =>
+        ExecutionInProgressScriptProgram(
+          preExecutionScriptProgram.txSignatureComponent,
+          stackTokens.toList,
+          preExecutionScriptProgram.script,
+          preExecutionScriptProgram.originalScript,
+          preExecutionScriptProgram.altStack,
+          preExecutionScriptProgram.flags,
+          None
+        )
       case None =>
-        ExecutionInProgressScriptProgram(preExecutionScriptProgram.txSignatureComponent, preExecutionScriptProgram.stack, preExecutionScriptProgram.script,
-          preExecutionScriptProgram.originalScript, preExecutionScriptProgram.altStack, preExecutionScriptProgram.flags, None)
+        ExecutionInProgressScriptProgram(
+          preExecutionScriptProgram.txSignatureComponent,
+          preExecutionScriptProgram.stack,
+          preExecutionScriptProgram.script,
+          preExecutionScriptProgram.originalScript,
+          preExecutionScriptProgram.altStack,
+          preExecutionScriptProgram.flags,
+          None
+        )
     }
-  }
 }
 
 object PreExecutionScriptProgram {
+
   /**
    * Implementation type for a [[PreExecutionScriptProgram]] - a [[ScriptProgram]] that has not yet begun being
    * evaluated  by the [[org.scash.core.script.interpreter.ScriptInterpreter]].
    */
   private case class PreExecutionScriptProgramImpl(
     txSignatureComponent: TxSigComponent,
-    stack: List[ScriptToken], script: List[ScriptToken], originalScript: List[ScriptToken], altStack: List[ScriptToken],
-    flags: Seq[ScriptFlag]) extends PreExecutionScriptProgram
+    stack: List[ScriptToken],
+    script: List[ScriptToken],
+    originalScript: List[ScriptToken],
+    altStack: List[ScriptToken],
+    flags: Seq[ScriptFlag]
+  ) extends PreExecutionScriptProgram
 
   def apply(
     txSignatureComponent: TxSigComponent,
@@ -223,51 +346,36 @@ object PreExecutionScriptProgram {
     script: List[ScriptToken],
     originalScript: List[ScriptToken],
     altStack: List[ScriptToken],
-    flags: Seq[ScriptFlag]): PreExecutionScriptProgram = {
+    flags: Seq[ScriptFlag]
+  ): PreExecutionScriptProgram =
     PreExecutionScriptProgramImpl(txSignatureComponent, stack, script, originalScript, altStack, flags)
-  }
 
-  def apply(txSigComponent: TxSigComponent): PreExecutionScriptProgram = {
+  def apply(txSigComponent: TxSigComponent): PreExecutionScriptProgram =
     PreExecutionScriptProgram(
       txSignatureComponent = txSigComponent,
       stack = Nil,
       script = txSigComponent.scriptSignature.asm.toList,
       originalScript = txSigComponent.scriptSignature.asm.toList,
       altStack = Nil,
-      flags = txSigComponent.flags)
-  }
+      flags = txSigComponent.flags
+    )
 }
 
 object ExecutionInProgressScriptProgram {
+
   /**
    * Implementation type for a [[ExecutionInProgressScriptProgram]] - a [[ScriptProgram]] that is currently being
    * evaluated by the [[org.scash.core.script.interpreter.ScriptInterpreter]].
    */
   private case class ExecutionInProgressScriptProgramImpl(
     txSignatureComponent: TxSigComponent,
-    stack: List[ScriptToken], script: List[ScriptToken], originalScript: List[ScriptToken], altStack: List[ScriptToken],
-    flags: Seq[ScriptFlag], lastCodeSeparator: Option[Int]) extends ExecutionInProgressScriptProgram
-
-  def apply(
-    txSignatureComponent: TxSigComponent,
     stack: List[ScriptToken],
     script: List[ScriptToken],
     originalScript: List[ScriptToken],
     altStack: List[ScriptToken],
-    flags: Seq[ScriptFlag], lastCodeSeparator: Option[Int]): ExecutionInProgressScriptProgram = {
-    ExecutionInProgressScriptProgramImpl(txSignatureComponent, stack, script, originalScript, altStack, flags, lastCodeSeparator)
-  }
-}
-
-object ExecutedScriptProgram {
-  /**
-   * The implementation type for a [[ExecutedScriptProgram]] - a [[ScriptProgram]] that has been evaluated completely
-   * by the [[org.scash.core.script.interpreter.ScriptInterpreter]].
-   */
-  private case class ExecutedScriptProgramImpl(
-    txSignatureComponent: TxSigComponent,
-    stack: List[ScriptToken], script: List[ScriptToken], originalScript: List[ScriptToken], altStack: List[ScriptToken],
-    flags: Seq[ScriptFlag], error: Option[ScriptError]) extends ExecutedScriptProgram
+    flags: Seq[ScriptFlag],
+    lastCodeSeparator: Option[Int]
+  ) extends ExecutionInProgressScriptProgram
 
   def apply(
     txSignatureComponent: TxSigComponent,
@@ -276,7 +384,43 @@ object ExecutedScriptProgram {
     originalScript: List[ScriptToken],
     altStack: List[ScriptToken],
     flags: Seq[ScriptFlag],
-    error: Option[ScriptError]): ExecutedScriptProgram = {
+    lastCodeSeparator: Option[Int]
+  ): ExecutionInProgressScriptProgram =
+    ExecutionInProgressScriptProgramImpl(
+      txSignatureComponent,
+      stack,
+      script,
+      originalScript,
+      altStack,
+      flags,
+      lastCodeSeparator
+    )
+}
+
+object ExecutedScriptProgram {
+
+  /**
+   * The implementation type for a [[ExecutedScriptProgram]] - a [[ScriptProgram]] that has been evaluated completely
+   * by the [[org.scash.core.script.interpreter.ScriptInterpreter]].
+   */
+  private case class ExecutedScriptProgramImpl(
+    txSignatureComponent: TxSigComponent,
+    stack: List[ScriptToken],
+    script: List[ScriptToken],
+    originalScript: List[ScriptToken],
+    altStack: List[ScriptToken],
+    flags: Seq[ScriptFlag],
+    error: Option[ScriptError]
+  ) extends ExecutedScriptProgram
+
+  def apply(
+    txSignatureComponent: TxSigComponent,
+    stack: List[ScriptToken],
+    script: List[ScriptToken],
+    originalScript: List[ScriptToken],
+    altStack: List[ScriptToken],
+    flags: Seq[ScriptFlag],
+    error: Option[ScriptError]
+  ): ExecutedScriptProgram =
     ExecutedScriptProgramImpl(txSignatureComponent, stack, script, originalScript, altStack, flags, error)
-  }
 }
