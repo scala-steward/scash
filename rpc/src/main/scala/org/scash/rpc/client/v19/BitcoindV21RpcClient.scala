@@ -19,14 +19,14 @@ import scala.util.Try
 /**
   * Class for creating a BitcoindV19 instance that can access RPCs
   */
-class BitcoindV19RpcClient(override val instance: BitcoindInstance)(
+class BitcoindV21RpcClient(override val instance: BitcoindInstance)(
     implicit
     actorSystem: ActorSystem)
     extends BitcoindRpcClient(instance)
     with DescriptorRpc
     with PsbtRpc {
 
-  override lazy val version: BitcoindVersion = BitcoindVersion.V19
+  override lazy val version: BitcoindVersion = BitcoindVersion.V21
 
   /**
     * $signRawTx
@@ -79,7 +79,7 @@ class BitcoindV19RpcClient(override val instance: BitcoindInstance)(
 
 }
 
-object BitcoindV19RpcClient {
+object BitcoindV21RpcClient {
 
   /**
     * Creates an RPC client from the given instance.
@@ -88,7 +88,7 @@ object BitcoindV19RpcClient {
     * you. You can use `withActorSystem` if you want to
     * manually specify an actor system for the RPC client.
     */
-  def apply(instance: BitcoindInstance): BitcoindV19RpcClient = {
+  def apply(instance: BitcoindInstance): BitcoindV21RpcClient = {
     implicit val system =
       ActorSystem.create(BitcoindRpcClient.ActorSystemName)
     withActorSystem(instance)
@@ -101,13 +101,13 @@ object BitcoindV19RpcClient {
     * over the RPC client.
     */
   def withActorSystem(instance: BitcoindInstance)(
-      implicit system: ActorSystem): BitcoindV19RpcClient =
-    new BitcoindV19RpcClient(instance)(system)
+      implicit system: ActorSystem): BitcoindV21RpcClient =
+    new BitcoindV21RpcClient(instance)(system)
 
   def fromUnknownVersion(
-      rpcClient: BitcoindRpcClient): Try[BitcoindV19RpcClient] =
+      rpcClient: BitcoindRpcClient): Try[BitcoindV21RpcClient] =
     Try {
-      new BitcoindV19RpcClient(rpcClient.instance)(rpcClient.system)
+      new BitcoindV21RpcClient(rpcClient.instance)(rpcClient.system)
     }
 
 }

@@ -198,7 +198,7 @@ trait WalletRpc { self: Client =>
       blank: Boolean = false,
       passphrase: String = ""): Future[CreateWalletResult] =
     self.version match {
-      case V19 | Experimental | Unknown =>
+      case V21 | Experimental | Unknown =>
         bitcoindCall[CreateWalletResult]("createwallet",
                                          List(JsString(walletName),
                                               JsBoolean(disablePrivateKeys),

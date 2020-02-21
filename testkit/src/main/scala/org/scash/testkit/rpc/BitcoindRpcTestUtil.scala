@@ -39,7 +39,7 @@ import org.scash.rpc.client.common.{
 import org.scash.rpc.client.v16.BitcoindV16RpcClient
 import org.scash.rpc.client.v17.BitcoindV17RpcClient
 import org.scash.rpc.client.v18.BitcoindV18RpcClient
-import org.scash.rpc.client.v19.BitcoindV19RpcClient
+import org.scash.rpc.client.v19.BitcoindV21RpcClient
 import org.scash.rpc.config.{
   BitcoindAuthCredentials,
   BitcoindConfig,
@@ -182,7 +182,7 @@ trait BitcoindRpcTestUtil extends BitcoinSLogger {
 
     // default to newest version
     case Unknown => getBinary(BitcoindVersion.newest)
-    case known @ (Experimental | V16 | V17 | V18 | V19) =>
+    case known @ (Experimental | V16 | V17 | V18 | V21) =>
       val fileList = Files
         .list(binaryDirectory)
         .iterator()
@@ -225,7 +225,7 @@ trait BitcoindRpcTestUtil extends BitcoinSLogger {
     versionOpt: Option[BitcoindVersion] = None): BitcoindInstance = {
     val uri = new URI("http://localhost:" + port)
     val rpcUri = new URI("http://localhost:" + rpcPort)
-    val hasNeutrinoSupport = versionOpt.contains(BitcoindVersion.V19) || versionOpt
+    val hasNeutrinoSupport = versionOpt.contains(BitcoindVersion.V21) || versionOpt
       .contains(BitcoindVersion.Experimental)
     val configFile =
       writtenConfig(uri,
@@ -306,7 +306,7 @@ trait BitcoindRpcTestUtil extends BitcoinSLogger {
              rpcPort = rpcPort,
              zmqPort = zmqPort,
              pruneMode = pruneMode,
-             versionOpt = Some(BitcoindVersion.V19))
+             versionOpt = Some(BitcoindVersion.V21))
 
   def vExperimentalInstance(
     port: Int = RpcUtil.randomPort,
@@ -611,11 +611,11 @@ trait BitcoindRpcTestUtil extends BitcoinSLogger {
         case BitcoindVersion.V18 =>
           BitcoindV18RpcClient.withActorSystem(
             BitcoindRpcTestUtil.v18Instance())
-        case BitcoindVersion.V19 =>
-          BitcoindV19RpcClient.withActorSystem(
+        case BitcoindVersion.V21 =>
+          BitcoindV21RpcClient.withActorSystem(
             BitcoindRpcTestUtil.v19Instance())
         case BitcoindVersion.Experimental =>
-          BitcoindV19RpcClient.withActorSystem(
+          BitcoindV21RpcClient.withActorSystem(
             BitcoindRpcTestUtil.vExperimentalInstance())
       }
 
@@ -692,13 +692,13 @@ trait BitcoindRpcTestUtil extends BitcoinSLogger {
     createNodePairInternal(BitcoindVersion.V18, clientAccum)
 
   /**
-   * Returns a pair of [[org.scash.rpc.client.v19.BitcoindV19RpcClient BitcoindV19RpcClient]]
+   * Returns a pair of [[org.scash.rpc.client.v19.BitcoindV21RpcClient BitcoindV21RpcClient]]
    * that are connected with some blocks in the chain
    */
-  def createNodePairV19(clientAccum: RpcClientAccum = Vector.newBuilder)(
+  def createNodePairV21(clientAccum: RpcClientAccum = Vector.newBuilder)(
     implicit system: ActorSystem): Future[
-    (BitcoindV19RpcClient, BitcoindV19RpcClient)] =
-    createNodePairInternal(BitcoindVersion.V19, clientAccum)
+    (BitcoindV21RpcClient, BitcoindV21RpcClient)] =
+    createNodePairInternal(BitcoindVersion.V21, clientAccum)
 
   /**
    * Returns a triple of [[org.scash.rpc.client.common.BitcoindRpcClient BitcoindRpcClient]]
@@ -749,8 +749,8 @@ trait BitcoindRpcTestUtil extends BitcoinSLogger {
   def createNodeTripleV19(
     clientAccum: RpcClientAccum = Vector.newBuilder
   )(implicit system: ActorSystem): Future[
-    (BitcoindV19RpcClient, BitcoindV19RpcClient, BitcoindV19RpcClient)] = {
-    createNodeTripleInternal(BitcoindVersion.V19, clientAccum)
+    (BitcoindV21RpcClient, BitcoindV21RpcClient, BitcoindV21RpcClient)] = {
+    createNodeTripleInternal(BitcoindVersion.V21, clientAccum)
   }
 
   def createRawCoinbaseTransaction(
@@ -804,7 +804,7 @@ trait BitcoindRpcTestUtil extends BitcoinSLogger {
         val v16T = BitcoindV16RpcClient.fromUnknownVersion(unknown)
         val v17T = BitcoindV17RpcClient.fromUnknownVersion(unknown)
         val v18T = BitcoindV18RpcClient.fromUnknownVersion(unknown)
-        val v19T = BitcoindV19RpcClient.fromUnknownVersion(unknown)
+        val v19T = BitcoindV21RpcClient.fromUnknownVersion(unknown)
         (v16T, v17T, v18T, v19T) match {
           case (Failure(_), Failure(_), Failure(_), Failure(_)) =>
             throw new RuntimeException(

@@ -2,20 +2,20 @@ package org.scash.rpc.v19
 
 import org.scash.rpc.client.common.BitcoindVersion
 import org.scash.rpc.client.common.RpcOpts.WalletFlag
-import org.scash.rpc.client.v19.BitcoindV19RpcClient
+import org.scash.rpc.client.v19.BitcoindV21RpcClient
 import org.scash.testkit.rpc.BitcoindRpcTestUtil
 import org.scash.testkit.util.BitcoindRpcTest
 
 import scala.concurrent.Future
 
-class BitcoindV19RpcClientTest extends BitcoindRpcTest {
-  lazy val clientF: Future[BitcoindV19RpcClient] = {
-    val client = new BitcoindV19RpcClient(BitcoindRpcTestUtil.v19Instance())
+class BitcoindV21RpcClientTest extends BitcoindRpcTest {
+  lazy val clientF: Future[BitcoindV21RpcClient] = {
+    val client = new BitcoindV21RpcClient(BitcoindRpcTestUtil.v19Instance())
     val clientIsStartedF = BitcoindRpcTestUtil.startServers(Vector(client))
     clientIsStartedF.map(_ => client)
   }
-  lazy val clientPairF: Future[(BitcoindV19RpcClient, BitcoindV19RpcClient)] =
-    BitcoindRpcTestUtil.createNodePairV19(clientAccum)
+  lazy val clientPairF: Future[(BitcoindV21RpcClient, BitcoindV21RpcClient)] =
+    BitcoindRpcTestUtil.createNodePairV21(clientAccum)
 
   clientF.foreach(c => clientAccum.+=(c))
 
@@ -24,7 +24,7 @@ class BitcoindV19RpcClientTest extends BitcoindRpcTest {
   it should "be able to start a V19 bitcoind instance" in {
 
     clientF.map { client =>
-      assert(client.version == BitcoindVersion.V19)
+      assert(client.version == BitcoindVersion.V21)
     }
 
   }
