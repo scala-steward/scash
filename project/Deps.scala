@@ -41,7 +41,7 @@ object Deps {
 
   object Test {
     val newAsync       = "org.scala-lang.modules" %% "scala-async" % V.asyncNewScalaV % "test" withSources () withJavadoc ()
-    val bitcoinj       = ("org.bitcoinj" % "bitcoinj-core" % "0.14.4" % "test").exclude("org.slf4j", "slf4j-api")
+    val bitcoinj       = ("org.bitcoinj" % "bitcoinj-core" % "0.14.7" % "test").exclude("org.slf4j", "slf4j-api")
     val junitInterface = "com.novocode" % "junit-interface" % V.junitv % "test"
     val logback        = "ch.qos.logback" % "logback-classic" % V.logback % "test"
     val scalacheck     = "org.scalacheck" %% "scalacheck" % V.scalacheck % "test" withSources () withJavadoc ()
