@@ -1,32 +1,30 @@
 # Use container-based infrastructure
-sudo: false
-
 language: scala
 
+env:
+  matrix:
+    - TEST_COMMAND="rpcTest/test rpc/coverageReport rpc/coverageAggregate rpc/coveralls"
+    - TEST_COMMAND="coreTest/test core/coverageReport core/coverageAggregate core/coveralls secp256k1jni/test"
+
+os: linux
 jdk:
   - oraclejdk8
   - openjdk8
 
 scala:
-  - 2.12.8
+  - 2.13.1
 
 # These directories are cached to S3 at the end of the build
 cache:
   directories:
     - $HOME/.ivy2/cache
     - $HOME/.sbt/boot/
+    - $PWD/binaries/bitcoind/
 
 before_cache:
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
-
-before_install:
-  - wget https://download.bitcoinabc.org/0.18.7/linux/bitcoin-abc-0.18.7-x86_64-linux-gnu.tar.gz
-  - tar -xzf bitcoin-abc-0.18.7-x86_64-linux-gnu.tar.gz
-  - cd bitcoin-abc-0.18.7/bin
-  - export PATH=$PATH:$(pwd)
-  - cd ../..
 
 addons:
   apt:
@@ -38,9 +36,6 @@ install:
   - ./configure --enable-jni --enable-experimental --enable-module-ecdh
   - sudo make install
   - cd ../
+
 script:
-  - sbt clean coverage test &&
-    sbt core/coverageReport &&
-    sbt coverageAggregate
-after_success:
-  - sbt coveralls
+  - sbt downloadBitcoind coverage

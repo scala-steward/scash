@@ -51,15 +51,6 @@ object CommonSettings {
       )
   }
 
-  private val scala2_13CompilerOpts = Seq("-Xlint:unused")
-
-  private val nonScala2_13CompilerOpts = Seq(
-    "-Xmax-classfile-name",
-    "128",
-    "-Ywarn-unused",
-    "-Ywarn-unused-import"
-    )
-
   //https://docs.scala-lang.org/overviews/compiler-options/index.html
   def compilerOpts(scalaVersion: String): Seq[String] =
     Seq(
@@ -73,11 +64,9 @@ object CommonSettings {
       "-Ywarn-unused",
       "-unchecked",
       "-deprecation",
-      "-feature"
-      ) ++ commonCompilerOpts ++ {
-      if (scalaVersion.startsWith("2.13")) scala2_13CompilerOpts
-      else nonScala2_13CompilerOpts
-    }
+      "-feature",
+      "-Xlint:unused"
+      ) ++ commonCompilerOpts
 
   val testCompilerOpts: Seq[String] = commonCompilerOpts
 
