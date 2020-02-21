@@ -18,7 +18,7 @@ object Deps {
     val zio             = "1.0.0-RC17"
     val typesafeConfigV = "1.4.0"
     val nativeLoaderV   = "2.3.4"
-    val scalaTestPlus   = "3.1.0.1"
+    val scalaTestPlus   = "3.1.1.1"
     val asyncNewScalaV  = "0.10.0"
     val akkaActorV      = akkaStreamv
   }
