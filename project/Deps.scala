@@ -10,8 +10,8 @@ object Deps {
     val spray           = "1.3.5"
     val zeromq          = "0.5.1"
     val akkav           = "10.1.11"
-    val akkaStreamv     = "2.6.3"
-    val playv           = "2.7.4"
+    val akkaStreamv     = "2.5.29"
+    val playv           = "2.8.1"
     val scalazv         = "7.2.30"
     val scodecbitsv     = "1.1.13"
     val junitv          = "0.11"
@@ -21,6 +21,7 @@ object Deps {
     val scalaTestPlus   = "3.1.0.1"
     val asyncNewScalaV  = "0.10.0"
     val akkaActorV      = akkaStreamv
+    val sttpV           = "2.0.0-RC13"
   }
 
   object Compile {
@@ -35,8 +36,8 @@ object Deps {
     val zio            = "dev.zio"           %% "zio"           % V.zio withSources () withJavadoc ()
     val typesafeConfig = "com.typesafe"      % "config"         % V.typesafeConfigV withSources () withJavadoc ()
     //for loading secp256k1 natively
-    val nativeLoader = "org.scijava" % "native-lib-loader" % V.nativeLoaderV withSources () withJavadoc ()
-
+    val nativeLoader = "org.scijava"                  % "native-lib-loader" % V.nativeLoaderV withSources () withJavadoc ()
+    val sttp         = "com.softwaremill.sttp.client" %% "core"             % V.sttpV
   }
 
   object Test {
@@ -87,7 +88,8 @@ object Deps {
     Compile.playJson,
     Compile.slf4j,
     Compile.typesafeConfig,
-    Compile.zio
+    Compile.zio,
+    Compile.sttp
   )
 
   def rpcTest(scalaVersion: String) = List(
