@@ -12,7 +12,7 @@ import play.api.libs.json.JsSuccess
  * @see [[https://github.com/bitcoin/bitcoin/blob/eb7daf4d600eeb631427c018a984a77a34aca66e/src/rpc/protocol.h#L32 protcol.h]]
  *      for an enumeration of all error codes used
  */
-sealed abstract class BitcoindException(private val message: String) extends Exception {
+sealed abstract class BitcoindException(private val message: String) extends Throwable {
   override def getMessage(): String = s"Error $code: $message"
   val code: Int
 }

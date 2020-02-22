@@ -6,16 +6,17 @@ import java.nio.file.{ Files, Paths }
 
 import org.scash.core.config.NetworkParameters
 import org.scash.core.util.BitcoinSLogger
-import org.scash.rpc.client.common.BitcoindVersion
+import org.scash.rpc.client.common.{ BitcoindRpcClient, BitcoindVersion }
 
 import scala.sys.process._
 import org.scash.core.util.BitcoinSLogger
 import org.scash.core.config.NetworkParameters
+import org.scash.rpc.config.BitcoindAuthCredentials.{ CookieBased, PasswordBased }
+import org.scash.rpc.util.AsyncUtil
+import zio.{ UIO, ZIO }
 
-import scala.util.Properties
-import java.nio.file.Files
-
-import scala.util.Properties
+import scala.util.{ Failure, Properties, Success }
+import scala.concurrent.{ Future, Promise }
 
 /**
  * Created by chris on 4/29/17.
@@ -63,6 +64,20 @@ sealed trait BitcoindInstance extends BitcoinSLogger {
   }
 
   def p2pPort: Int = uri.getPort
+
+  def start: UIO[BitcoindRpcClient] = {
+    val binaryPath = binary.getAbsolutePath
+    val cmd = List(
+      binaryPath,
+      "-datadir=" + datadir,
+      "-rpcport=" + rpcUri.getPort,
+      "-port=" + uri.getPort
+    )
+
+    logger.debug(s"starting bitcoind with datadir ${datadir} and binary path $binaryPath")
+    ZIO.succeed(Process(cmd).run())
+  }
+
 }
 
 object BitcoindInstance {

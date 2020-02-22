@@ -293,7 +293,7 @@ object BitcoindConfig extends BitcoinSLogger {
 
   /** Reads the given file and construct a `bitcoind` config from it */
   def apply(config: File, datadir: File = DEFAULT_DATADIR): BitcoindConfig = {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     val lines = Files
       .readAllLines(config.toPath)

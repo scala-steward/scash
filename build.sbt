@@ -1,7 +1,7 @@
 cancelable in Global := true
 
 lazy val core = project in file("core")
-lazy val rpc = project in file("rpc")
+lazy val rpc  = project in file("rpc")
 
 lazy val scash = project
   .in(file("."))
@@ -10,7 +10,7 @@ lazy val scash = project
     core,
     testkit,
     coreTest,
-    rpc,
+    rpc
     //rpcTest,
   )
   .settings(CommonSettings.settings: _*)
@@ -27,7 +27,7 @@ lazy val testkit = project
   .enablePlugins()
   .settings(CommonSettings.prodSettings: _*)
   .dependsOn(
-    core  % "compile->compile;test->test",
+    core % "compile->compile;test->test",
     rpc
   )
 
@@ -45,7 +45,6 @@ lazy val rpcTest = project
   .in(file("rpc-test"))
   .settings(CommonSettings.testSettings: _*)
   .dependsOn(
-    core % "compile->compile;test->test",
+    core % "compile->compile",
     testkit
   )
-

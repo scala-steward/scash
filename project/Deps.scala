@@ -36,8 +36,10 @@ object Deps {
     val zio            = "dev.zio"           %% "zio"           % V.zio withSources () withJavadoc ()
     val typesafeConfig = "com.typesafe"      % "config"         % V.typesafeConfigV withSources () withJavadoc ()
     //for loading secp256k1 natively
-    val nativeLoader = "org.scijava"                  % "native-lib-loader" % V.nativeLoaderV withSources () withJavadoc ()
-    val sttp         = "com.softwaremill.sttp.client" %% "core"             % V.sttpV
+    val nativeLoader = "org.scijava"                  % "native-lib-loader"              % V.nativeLoaderV withSources () withJavadoc ()
+    val sttp         = "com.softwaremill.sttp.client" %% "core"                          % V.sttpV
+    val sttpZio      = "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % V.sttpV
+    val sttpJson     = "com.softwaremill.sttp.client" %% "play-json"                     % V.sttpV
   }
 
   object Test {
@@ -89,7 +91,9 @@ object Deps {
     Compile.slf4j,
     Compile.typesafeConfig,
     Compile.zio,
-    Compile.sttp
+    Compile.sttp,
+    Compile.sttpZio,
+    Compile.sttpJson
   )
 
   def rpcTest(scalaVersion: String) = List(

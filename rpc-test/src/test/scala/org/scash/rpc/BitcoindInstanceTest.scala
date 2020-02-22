@@ -1,18 +1,14 @@
 package org.scash.rpc
 
-import java.io.{File, PrintWriter}
+import java.io.{ File, PrintWriter }
 import java.net.URI
-import java.nio.file.{Files, Path}
+import java.nio.file.{ Files, Path }
 
 import akka.stream.StreamTcpException
 import org.scash.core.config.RegTest
 import org.scash.core.currency.Bitcoins
 import org.scash.rpc.client.common.BitcoindRpcClient
-import org.scash.rpc.config.{
-  BitcoindAuthCredentials,
-  BitcoindConfig,
-  BitcoindInstance
-}
+import org.scash.rpc.config.{ BitcoindAuthCredentials, BitcoindConfig, BitcoindInstance }
 import org.scash.rpc.util.RpcUtil
 import org.scash.testkit.rpc.BitcoindRpcTestUtil
 import org.scash.testkit.rpc.BitcoindRpcTestUtil.newestBitcoindBinary
@@ -33,20 +29,20 @@ class BitcoindInstanceTest extends BitcoindRpcTest {
 
   override protected def beforeAll(): Unit = {
     val confFile = new File(datadir.toString + "/bitcoin.conf")
-    val pw = new PrintWriter(confFile)
+    val pw       = new PrintWriter(confFile)
     sampleConf.foreach(line => pw.write(line + "\n"))
     pw.close()
   }
 
   /**
-    * Tests that the client can call the isStartedF method
-    * without throwing and then start
-    */
+   * Tests that the client can call the isStartedF method
+   * without throwing and then start
+   */
   private def testClientStart(client: BitcoindRpcClient): Future[Assertion] = {
     clientAccum += client
     for {
-      firstStarted <- client.isStartedF
-      _ <- client.start()
+      firstStarted  <- client.isStartedF
+      _             <- client.start()
       secondStarted <- client.isStartedF
 
       _ <- client.getBalance
@@ -66,11 +62,12 @@ class BitcoindInstanceTest extends BitcoindRpcTest {
                      |rpcport=${RpcUtil.randomPort}
     """.stripMargin
 
-    val conf = BitcoindConfig(confStr, BitcoindRpcTestUtil.tmpDir())
+    val conf     = BitcoindConfig(confStr, BitcoindRpcTestUtil.tmpDir())
     val instance = BitcoindInstance.fromConfig(conf, newestBitcoindBinary)
     assert(
       instance.authCredentials
-        .isInstanceOf[BitcoindAuthCredentials.CookieBased])
+        .isInstanceOf[BitcoindAuthCredentials.CookieBased]
+    )
 
     val cli = BitcoindRpcClient.withActorSystem(instance)
     testClientStart(cli)
@@ -86,11 +83,12 @@ class BitcoindInstanceTest extends BitcoindRpcTest {
                      |rpcport=${RpcUtil.randomPort}
       """.stripMargin
 
-    val conf = BitcoindConfig(confStr, BitcoindRpcTestUtil.tmpDir())
+    val conf     = BitcoindConfig(confStr, BitcoindRpcTestUtil.tmpDir())
     val instance = BitcoindInstance.fromConfig(conf, newestBitcoindBinary)
     assert(
       instance.authCredentials
-        .isInstanceOf[BitcoindAuthCredentials.PasswordBased])
+        .isInstanceOf[BitcoindAuthCredentials.PasswordBased]
+    )
     testClientStart(BitcoindRpcClient.withActorSystem(instance))
   }
 
@@ -104,7 +102,7 @@ class BitcoindInstanceTest extends BitcoindRpcTest {
   // strong_password
 
   it should "start a bitcoind with auth based authentication" in {
-    val port = RpcUtil.randomPort
+    val port    = RpcUtil.randomPort
     val rpcPort = RpcUtil.randomPort
     val confStr = s"""
                      |daemon=1
@@ -116,8 +114,7 @@ class BitcoindInstanceTest extends BitcoindRpcTest {
 
     val conf = BitcoindConfig(confStr, BitcoindRpcTestUtil.tmpDir())
     val authCredentials =
-      BitcoindAuthCredentials.PasswordBased(username = "bitcoin-s",
-                                            password = "strong_password")
+      BitcoindAuthCredentials.PasswordBased(username = "bitcoin-s", password = "strong_password")
     val instance =
       BitcoindInstance(
         network = RegTest,
@@ -130,28 +127,26 @@ class BitcoindInstanceTest extends BitcoindRpcTest {
 
     testClientStart(BitcoindRpcClient.withActorSystem(instance))
   }
-/*
+
   it should "parse a bitcoin.conf file, start bitcoind, mine some blocks and quit" in {
     val instance =
       BitcoindInstance.fromDatadir(datadir.toFile, newestBitcoindBinary)
     val client = BitcoindRpcClient.withActorSystem(instance)
 
     for {
-      _ <- client.start()
-      _ <- client.getNewAddress.flatMap(client.generateToAddress(101, _))
+      _       <- client.start()
+      _       <- client.getNewAddress.flatMap(client.generateToAddress(101, _))
       balance <- client.getBalance
-      _ <- BitcoindRpcTestUtil.stopServers(Vector(client))
-      _ <- client.getBalance
-        .map { balance =>
-          logger.error(s"Got unexpected balance: $balance")
-          fail("Was able to connect to bitcoind after shutting down")
-        }
-        .recover {
-          case _: StreamTcpException =>
-            ()
-        }
+      _       <- BitcoindRpcTestUtil.stopServers(Vector(client))
+      _ <- client.getBalance.map { balance =>
+            logger.error(s"Got unexpected balance: $balance")
+            fail("Was able to connect to bitcoind after shutting down")
+          }.recover {
+            case _: StreamTcpException =>
+              ()
+          }
     } yield assert(balance > Bitcoins(0))
 
   }
-*/
+
 }
