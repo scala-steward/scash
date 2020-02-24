@@ -5,20 +5,20 @@ object Deps {
     val bouncyCastle    = "1.55"
     val logback         = "1.2.3"
     val scalacheck      = "1.14.3"
-    val scalaTest       = "3.1.0"
+    val scalaTest       = "3.1.1"
     val slf4j           = "1.7.30"
     val spray           = "1.3.5"
     val zeromq          = "0.5.1"
     val akkav           = "10.1.11"
     val akkaStreamv     = "2.5.29"
-    val playv           = "2.7.4"
+    val playv           = "2.8.1"
     val scalazv         = "7.2.30"
     val scodecbitsv     = "1.1.13"
     val junitv          = "0.11"
-    val zio             = "1.0.0-RC17"
+    val zioV            = "1.0.0-RC17"
     val typesafeConfigV = "1.4.0"
     val nativeLoaderV   = "2.3.4"
-    val scalaTestPlus   = "3.1.0.1"
+    val scalaTestPlus   = "3.1.1.1"
     val asyncNewScalaV  = "0.10.0"
     val akkaActorV      = akkaStreamv
     val sttpV           = "2.0.0-RC13"
@@ -33,7 +33,7 @@ object Deps {
     val akkaStream     = "com.typesafe.akka" %% "akka-stream"   % V.akkaStreamv
     val playJson       = "com.typesafe.play" %% "play-json"     % V.playv
     val scalaz         = "org.scalaz"        %% "scalaz-core"   % V.scalazv withSources () withJavadoc ()
-    val zio            = "dev.zio"           %% "zio"           % V.zio withSources () withJavadoc ()
+    val zio            = "dev.zio"           %% "zio"           % V.zioV withSources () withJavadoc ()
     val typesafeConfig = "com.typesafe"      % "config"         % V.typesafeConfigV withSources () withJavadoc ()
     //for loading secp256k1 natively
     val nativeLoader = "org.scijava"                  % "native-lib-loader"              % V.nativeLoaderV withSources () withJavadoc ()
@@ -54,6 +54,8 @@ object Deps {
     val akkaHttp       = "com.typesafe.akka" %% "akka-http-testkit" % V.akkav % "test"
     val akkaStream     = "com.typesafe.akka" %% "akka-stream-testkit" % V.akkaStreamv % "test"
     val akkaTestkit    = "com.typesafe.akka" %% "akka-testkit" % V.akkaActorV withSources () withJavadoc ()
+    val zioTest        = "dev.zio" %% "zio-test" % V.zioV % "test"
+    val zioTestsbt     = "dev.zio" %% "zio-test-sbt" % V.zioV % "test"
   }
 
   val core = List(
@@ -96,13 +98,15 @@ object Deps {
     Compile.sttpJson
   )
 
-  def rpcTest(scalaVersion: String) = List(
+  val rpcTest = List(
     Test.akkaHttp,
     Test.akkaStream,
     Test.logback,
     Test.scalaTest,
     Test.scalacheck,
-    Test.newAsync
+    Test.newAsync,
+    Test.zioTest,
+    Test.zioTestsbt
   )
 
 }
