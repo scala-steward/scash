@@ -22,30 +22,28 @@ object ClientService {
   def bitcoindCall[A](command: String, parameters: List[JsValue] = List.empty)(
     implicit reader: Reads[A]
   ): RIO[ZConfig, A] =
-    AsyncHttpClientZioBackend().bracket(
-      s => s.close().fold(_ => (), _ => ()), { implicit backend =>
-        val payload = JsObject(
-          Map(
-            "method" -> JsString(command),
-            "params" -> JsArray(parameters),
-            "id"     -> JsString(UUID.randomUUID().toString)
-          )
+    AsyncHttpClientZioBackend().flatMap { implicit backend =>
+      val payload = JsObject(
+        Map(
+          "method" -> JsString(command),
+          "params" -> JsArray(parameters),
+          "id"     -> JsString(UUID.randomUUID().toString)
         )
+      )
 
-        val response = for {
-          env <- ZIO.environment[ZConfig]
-          r <- basicRequest
-                .response(asStringAlways.map(parseJson[A]))
-                .post(env.uri)
-                .body(payload)
-                .auth
-                .basic(env.userName, env.passWord)
-                .send()
-        } yield r.body
+      val response = for {
+        env <- ZIO.environment[ZConfig]
+        r <- basicRequest
+              .response(asStringAlways.map(parseJson[A]))
+              .post(env.uri)
+              .body(payload)
+              .auth
+              .basic(env.userName, env.passWord)
+              .send()
+      } yield r.body
 
-        response.absolve
-      }
-    )
+      response.absolve.ensuring(backend.close().catchAll(_ => ZIO.unit))
+    }
 
   def parseJson[A](json: String)(implicit r: Reads[A]): Either[Throwable, A] =
     Try(Json.parse(json)) match {
