@@ -3,25 +3,22 @@ package org.scash.rpc.zrpc
 import java.util.UUID
 
 import org.scash.rpc.BitcoindException
-
-import org.scash.rpc.serializers.JsonSerializers._
 import play.api.libs.json._
-
 import sttp.client.asynchttpclient.zio.AsyncHttpClientZioBackend
 import sttp.client._
 import sttp.client.playJson._
-
-import zio.{ RIO, ZIO }
+import sttp.model.Uri
+import zio.{ RIO, Task, ZIO }
 
 import scala.util.{ Failure, Success, Try }
 
-object ClientService {
+case class ClientService(uri: Uri, userName: String, password: String) {
   private val resultKey: String = "result"
   private val errorKey: String  = "error"
 
   def bitcoindCall[A](command: String, parameters: List[JsValue] = List.empty)(
     implicit reader: Reads[A]
-  ): RIO[ZConfig, A] =
+  ): Task[A] =
     AsyncHttpClientZioBackend().flatMap { implicit backend =>
       val payload = JsObject(
         Map(
@@ -32,13 +29,12 @@ object ClientService {
       )
 
       val response = for {
-        env <- ZIO.environment[ZConfig]
         r <- basicRequest
               .response(asStringAlways.map(parseJson[A]))
-              .post(env.uri)
+              .post(uri)
               .body(payload)
               .auth
-              .basic(env.userName, env.passWord)
+              .basic(userName, password)
               .send()
       } yield r.body
 

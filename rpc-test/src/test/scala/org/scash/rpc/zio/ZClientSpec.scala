@@ -1,20 +1,11 @@
 package org.scash.rpc.zio
 
-import java.io.File
-import java.net.URI
-import java.nio.charset.StandardCharsets.UTF_8
-import java.nio.file.{ Files, Path }
-
-import org.scash.core.config.RegTest
-import org.scash.rpc.config.{ BitcoindAuthCredentials, BitcoindInstance }
 import org.scash.rpc.jsonmodels.GetBlockChainInfoResult
-import zio._
-import zio.console._
+import org.scash.rpc.zrpc._
+
 import zio.test._
 import zio.test.Assertion._
-import zio.test.environment._
-import zio.{ Managed, RIO, Task, UIO }
-import org.scash.rpc.zrpc._
+
 import sttp.client._
 
 object ZClientSpec
@@ -22,24 +13,23 @@ object ZClientSpec
       suite("ZClient")(
         testM("ping") {
           val test = assertM(zrpc.ping, isUnit)
-          test.provide(Utils.instance)
+          test.provideM(Utils.instance)
         },
         testM("getBlockCount") {
           val test = assertM(zrpc.getBlockCount, isSubtype[Int](Assertion.anything))
-          test.provide(Utils.instance)
+          test.provideM(Utils.instance)
         },
         testM("getBlockchainInfo") {
           val test = assertM(zrpc.getBlockChainInfo, isSubtype[GetBlockChainInfoResult](Assertion.anything))
-          test.provide(Utils.instance)
+          test.provideM(Utils.instance)
         }
       )
     )
 
 object Utils {
-  val instance =
-    ZConfig(
-      userName = "user",
-      passWord = "password",
-      uri = uri"http://127.0.0.1:8332"
-    )
+  val instance = ZClient.Live.make(
+    uri"http://127.0.0.1:8332",
+    "user",
+    "password"
+  )
 }
