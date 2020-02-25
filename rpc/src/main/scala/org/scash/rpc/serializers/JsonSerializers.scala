@@ -55,7 +55,6 @@ import org.scash.rpc.jsonmodels.{
   Peer,
   PeerNetworkInfo,
   Softfork,
-  SoftforkProgress,
   SubmitHeaderResult,
   TestMempoolAcceptResult,
   ValidateAddressResultImpl
@@ -224,10 +223,9 @@ object JsonSerializers {
   implicit val getBlockWithTransactionsResultReads: Reads[GetBlockWithTransactionsResult] =
     Json.reads[GetBlockWithTransactionsResult]
 
-  implicit val softforkProgressReads: Reads[SoftforkProgress] =
-    Json.reads[SoftforkProgress]
-  implicit val softforkReads: Reads[Softfork]         = Json.reads[Softfork]
   implicit val bip9SoftforkReads: Reads[Bip9Softfork] = Json.reads[Bip9Softfork]
+  implicit val softforkReads: Reads[Softfork]         = Json.reads[Softfork]
+
   implicit val getBlockChainInfoResultReads: Reads[GetBlockChainInfoResult] =
     Json.reads[GetBlockChainInfoResult]
 

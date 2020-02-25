@@ -42,9 +42,9 @@ abstract class MerkleGenerator {
       block <- BlockchainElementsGenerator.block
       //choose some random txs in the block to put in the bloom filter
       txIds                       <- Gen.someOf(block.transactions.map(_.txId))
-      initialFilter               <- BloomFilterGenerator.bloomFilter(txIds.map(_.bytes))
+      initialFilter               <- BloomFilterGenerator.bloomFilter(txIds.map(_.bytes).toSeq)
       (merkleBlock, loadedFilter) = MerkleBlock(block, initialFilter)
-    } yield (merkleBlock, block, txIds, loadedFilter)
+    } yield (merkleBlock, block, txIds.toSeq, loadedFilter)
 
   /** Generates a partial merkle tree with a sequence of txids and a flag indicating if the txid was matched */
   def partialMerkleTree: Gen[(PartialMerkleTree, Seq[(Boolean, DoubleSha256Digest)])] =

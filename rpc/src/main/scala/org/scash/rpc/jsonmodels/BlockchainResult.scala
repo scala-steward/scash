@@ -64,19 +64,13 @@ case class GetBlockChainInfoResult(
   size_on_disk: Long,
   pruned: Boolean,
   pruneheight: Option[Int],
-  softforks: Vector[Softfork],
-  bip9_softforks: Map[String, Bip9Softfork],
+  softforks: Map[String, Softfork],
   warnings: String
 ) extends BlockchainResult
 
-case class Softfork(id: String, version: Int, enforce: Option[Map[String, SoftforkProgress]], reject: SoftforkProgress)
-    extends BlockchainResult
+case class Softfork(`type`: String, bip9: Bip9Softfork, active: Boolean) extends BlockchainResult
 
-case class SoftforkProgress(status: Option[Boolean], found: Option[Int], required: Option[Int], window: Option[Int])
-    extends BlockchainResult
-
-case class Bip9Softfork(status: String, bit: Option[Int], startTime: Int, timeout: BigInt, since: Int)
-    extends BlockchainResult
+case class Bip9Softfork(status: String, start_time: Int, timeout: BigInt, since: Int) extends BlockchainResult
 
 case class GetBlockHeaderResult(
   hash: DoubleSha256DigestBE,

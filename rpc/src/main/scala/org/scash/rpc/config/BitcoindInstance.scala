@@ -65,7 +65,7 @@ sealed trait BitcoindInstance extends BitcoinSLogger {
 
   def p2pPort: Int = uri.getPort
 
-  def start: UIO[BitcoindRpcClient] = {
+  def start: UIO[Process] = {
     val binaryPath = binary.getAbsolutePath
     val cmd = List(
       binaryPath,
