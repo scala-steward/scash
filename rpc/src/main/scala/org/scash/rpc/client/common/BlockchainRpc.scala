@@ -69,14 +69,12 @@ trait BlockchainRpc { self: Client =>
     blocks: Option[Int],
     blockHash: Option[DoubleSha256DigestBE]
   ): Future[GetChainTxStatsResult] = {
-    val params =
-      if (blocks.isEmpty) {
-        List.empty
-      } else if (blockHash.isEmpty) {
-        List(JsNumber(blocks.get))
-      } else {
-        List(JsNumber(blocks.get), JsString(blockHash.get.hex))
-      }
+    val params = (blocks, blockHash) match {
+      case (Some(b), Some(h)) => List(JsNumber(b), JsString(h.hex))
+      case (Some(b), None)    => List(JsNumber(b))
+      case _                  => List.empty
+    }
+
     bitcoindCall[GetChainTxStatsResult]("getchaintxstats", params)
   }
 
