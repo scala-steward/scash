@@ -8,7 +8,7 @@ import sttp.client.asynchttpclient.zio.AsyncHttpClientZioBackend
 import sttp.client._
 import sttp.client.playJson._
 import sttp.model.Uri
-import zio.{ RIO, Task, ZIO }
+import zio.{ RIO, Task, URIO, ZIO }
 
 import scala.util.{ Failure, Success, Try }
 
@@ -19,7 +19,7 @@ case class ClientService(uri: Uri, userName: String, password: String) {
   def bitcoindCall[A](command: String, parameters: List[JsValue] = List.empty)(
     implicit reader: Reads[A]
   ): Task[A] =
-    AsyncHttpClientZioBackend().flatMap { implicit backend =>
+    AsyncHttpClientZioBackend().toManaged(_.close().ignore).use { implicit backend =>
       val payload = JsObject(
         Map(
           "method" -> JsString(command),
@@ -38,7 +38,7 @@ case class ClientService(uri: Uri, userName: String, password: String) {
               .send()
       } yield r.body
 
-      response.absolve.ensuring(backend.close().catchAll(_ => ZIO.unit))
+      response.absolve
     }
 
   def parseJson[A](json: String)(implicit r: Reads[A]): Either[Throwable, A] =
