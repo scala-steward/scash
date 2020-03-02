@@ -141,12 +141,21 @@ object JsonSerializers {
   }
 
   // Transaction Models
+  implicit val rpcScriptSigReads: Reads[RpcScriptSig] = Json.reads[RpcScriptSig]
+
   implicit val rpcScriptPubKeyReads: Reads[RpcScriptPubKey] =
     ((__ \ "asm").read[String] and
       (__ \ "hex").read[String] and
       (__ \ "reqSigs").readNullable[Int] and
       (__ \ "type").read[ScriptType] and
-      (__ \ "addresses").readNullable[Vector[BitcoinAddress]])(RpcScriptPubKey)
+      (__ \ "addresses").readNullable[Vector[String]])(RpcScriptPubKey)
+
+  implicit val rpcTransactionInputCoinbaseReads: Reads[RpcCoinbaseInput] = Json.reads[RpcCoinbaseInput]
+
+  implicit val rpcTransactionInputReads: Reads[RpcTransactionInput] = Json.reads[RpcTransactionInput]
+
+  implicit val rpcTInputReads: Reads[RpcTInput] = Json.reads[RpcTInput]
+
   implicit val rpcTransactionOutputReads: Reads[RpcTransactionOutput] =
     Json.reads[RpcTransactionOutput]
   implicit val rpcTransactionReads: Reads[RpcTransaction] =

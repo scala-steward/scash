@@ -18,19 +18,42 @@ case class RpcTransaction(
   version: Int,
   size: Int,
   locktime: UInt32,
-  vin: Vector[TransactionInput],
+  vin: Vector[RpcTInput],
   vout: Vector[RpcTransactionOutput],
-  hex: Option[Transaction]
+  hex: Option[String]
 ) extends RawTransactionResult
 
-case class RpcTransactionOutput(value: Bitcoins, n: Int, scriptPubKey: RpcScriptPubKey) extends RawTransactionResult
+sealed trait RpcTInput
+
+case class RpcCoinbaseInput(
+  coinbase: String,
+  sequence: UInt32
+) extends RpcTInput
+
+case class RpcTransactionInput(
+  txid: DoubleSha256DigestBE,
+  vout: Int,
+  scriptSig: RpcScriptSig,
+  sequence: UInt32
+) extends RpcTInput
+
+case class RpcScriptSig(
+  asm: String,
+  hex: String
+) extends RawTransactionResult
+
+case class RpcTransactionOutput(
+  value: Bitcoins,
+  n: Int,
+  scriptPubKey: RpcScriptPubKey
+) extends RawTransactionResult
 
 case class RpcScriptPubKey(
   asm: String,
   hex: String,
   reqSigs: Option[Int],
   scriptType: ScriptType,
-  addresses: Option[Vector[BitcoinAddress]]
+  addresses: Option[Vector[String]] //TODO: cant support cashaddr yet store as string for now
 ) extends RawTransactionResult
 
 case class DecodeScriptResult(
@@ -63,8 +86,7 @@ case class GetRawTransactionVin(
   txid: Option[DoubleSha256DigestBE],
   vout: Option[Int],
   scriptSig: Option[GetRawTransactionScriptSig],
-  sequence: Option[BigDecimal],
-  txinwitness: Option[Vector[String]] // Should be TransactionWitness?
+  sequence: Option[BigDecimal]
 ) extends RawTransactionResult
 
 case class GetRawTransactionScriptSig(asm: String, hex: ScriptSignature) extends RawTransactionResult

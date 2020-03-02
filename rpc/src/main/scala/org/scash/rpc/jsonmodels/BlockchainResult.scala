@@ -12,9 +12,7 @@ sealed abstract class BlockchainResult
 case class GetBlockResult(
   hash: DoubleSha256DigestBE,
   confirmations: Int,
-  strippedsize: Int,
   size: Int,
-  weight: Int,
   height: Int,
   version: Int,
   versionHex: Int32,
@@ -26,6 +24,7 @@ case class GetBlockResult(
   bits: UInt32,
   difficulty: BigDecimal,
   chainwork: String,
+  nTx: Int,
   previousblockhash: Option[DoubleSha256DigestBE],
   nextblockhash: Option[DoubleSha256DigestBE]
 ) extends BlockchainResult
@@ -33,9 +32,7 @@ case class GetBlockResult(
 case class GetBlockWithTransactionsResult(
   hash: DoubleSha256DigestBE,
   confirmations: Int,
-  strippedsize: Int,
   size: Int,
-  weight: Int,
   height: Int,
   version: Int,
   versionHex: Int32,
@@ -47,6 +44,7 @@ case class GetBlockWithTransactionsResult(
   bits: UInt32,
   difficulty: BigDecimal,
   chainwork: String,
+  nTx: Int,
   previousblockhash: Option[DoubleSha256DigestBE],
   nextblockhash: Option[DoubleSha256DigestBE]
 ) extends BlockchainResult

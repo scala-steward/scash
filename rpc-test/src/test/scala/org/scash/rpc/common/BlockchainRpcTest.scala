@@ -66,8 +66,8 @@ class BlockchainRpcTest extends BitcoindRpcTest {
   it should "be able to prune the blockchain" in {
     for {
       pruneClient <- pruneClientF
-      count <- pruneClient.getBlockCount
-      pruned <- pruneClient.pruneBlockChain(count)
+      count       <- pruneClient.getBlockCount
+      pruned      <- pruneClient.pruneBlockChain(count)
     } yield {
       assert(pruned > 0)
     }
