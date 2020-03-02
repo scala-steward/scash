@@ -9,17 +9,19 @@ import zio.{ RIO, ZIO }
 
 trait BlockchainRPC {
   def ping: RIO[ZClient, Unit] =
-    ZIO.accessM[ZClient](_.rpc.bitcoindCall[Unit]("ping"))
+    ZIO.accessM[ZClient](_.zclient.bitcoindCall[Unit]("ping"))
 
   def getBestBlockHash: RIO[ZClient, DoubleSha256DigestBE] =
-    ZIO.accessM[ZClient](_.rpc.bitcoindCall[DoubleSha256DigestBE]("getbestblockhash"))
+    ZIO.accessM[ZClient](_.zclient.bitcoindCall[DoubleSha256DigestBE]("getbestblockhash"))
 
   /**
    * Returns a `GetBlockResult` from the block <hash>, with a Vector of tx hashes inside the block
    * Equivalent to bitcoin-cli getblock <hash> 1`
    */
   def getBlock(headerHash: DoubleSha256DigestBE): RIO[ZClient, GetBlockResult] =
-    ZIO.accessM[ZClient](_.rpc.bitcoindCall[GetBlockResult]("getblock", List(JsString(headerHash.hex), JsNumber(1))))
+    ZIO.accessM[ZClient](
+      _.zclient.bitcoindCall[GetBlockResult]("getblock", List(JsString(headerHash.hex), JsNumber(1)))
+    )
 
   /**
    * Same as [[getBlock]] but takes a Little Endian DoubleSha256 Hex instead of Big endian (BE)
@@ -32,16 +34,16 @@ trait BlockchainRPC {
    */
   def getBlockWithTransactions(headerHash: DoubleSha256DigestBE): RIO[ZClient, GetBlockWithTransactionsResult] =
     ZIO.accessM[ZClient](
-      _.rpc.bitcoindCall[GetBlockWithTransactionsResult]("getblock", List(JsString(headerHash.hex), JsNumber(2)))
+      _.zclient.bitcoindCall[GetBlockWithTransactionsResult]("getblock", List(JsString(headerHash.hex), JsNumber(2)))
     )
 
   def getBlockChainInfo: RIO[ZClient, GetBlockChainInfoResult] =
-    ZIO.accessM[ZClient](_.rpc.bitcoindCall[GetBlockChainInfoResult]("getblockchaininfo"))
+    ZIO.accessM[ZClient](_.zclient.bitcoindCall[GetBlockChainInfoResult]("getblockchaininfo"))
 
   def getBlockCount: RIO[ZClient, Int] =
-    ZIO.accessM[ZClient](_.rpc.bitcoindCall[Int]("getblockcount"))
+    ZIO.accessM[ZClient](_.zclient.bitcoindCall[Int]("getblockcount"))
 
   def getBlockHash(height: Int): RIO[ZClient, DoubleSha256DigestBE] =
-    ZIO.accessM[ZClient](_.rpc.bitcoindCall[DoubleSha256DigestBE]("getblockhash", List(JsNumber(height))))
+    ZIO.accessM[ZClient](_.zclient.bitcoindCall[DoubleSha256DigestBE]("getblockhash", List(JsNumber(height))))
 
 }
