@@ -44,7 +44,7 @@ object BlockchainRPCTest
           val test = assertM(zrpc.getBlockHash(1), equalTo(Utils.genesisBlockHash))
           test.provideManaged(Utils.instance)
         }
-      )
+      ) @@ TestAspect.sequential
     )
 
 object Utils {
