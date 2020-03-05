@@ -22,16 +22,14 @@ trait ZClient {
 
 object ZClient {
   trait Service {
-    def bitcoindCall[A](cmd: String, parameters: List[JsValue] = List.empty)(implicit r: Reads[A]): Task[A]
+    def bitcoindCall[A: Reads](cmd: String, parameters: List[JsValue] = List.empty): Task[A]
   }
 
   def make(uri: Uri, userName: String, password: String): ZManaged[Any, Throwable, ZClient] =
     Managed.make(AsyncHttpClientZioBackend())(_.close().ignore).map { implicit sttp =>
       new ZClient {
         val zclient = new ZClient.Service {
-          def bitcoindCall[A](command: String, parameters: List[JsValue] = List.empty)(
-            implicit reader: Reads[A]
-          ): Task[A] = {
+          def bitcoindCall[A: Reads](command: String, parameters: List[JsValue] = List.empty): Task[A] = {
             val payload = JsObject(
               Map(
                 "method" -> JsString(command),
@@ -59,7 +57,7 @@ object ZClient {
   private val resultKey: String = "result"
   private val errorKey: String  = "error"
 
-  private def parseJson[A](json: String)(implicit r: Reads[A]): Either[Throwable, A] =
+  private def parseJson[A: Reads](json: String): Either[Throwable, A] =
     Try(Json.parse(json)) match {
       case Failure(e) => Left(e)
       case Success(js) => {

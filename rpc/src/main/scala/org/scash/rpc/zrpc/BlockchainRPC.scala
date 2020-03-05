@@ -1,8 +1,8 @@
 package org.scash.rpc.zrpc
 
 import org.scash.core.crypto.{ DoubleSha256Digest, DoubleSha256DigestBE }
-import org.scash.core.protocol.blockchain.Block
 import org.scash.rpc.jsonmodels.{ GetBlockChainInfoResult, GetBlockResult, GetBlockWithTransactionsResult }
+
 import org.scash.rpc.serializers.JsonSerializers._
 import play.api.libs.json.{ JsNumber, JsString }
 import zio.{ RIO, ZIO }

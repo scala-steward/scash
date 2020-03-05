@@ -1,11 +1,12 @@
 package org.scash.rpc.zio
 
-import org.scash.core.crypto
 import org.scash.core.crypto.DoubleSha256DigestBE
 import org.scash.rpc.jsonmodels.{ GetBlockChainInfoResult, GetBlockResult, GetBlockWithTransactionsResult }
 import org.scash.rpc.zrpc._
+
 import zio.test._
 import zio.test.Assertion._
+
 import sttp.client._
 
 object BlockchainRPCTest
