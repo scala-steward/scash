@@ -1,16 +1,19 @@
-package org.scash.rpc.zio
+package org.scash.rpc.zio.spec
 
 import org.scash.rpc.jsonmodels.{ Bip9Softfork, GetBlockChainInfoResult, Softfork }
-import zio._
-import zio.test._
-import zio.test.Assertion._
 import org.scash.rpc.serializers.JsonSerializers._
-import play.api.libs.json._
+
+import play.api.libs.json.Json
+
+import zio.ZIO
+import zio.test.Assertion.{ equalTo, isSubtype }
+import zio.test._
 
 object SerializerSpec
     extends DefaultRunnableSpec(
       suite("BitcoinRPC")(
         testM("GetBlockchainInfo") {
+
           val p = """{
             "chain": "main",
             "blocks": 568749,

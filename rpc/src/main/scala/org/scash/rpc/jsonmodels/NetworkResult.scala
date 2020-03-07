@@ -40,7 +40,7 @@ case class GetNetworkInfoResult(
   connections: Int,
   networks: Vector[Network],
   relayfee: Bitcoins,
-  incrementalfee: Bitcoins,
+  excessutxocharge: Bitcoins,
   localadresses: Option[Vector[NetworkAddress]],
   warnings: String
 ) extends NetworkResult
@@ -99,3 +99,5 @@ final case class GetNodeAddressesResult(
   address: java.net.URI,
   port: Int
 ) extends NetworkResult
+
+final case class GetExcessiveBlockSize(excessiveBlockSize: UInt32) extends NetworkResult

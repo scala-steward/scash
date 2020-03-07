@@ -50,4 +50,8 @@ trait MiningRpc { self: Client =>
 
   def prioritiseTransaction(txid: DoubleSha256Digest, feeDelta: Satoshis): Future[Boolean] =
     prioritiseTransaction(txid.flip, feeDelta)
+  /*
+  def submitBlock(block: Block): ZIO[ZClient, Throwable, Unit] =
+    ZIO.accessM[ZClient](_.zclient.bitcoindCall[Unit]("submitblock", List(JsString(block.hex))))
+ */
 }

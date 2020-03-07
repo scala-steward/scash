@@ -33,6 +33,7 @@ import org.scash.rpc.jsonmodels.{
   GetBlockWithTransactionsResult,
   GetChainTxStatsResult,
   GetDescriptorInfoResult,
+  GetExcessiveBlockSize,
   GetMemPoolEntryResultPostV19,
   GetMemPoolEntryResultPreV19,
   GetMemPoolInfoResult,
@@ -190,7 +191,8 @@ object JsonSerializers {
   implicit val netTargetReads: Reads[NetTarget] = Json.reads[NetTarget]
   implicit val getNetTotalsResultReads: Reads[GetNetTotalsResult] =
     Json.reads[GetNetTotalsResult]
-
+  implicit val getExcessiveBlockSizeReads: Reads[GetExcessiveBlockSize] =
+    Json.reads[GetExcessiveBlockSize]
   implicit val networkReads: Reads[Network] = Json.reads[Network]
   implicit val networkAddressReads: Reads[NetworkAddress] =
     Json.reads[NetworkAddress]

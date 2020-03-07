@@ -8,9 +8,6 @@ import play.api.libs.json.{ JsNumber, JsString }
 import zio.{ RIO, ZIO }
 
 trait BlockchainRPC {
-  def ping: RIO[ZClient, Unit] =
-    ZIO.accessM[ZClient](_.zclient.bitcoindCall[Unit]("ping"))
-
   def getBestBlockHash: RIO[ZClient, DoubleSha256DigestBE] =
     ZIO.accessM[ZClient](_.zclient.bitcoindCall[DoubleSha256DigestBE]("getbestblockhash"))
 
