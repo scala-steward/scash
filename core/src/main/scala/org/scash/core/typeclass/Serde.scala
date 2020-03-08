@@ -8,7 +8,7 @@ object Serde {
 }
 
 trait SerdeSyntax {
-  implicit class DecodeSyntax[A: SCodec](a: A) {
+  implicit class SerdeSyntaxOps[A: SCodec](a: A) {
     def bytesB: ByteVector = Serde[A].encode(a).require.toByteVector
     def hexB: String       = Serde[A].encode(a).require.toHex
   }
