@@ -13,6 +13,7 @@ object Deps {
     val akkaStreamv     = "2.5.29"
     val playv           = "2.8.1"
     val scalazv         = "7.2.30"
+    val scodecv         = "1.11.6"
     val scodecbitsv     = "1.1.14"
     val junitv          = "0.11"
     val zioV            = "1.0.0-RC17"
@@ -26,7 +27,8 @@ object Deps {
 
   object Compile {
     val bouncycastle   = "org.bouncycastle"  % "bcprov-jdk15on" % V.bouncyCastle
-    val scodec         = "org.scodec"        %% "scodec-bits"   % V.scodecbitsv
+    val scodecbits     = "org.scodec"        %% "scodec-bits"   % V.scodecbitsv
+    val scodec         = "org.scodec"        %% "scodec-core"   % V.scodecv
     val slf4j          = "org.slf4j"         % "slf4j-api"      % V.slf4j % "provided"
     val zeromq         = "org.zeromq"        % "jeromq"         % V.zeromq
     val akkaHttp       = "com.typesafe.akka" %% "akka-http"     % V.akkav
@@ -60,6 +62,7 @@ object Deps {
 
   val core = List(
     Compile.bouncycastle,
+    Compile.scodecbits,
     Compile.scodec,
     Compile.slf4j,
     Compile.scalaz
