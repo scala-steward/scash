@@ -45,18 +45,14 @@ sealed abstract class Number[T <: Number[T]] extends NetworkElement {
   def >>(num: Int): T = this.>>(apply(num))
 
   def <<(num: T): T =
-    checkIfInt(num).map { _ =>
-      apply((underlying << num.toInt) & andMask)
-    }.get
+    checkIfInt(num).map(_ => apply((underlying << num.toInt) & andMask)).get
 
   def >>(num: T): T =
     //this check is for weird behavior with the jvm and shift rights
     //https://stackoverflow.com/questions/47519140/bitwise-shift-right-with-long-not-equaling-zero/47519728#47519728
     if (num.toLong > 63) apply(0)
     else {
-      checkIfInt(num).map { _ =>
-        apply(underlying >> num.toInt)
-      }.get
+      checkIfInt(num).map(_ => apply(underlying >> num.toInt)).get
     }
 
   def |(num: T): T = apply(checkResult(underlying | num.underlying))
@@ -199,9 +195,7 @@ object UInt8 extends Factory[UInt8] with BaseNumbers[UInt8] {
     ByteVector(us.map(toByte(_)))
 
   def toUInt8s(bytes: ByteVector): Seq[UInt8] =
-    bytes.toSeq.map { b: Byte =>
-      toUInt8(b)
-    }
+    bytes.toSeq.map { b: Byte => toUInt8(b) }
 
   def checkBounds(res: BigInt): UInt8 =
     if (res > max.underlying || res < min.underlying) {
@@ -217,9 +211,8 @@ object UInt32 extends Factory[UInt32] with BaseNumbers[UInt32] {
 
   lazy val zero = UInt32(0)
   lazy val one  = UInt32(1)
-  zero.hex
-  lazy val min = zero
-  lazy val max = UInt32(4294967295L)
+  lazy val min  = zero
+  lazy val max  = UInt32(4294967295L)
 
   override def fromBytes(bytes: ByteVector): UInt32 = {
     require(bytes.size <= 4, "UInt32 byte array was too large, got: " + BitcoinSUtil.encodeHex(bytes))
