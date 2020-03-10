@@ -151,11 +151,9 @@ object JsonSerializers {
       (__ \ "type").read[ScriptType] and
       (__ \ "addresses").readNullable[Vector[String]])(RpcScriptPubKey)
 
-  implicit val rpcTransactionInputCoinbaseReads: Reads[RpcCoinbaseInput] = Json.reads[RpcCoinbaseInput]
-
-  implicit val rpcTransactionInputReads: Reads[RpcTransactionInput] = Json.reads[RpcTransactionInput]
-
-  implicit val rpcTInputReads: Reads[RpcTInput] = Json.reads[RpcTInput]
+  implicit val rpcTInputReads: Reads[RpcTInput] =
+    Json.reads[RpcCoinbaseInput].map(_.asInstanceOf[RpcTInput]) |
+      Json.reads[RpcTransactionInput].map(_.asInstanceOf[RpcTInput])
 
   implicit val rpcTransactionOutputReads: Reads[RpcTransactionOutput] =
     Json.reads[RpcTransactionOutput]

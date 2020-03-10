@@ -1,10 +1,16 @@
 package org.scash.rpc.zrpc
 
 import org.scash.core.crypto.{ DoubleSha256Digest, DoubleSha256DigestBE }
-import org.scash.rpc.jsonmodels.{ GetBlockChainInfoResult, GetBlockResult, GetBlockWithTransactionsResult }
-
+import org.scash.core.protocol.blockchain.{ Block, BlockHeader }
+import org.scash.rpc.jsonmodels.{
+  ChainTip,
+  GetBlockChainInfoResult,
+  GetBlockHeaderResult,
+  GetBlockResult,
+  GetBlockWithTransactionsResult
+}
 import org.scash.rpc.serializers.JsonSerializers._
-import play.api.libs.json.{ JsNumber, JsString }
+import play.api.libs.json.{ JsBoolean, JsNumber, JsString }
 import zio.{ RIO, ZIO }
 
 trait BlockchainRPC {
@@ -34,6 +40,9 @@ trait BlockchainRPC {
       _.zclient.bitcoindCall[GetBlockWithTransactionsResult]("getblock", List(JsString(headerHash.hex), JsNumber(2)))
     )
 
+  def getBlockWithTransactions(headerHash: DoubleSha256Digest): RIO[ZClient, GetBlockWithTransactionsResult] =
+    getBlockWithTransactions(headerHash.flip)
+
   def getBlockChainInfo: RIO[ZClient, GetBlockChainInfoResult] =
     ZIO.accessM[ZClient](_.zclient.bitcoindCall[GetBlockChainInfoResult]("getblockchaininfo"))
 
@@ -43,4 +52,28 @@ trait BlockchainRPC {
   def getBlockHash(height: Int): RIO[ZClient, DoubleSha256DigestBE] =
     ZIO.accessM[ZClient](_.zclient.bitcoindCall[DoubleSha256DigestBE]("getblockhash", List(JsNumber(height))))
 
+  def getBlockHeader(headerHash: DoubleSha256DigestBE): RIO[ZClient, GetBlockHeaderResult] =
+    ZIO.accessM[ZClient](
+      _.zclient.bitcoindCall[GetBlockHeaderResult]("getblockheader", List(JsString(headerHash.hex), JsBoolean(true)))
+    )
+
+  def getBlockHeader(headerHash: DoubleSha256Digest): RIO[ZClient, GetBlockHeaderResult] =
+    getBlockHeader(headerHash.flip)
+
+  def getBlockHeaderRaw(headerHash: DoubleSha256DigestBE): RIO[ZClient, BlockHeader] =
+    ZIO.accessM[ZClient](
+      _.zclient.bitcoindCall[BlockHeader]("getblockheader", List(JsString(headerHash.hex), JsBoolean(false)))
+    )
+
+  def getBlockHeaderRaw(headerHash: DoubleSha256Digest): RIO[ZClient, BlockHeader] =
+    getBlockHeaderRaw(headerHash.flip)
+
+  def getBlockRaw(headerHash: DoubleSha256DigestBE): RIO[ZClient, Block] =
+    ZIO.accessM[ZClient](_.zclient.bitcoindCall[Block]("getblock", List(JsString(headerHash.hex), JsNumber(0))))
+
+  def getBlockRaw(headerHash: DoubleSha256Digest): RIO[ZClient, Block] =
+    getBlockRaw(headerHash.flip)
+
+  def getChainTips: RIO[ZClient, Vector[ChainTip]] =
+    ZIO.accessM[ZClient](_.zclient.bitcoindCall[Vector[ChainTip]]("getchaintips"))
 }
