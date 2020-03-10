@@ -88,6 +88,6 @@ object TypeIdentifier extends Factory[TypeIdentifier] {
     case UInt32.one                 => MsgTx
     case _ if (uInt32 == UInt32(2)) => MsgBlock
     case _ if (uInt32 == UInt32(3)) => MsgFilteredBlock
-    case x: UInt32                  => MsgUnassignedImpl(x)
+    case _                          => MsgUnassignedImpl(uInt32)
   }
 }
