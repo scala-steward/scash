@@ -18,30 +18,29 @@ object Deps {
     val junitv          = "0.11"
     val zioV            = "1.0.0-RC17"
     val typesafeConfigV = "1.4.0"
-    val nativeLoaderV   = "2.3.4"
     val scalaTestPlus   = "3.1.1.1"
     val asyncNewScalaV  = "0.10.0"
     val akkaActorV      = akkaStreamv
     val sttpV           = "2.0.0"
+    val secp256k1jni    = "1.1.1"
   }
 
   object Compile {
-    val bouncycastle   = "org.bouncycastle"  % "bcprov-jdk15on" % V.bouncyCastle
-    val scodecbits     = "org.scodec"        %% "scodec-bits"   % V.scodecbitsv
-    val scodec         = "org.scodec"        %% "scodec-core"   % V.scodecv
-    val slf4j          = "org.slf4j"         % "slf4j-api"      % V.slf4j % "provided"
-    val zeromq         = "org.zeromq"        % "jeromq"         % V.zeromq
-    val akkaHttp       = "com.typesafe.akka" %% "akka-http"     % V.akkav
-    val akkaStream     = "com.typesafe.akka" %% "akka-stream"   % V.akkaStreamv
-    val playJson       = "com.typesafe.play" %% "play-json"     % V.playv
-    val scalaz         = "org.scalaz"        %% "scalaz-core"   % V.scalazv withSources () withJavadoc ()
-    val zio            = "dev.zio"           %% "zio"           % V.zioV withSources () withJavadoc ()
-    val typesafeConfig = "com.typesafe"      % "config"         % V.typesafeConfigV withSources () withJavadoc ()
-    //for loading secp256k1 natively
-    val nativeLoader = "org.scijava"                  % "native-lib-loader"              % V.nativeLoaderV withSources () withJavadoc ()
-    val sttp         = "com.softwaremill.sttp.client" %% "core"                          % V.sttpV
-    val sttpZio      = "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % V.sttpV
-    val sttpJson     = "com.softwaremill.sttp.client" %% "play-json"                     % V.sttpV
+    val bouncycastle   = "org.bouncycastle"             % "bcprov-jdk15on"                 % V.bouncyCastle
+    val scodecbits     = "org.scodec"                   %% "scodec-bits"                   % V.scodecbitsv
+    val scodec         = "org.scodec"                   %% "scodec-core"                   % V.scodecv
+    val slf4j          = "org.slf4j"                    % "slf4j-api"                      % V.slf4j % "provided"
+    val zeromq         = "org.zeromq"                   % "jeromq"                         % V.zeromq
+    val akkaHttp       = "com.typesafe.akka"            %% "akka-http"                     % V.akkav
+    val akkaStream     = "com.typesafe.akka"            %% "akka-stream"                   % V.akkaStreamv
+    val playJson       = "com.typesafe.play"            %% "play-json"                     % V.playv
+    val scalaz         = "org.scalaz"                   %% "scalaz-core"                   % V.scalazv withSources () withJavadoc ()
+    val zio            = "dev.zio"                      %% "zio"                           % V.zioV withSources () withJavadoc ()
+    val typesafeConfig = "com.typesafe"                 % "config"                         % V.typesafeConfigV withSources () withJavadoc ()
+    val secp256k1jni   = "org.scash"                    %% "secp256k1jni"                  % V.secp256k1jni
+    val sttp           = "com.softwaremill.sttp.client" %% "core"                          % V.sttpV
+    val sttpZio        = "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % V.sttpV
+    val sttpJson       = "com.softwaremill.sttp.client" %% "play-json"                     % V.sttpV
   }
 
   object Test {
@@ -65,12 +64,8 @@ object Deps {
     Compile.scodecbits,
     Compile.scodec,
     Compile.slf4j,
-    Compile.scalaz
-  )
-
-  val secp256k1jni = List(
-    Compile.nativeLoader,
-    Test.junitInterface
+    Compile.scalaz,
+    Compile.secp256k1jni
   )
 
   val testkit = List(

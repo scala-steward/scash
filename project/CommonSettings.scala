@@ -19,12 +19,12 @@ object CommonSettings {
     //https://stackoverflow.com/questions/26940253/in-sbt-how-do-you-override-scalacoptions-for-console-in-all-configurations
     scalacOptions in (Compile, console) ~= (_ filterNot (s =>
       s == "-Ywarn-unused-import"
-        || s =="-Ywarn-unused"
-        //for 2.13 -- they use different compiler opts
-        || s == "-Xlint:unused")),
+        || s == "-Ywarn-unused"
+      //for 2.13 -- they use different compiler opts
+        || s == "-Xlint:unused"
+    )),
     scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value,
     scalacOptions in Test := testCompilerOpts,
-
     Compile / compile / javacOptions ++= {
       if (isCI) {
         //jdk11 is used on CI, we need to use the --release flag to make sure
@@ -42,13 +42,13 @@ object CommonSettings {
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     // Travis has performance issues on macOS
     Test / parallelExecution := !(Properties.isMac && isCI)
-    )
+  )
 
   private val commonCompilerOpts = {
     List(
       "-Xsource:2.12",
       "-target:jvm-1.8"
-      )
+    )
   }
 
   //https://docs.scala-lang.org/overviews/compiler-options/index.html
@@ -66,13 +66,13 @@ object CommonSettings {
       "-deprecation",
       "-feature",
       "-Xlint:unused"
-      ) ++ commonCompilerOpts
+    ) ++ commonCompilerOpts
 
   val testCompilerOpts: Seq[String] = commonCompilerOpts
 
   lazy val testSettings: Seq[Setting[_]] = Seq(
     publish / skip := true
-    ) ++ settings
+  ) ++ settings
 
   lazy val prodSettings: Seq[Setting[_]] = settings
 }
