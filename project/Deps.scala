@@ -90,6 +90,8 @@ object Deps {
   )
 
   val rpc = List(
+    Compile.akkaHttp,
+    Compile.akkaStream,
     Compile.playJson,
     Compile.slf4j,
     Compile.typesafeConfig,
