@@ -15,6 +15,7 @@ object Deps {
     val scalazv         = "7.2.30"
     val scodecv         = "1.11.6"
     val scodecbitsv     = "1.1.14"
+    val junitv          = "0.11"
     val zioV            = "1.0.0-RC18-2"
     val typesafeConfigV = "1.4.0"
     val scalaTestPlus   = "3.1.1.1"
@@ -92,6 +93,10 @@ object Deps {
   )
 
   val rpcTest = List(
+    Test.akkaHttp,
+    Test.akkaStream,
+    Test.logback,
+    Test.newAsync,
     Test.zioTest,
     Test.zioTestsbt
   )
