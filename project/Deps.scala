@@ -15,13 +15,12 @@ object Deps {
     val scalazv         = "7.2.30"
     val scodecv         = "1.11.6"
     val scodecbitsv     = "1.1.14"
-    val junitv          = "0.11"
-    val zioV            = "1.0.0-RC17"
+    val zioV            = "1.0.0-RC18-2"
     val typesafeConfigV = "1.4.0"
     val scalaTestPlus   = "3.1.1.1"
     val asyncNewScalaV  = "0.10.0"
     val akkaActorV      = akkaStreamv
-    val sttpV           = "2.0.0"
+    val sttpV           = "2.0.6"
     val secp256k1jni    = "1.1.1"
   }
 
@@ -44,19 +43,18 @@ object Deps {
   }
 
   object Test {
-    val newAsync       = "org.scala-lang.modules" %% "scala-async" % V.asyncNewScalaV % "test" withSources () withJavadoc ()
-    val bitcoinj       = ("org.bitcoinj" % "bitcoinj-core" % "0.14.4" % "test").exclude("org.slf4j", "slf4j-api")
-    val junitInterface = "com.novocode" % "junit-interface" % V.junitv % "test"
-    val logback        = "ch.qos.logback" % "logback-classic" % V.logback % "test"
-    val scalacheck     = "org.scalacheck" %% "scalacheck" % V.scalacheck % "test" withSources () withJavadoc ()
-    val scalaTest      = "org.scalatest" %% "scalatest" % V.scalaTest % "test"
-    val scalaTestPlus  = "org.scalatestplus" %% "scalacheck-1-14" % V.scalaTestPlus
-    val spray          = "io.spray" %% "spray-json" % V.spray % "test"
-    val akkaHttp       = "com.typesafe.akka" %% "akka-http-testkit" % V.akkav % "test"
-    val akkaStream     = "com.typesafe.akka" %% "akka-stream-testkit" % V.akkaStreamv % "test"
-    val akkaTestkit    = "com.typesafe.akka" %% "akka-testkit" % V.akkaActorV withSources () withJavadoc ()
-    val zioTest        = "dev.zio" %% "zio-test" % V.zioV % "test"
-    val zioTestsbt     = "dev.zio" %% "zio-test-sbt" % V.zioV % "test"
+    val newAsync      = "org.scala-lang.modules" %% "scala-async" % V.asyncNewScalaV % "test" withSources () withJavadoc ()
+    val bitcoinj      = ("org.bitcoinj" % "bitcoinj-core" % "0.14.4" % "test").exclude("org.slf4j", "slf4j-api")
+    val logback       = "ch.qos.logback" % "logback-classic" % V.logback % "test"
+    val scalacheck    = "org.scalacheck" %% "scalacheck" % V.scalacheck % "test" withSources () withJavadoc ()
+    val scalaTest     = "org.scalatest" %% "scalatest" % V.scalaTest % "test"
+    val scalaTestPlus = "org.scalatestplus" %% "scalacheck-1-14" % V.scalaTestPlus
+    val spray         = "io.spray" %% "spray-json" % V.spray % "test"
+    val akkaHttp      = "com.typesafe.akka" %% "akka-http-testkit" % V.akkav % "test"
+    val akkaStream    = "com.typesafe.akka" %% "akka-stream-testkit" % V.akkaStreamv % "test"
+    val akkaTestkit   = "com.typesafe.akka" %% "akka-testkit" % V.akkaActorV withSources () withJavadoc ()
+    val zioTest       = "dev.zio" %% "zio-test" % V.zioV % "test"
+    val zioTestsbt    = "dev.zio" %% "zio-test-sbt" % V.zioV % "test"
   }
 
   val core = List(
@@ -78,15 +76,12 @@ object Deps {
 
   val coreTest = List(
     Test.bitcoinj,
-    Test.junitInterface,
     Test.logback,
     Test.scalaTest,
     Test.spray
   )
 
   val rpc = List(
-    Compile.akkaHttp,
-    Compile.akkaStream,
     Compile.playJson,
     Compile.slf4j,
     Compile.typesafeConfig,
@@ -97,12 +92,6 @@ object Deps {
   )
 
   val rpcTest = List(
-    Test.akkaHttp,
-    Test.akkaStream,
-    Test.logback,
-    Test.scalaTest,
-    Test.scalacheck,
-    Test.newAsync,
     Test.zioTest,
     Test.zioTestsbt
   )

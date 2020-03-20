@@ -35,6 +35,9 @@ object CommonSettings {
         Seq("-source", "1.8", "-target", "1.8")
       }
     },
+    resolvers ++= Seq(
+      Resolver.bintrayRepo("scala-cash", "io")
+    ),
     //show full stack trace of failed tests
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
     //show duration of tests
