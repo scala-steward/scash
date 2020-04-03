@@ -1,6 +1,13 @@
-package org.scash.core.number
+package org.scash.zcore.number
 
-private[core] object NumericUtil {
+import scala.math.BigInt
+
+private[scash] object NumericUtil {
+  def pow2(exponent: Int): BigInt = {
+    require(exponent < 64, "We cannot have anything larger than 2^64 - 1 in a long, you tried to do 2^" + exponent)
+    BigInt(1) << exponent
+  }
+
   def longToBigInt(unsignedLong: Long): BigInt =
     (BigInt(unsignedLong >>> 1) << 1) + (unsignedLong & 1)
 
