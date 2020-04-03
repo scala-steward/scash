@@ -1,7 +1,6 @@
-package org.scash.core.typeclass
+package org.scash.zcore.typeclass
 
 trait CNumeric[A] {
-  self =>
   def andMask: BigInt
   def num: A => BigInt
   def apply: BigInt => A

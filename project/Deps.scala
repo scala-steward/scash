@@ -57,7 +57,7 @@ object Deps {
     val akkaHttp       = "com.typesafe.akka" %% "akka-http-testkit" % V.akkav % "test"
     val akkaStream     = "com.typesafe.akka" %% "akka-stream-testkit" % V.akkaStreamv % "test"
     val akkaTestkit    = "com.typesafe.akka" %% "akka-testkit" % V.akkaActorV withSources () withJavadoc ()
-    val zioTest        = "dev.zio" %% "zio-test" % V.zioV % "test"
+    val zioTest        = "dev.zio" %% "zio-test" % V.zioV
     val zioTestsbt     = "dev.zio" %% "zio-test-sbt" % V.zioV % "test"
   }
 
@@ -67,6 +67,22 @@ object Deps {
     Compile.scodec,
     Compile.slf4j,
     Compile.scalaz
+  )
+
+  val zcore = List(
+    Compile.scodec,
+    Compile.scodecbits
+  )
+
+  val zcoretest = List(
+    Compile.scodecbits,
+    Test.zioTest % "test" withSources () withJavadoc (),
+    Test.zioTestsbt
+  )
+
+  val ztestkit = List(
+    Compile.scodecbits,
+    Test.zioTest
   )
 
   val secp256k1jni = List(
@@ -106,7 +122,7 @@ object Deps {
     Test.akkaStream,
     Test.logback,
     Test.newAsync,
-    Test.zioTest,
+    Test.zioTest % "test" withSources () withJavadoc (),
     Test.zioTestsbt
   )
 

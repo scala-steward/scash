@@ -1,51 +1,40 @@
-package org.scash.testkit.gen
+package org.scash.ztestkit.gen
 
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
-import org.scash.core.number._
-import org.scash.core.protocol.CompactSizeUInt
-import org.scash.core.script.constant.ScriptNumber
-import org.scash.core.util.NumberUtil
+import org.scash.zcore.number.{ NumericUtil, Uint32, Uint8 }
 import scodec.bits.BitVector
+import zio.test._
 
-/**
- * Created by chris on 6/16/16.
- */
-trait NumberGenerator {
+object NumberGenerator {
 
   /** Creates a generator that generates positive long numbers */
-  def positiveLongs: Gen[Long] = Gen.choose(0, Long.MaxValue)
+  def positiveLongs = Gen.long(0, Long.MaxValue)
 
   /** Creates a generator for positive longs without the number zero */
-  def positiveLongsNoZero: Gen[Long] = Gen.choose(1, Long.MaxValue)
+  def positiveLongsNoZero = Gen.long(1, Long.MaxValue)
 
   /** Creates a number generator that generates negative long numbers */
-  def negativeLongs: Gen[Long] = Gen.choose(Long.MinValue, -1)
+  def negativeLongs = Gen.long(Long.MinValue, -1)
 
-  def uInt8: Gen[UInt8] = Gen.choose(0, 255).map(n => UInt8(n.toShort))
-
-  def uInt8s: Gen[Seq[UInt8]] = Gen.listOf(uInt8)
+  def uInt8 = Gen.int(0, 255).map(Uint8(_))
 
   /**
    * Generates a number in the range 0 <= x <= 2 ^^32 - 1
    * then wraps it in a UInt32
    */
-  def uInt32s: Gen[UInt32] = Gen.choose(0L, (NumberUtil.pow2(32) - 1).toLong).map(UInt32(_))
+  def uInt32 = Gen.long(0L, (NumericUtil.pow2(32) - 1).toLong).map(Uint32(_))
 
   /** Chooses a BigInt in the ranges of 0 <= bigInt < 2^^64 */
-  def bigInts: Gen[BigInt] =
-    Gen
-      .chooseNum(Long.MinValue, Long.MaxValue)
-      .map(x => BigInt(x) + BigInt(2).pow(63))
+  def bigInts = Gen.long(Long.MinValue, Long.MaxValue).map(n => BigInt(n) + BigInt(2).pow(63))
 
-  def positiveBigInts: Gen[BigInt] = bigInts.filter(_ >= 0)
+  def positiveBigInts = bigInts.filter(_ >= 0)
 
-  def bigIntsUInt64Range: Gen[BigInt] = positiveBigInts.filter(_ < (BigInt(1) << 64))
+  def bigIntsUInt64Range = positiveBigInts.filter(_ < (BigInt(1) << 64))
 
   /**
    * Generates a number in the range 0 <= x < 2^^64
    * then wraps it in a UInt64
    */
+  /*
   def uInt64s: Gen[UInt64] =
     for {
       bigInt <- bigIntsUInt64Range
@@ -72,10 +61,10 @@ trait NumberGenerator {
     } yield b
 
   /**
-   * Generates the number of bytes specified by num
-   * @param num
-   * @return
-   */
+ * Generates the number of bytes specified by num
+ * @param num
+ * @return
+ */
   def bytes(num: Int): Gen[List[Byte]] = Gen.listOfN(num, byte)
 
   /** Generates a random boolean */
@@ -90,7 +79,5 @@ trait NumberGenerator {
       n      <- Gen.choose(0, 100)
       vector <- Gen.listOfN(n, bool)
     } yield BitVector.bits(vector)
-
+ */
 }
-
-object NumberGenerator extends NumberGenerator

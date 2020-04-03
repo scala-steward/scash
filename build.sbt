@@ -1,20 +1,42 @@
 cancelable in Global := true
 
 lazy val core = project in file("core")
-lazy val rpc  = project in file("rpc")
 
 lazy val scash = project
   .in(file("."))
   .aggregate(
     secp256k1jni,
-    core,
-    testkit,
-    coreTest,
-    rpc
-    //rpcTest,
+    zcore,
+    zcoretest,
+    ztestkit,
+    rpc,
+    rpcTest
   )
   .settings(CommonSettings.settings: _*)
   .settings(crossScalaVersions := Nil)
+
+lazy val zcore = project
+  .in(file("zcore"))
+  .settings(CommonSettings.prodSettings: _*)
+
+lazy val zcoretest = project
+  .in(file("zcoretest"))
+  .enablePlugins()
+  .settings(CommonSettings.testSettings: _*)
+  .dependsOn(
+    zcore,
+    ztestkit % "test->test"
+  )
+
+lazy val ztestkit = project
+  .in(file("ztestkit"))
+  .enablePlugins()
+  .settings(CommonSettings.prodSettings: _*)
+  .dependsOn(zcore % "compile->compile;test->test")
+
+lazy val rpc = project
+  .in(file("rpc"))
+  .settings(CommonSettings.prodSettings: _*)
 
 lazy val secp256k1jni = project
   .in(file("secp256k1jni"))
