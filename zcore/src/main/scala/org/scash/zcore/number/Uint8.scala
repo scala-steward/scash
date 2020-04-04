@@ -1,23 +1,26 @@
 package org.scash.zcore.number
 
 import org.scash.zcore.typeclass.CNumeric
-import scodec.Attempt.Successful
 import scodec.Codec
 import scodec.codecs._
 
-case class Uint8(private[zcore] val num: Int)
+import scala.util.Try
+
+case class Uint8(num: Int) extends AnyVal
 
 object Uint8 {
 
-  def apply(int: Int): Uint8 =
-    if (isValid(int)) Uint8(int)
-    else throw new IllegalArgumentException(s"$int negative or larger than 256")
+  def apply(int: Int): Uint8 = Uint8(verify(int)(min, max))
 
-  def isValid(bigInt: BigInt): Boolean = bigInt >= 0 && bigInt < 256
+  def safe(int: Int): Option[Uint8] = Try(apply(int)).toOption
 
-  implicit val uint8Codec: Codec[Uint8] = uint8L.widen(Uint8(_), u => Successful(u.num))
+  val min = Uint8(0)
+  val one = Uint8(1)
+  val max = Uint8(255)
+
+  implicit val uint8Codec: Codec[Uint8] = uint8L.xmap(apply(_), _.num)
 
   implicit val uint8Numeric: CNumeric[Uint8] =
-    CNumeric[Uint8](0xff)(_.num, n => Uint8(n.toInt))
+    CNumeric[Uint8](0xFF)(_.num, n => apply(n.toInt))
 
 }

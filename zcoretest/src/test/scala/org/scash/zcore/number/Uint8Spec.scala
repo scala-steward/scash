@@ -9,7 +9,7 @@ import zio.test._
 object Uint8Spec extends DefaultRunnableSpec {
   val spec = suite("Uint8Spec")(
     testM("uint8 -> byte -> uint8")(
-      check(UintGen.uInt8)(u => assert(u.bytes.decode[Uint8])(equalTo(u)))
+      check(UintGen.uint8)(u => assert(u.bytes.decode[Uint8])(equalTo(u)))
     )
   )
 }

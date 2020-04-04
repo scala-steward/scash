@@ -1,10 +1,10 @@
 package org.scash.ztestkit.gen
 
-import org.scash.zcore.number.{ NumericUtil, Uint32, Uint8 }
-import scodec.bits.BitVector
+import org.scash.zcore.number.{ Uint32, Uint8 }
+import org.scash.zcore.number._
 import zio.test._
 
-object NumberGenerator {
+object UintGen {
 
   /** Creates a generator that generates positive long numbers */
   def positiveLongs = Gen.long(0, Long.MaxValue)
@@ -15,21 +15,19 @@ object NumberGenerator {
   /** Creates a number generator that generates negative long numbers */
   def negativeLongs = Gen.long(Long.MinValue, -1)
 
-  def uInt8 = Gen.int(0, 255).map(Uint8(_))
+  /** Generates a random uint8 */
+  def uint8 = Gen.int(Uint8.min.num, Uint8.max.num).map(Uint8(_))
 
-  /**
-   * Generates a number in the range 0 <= x <= 2 ^^32 - 1
-   * then wraps it in a UInt32
-   */
-  def uInt32 = Gen.long(0L, (NumericUtil.pow2(32) - 1).toLong).map(Uint32(_))
+  /** Generates a random uint32 */
+  def uint32 = Gen.long(Uint32.min.num, Uint32.max.num).map(Uint32(_))
+
+  /** Generates a random uint32 */
+  def uint64 = positiveBigInts.filter(_ < (BigInt(1) << 64)).map(Uint64(_))
 
   /** Chooses a BigInt in the ranges of 0 <= bigInt < 2^^64 */
   def bigInts = Gen.long(Long.MinValue, Long.MaxValue).map(n => BigInt(n) + BigInt(2).pow(63))
 
   def positiveBigInts = bigInts.filter(_ >= 0)
-
-  def bigIntsUInt64Range = positiveBigInts.filter(_ < (BigInt(1) << 64))
-
   /**
    * Generates a number in the range 0 <= x < 2^^64
    * then wraps it in a UInt64
