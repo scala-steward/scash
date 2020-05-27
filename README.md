@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/scala-cash/scash.svg?branch=master)](https://travis-ci.org/scala-cash/scash) [![Coverage Status](https://coveralls.io/repos/github/scala-cash/scash/badge.svg)](https://coveralls.io/github/scala-cash/scash)
+## This project has been archived and work now is started from the ground up to a more clean implementation.
+Work is now been done here [warhorse](https://github.com/scala-cash/warhorse)
 
 # scash
 this is a fork of bitcoin-s which is a library for bitcoin core. Work is still on the way to have a final product that fully supports all BCH features. Here is where we are at the moment:
